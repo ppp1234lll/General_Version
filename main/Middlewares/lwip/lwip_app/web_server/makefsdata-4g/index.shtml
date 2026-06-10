@@ -1,0 +1,647 @@
+<!-- 数据采集器Web界面主文件 -->
+<html lang="zh-CN">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf8"/>
+        <style>
+            /* 基础布局样式 - 使用Flexbox实现响应式布局 */
+            .flex{
+                flex-flow:row wrap;
+                display: flex;
+                width: 100%;
+                height: 100%;
+            }
+            
+            /* 全局样式重置 */
+            *{
+                margin: 0;
+                padding: 0;
+                box-sizing:border-box;
+                cursor: pointer;
+
+            }
+            
+            /* 开关组件样式 */
+            .switch {
+                position: relative;
+                display: inline-block;
+                width: 60px;
+                height: 34px;
+                margin-left: 10px;
+            }
+            .switch input {display:none;}
+
+            /* 开关滑块样式 */
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
+
+            /* 开关滑块内部圆形按钮 */
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 26px;
+                width: 26px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
+
+            /* 开关选中状态样式 */
+            input:checked + .slider {
+                background-color: #2196F3;
+            }
+
+            /* 开关聚焦状态样式 */
+            input:focus + .slider {
+                box-shadow: 0 0 1px #2196F3;
+            }
+
+            /* 开关选中时滑块动画 */
+            input:checked + .slider:before {
+                -webkit-transform: translateX(26px);
+                -ms-transform: translateX(26px);
+                transform: translateX(26px);
+            }
+
+            /* 圆形开关样式 */
+            .slider.round {
+                border-radius: 34px;
+            }
+
+            /* 圆形开关内部按钮样式 */
+            .slider.round:before {
+                border-radius: 50%;
+            }
+            
+            /* 导航栏样式 */
+            .nav{
+                font-size: 40px;
+
+            }
+            
+            /* 选中导航项样式 */
+            .blue{
+                background: #00f9;
+            }
+            
+            /* 按钮样式 */
+            button{
+                padding: 10px;
+                width: 300px;
+
+            }
+            
+            /* 主内容区样式 */
+            #content{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-top: 20px;
+                overflow-y: auto;
+            }
+
+            /* 登录遮罩层样式 */
+            #loginshado{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+
+                padding-top: 100px;
+                width: 100%;
+                height: 100%;
+                background: #000f;
+                position: fixed;
+                display: flex;
+            }
+            
+            /* 登录框样式 */
+            #login{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: #fff;
+                width: 600px;
+                height: 400px;
+                justify-content: center;
+            }
+            
+            /* 表单行样式 */
+            .from {
+                display: flex;
+                margin: 20px 0;
+                width: 300px;
+
+            }
+
+            /* 表单标签样式 */
+            .from span{
+               min-width: 100px;
+               text-align: left;
+            }
+            
+            /* 输入框和选择框样式 */
+            input,select {
+                width: 200px;
+                height: 30px;
+                margin-left: 2%;
+                padding-left: 5px;
+                border-radius: 3px;
+                border: 1px solid #919191;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- 应用主容器 -->
+        <div id="app" class="flex">
+            <!-- 顶部标题栏 -->
+            <div style="width:100%;height: 7%;border-bottom: 1px solid #000;align-items: center;display: flex;">
+                <h1 style="margin-left: 10px;">数据采集器<h1>
+            </div>
+            <!-- 左侧导航栏 -->
+            <div style="width: 15%;height: 86%;border-right: 1px solid #000; overflow-y: auto;" id="nav"></div>
+            <!-- 主内容区 -->
+            <div style="width: 85%;height: 86%;" id="content"></div>
+            <!-- 底部状态栏 -->
+            <div style="width: 100%;height: 7%;border-top: 1px solid #000;align-items: center;display: flex;justify-content:space-between;">
+                <h1><h1>
+                <h2 style="margin-left: 40px;color: red;"> </h2>
+            </div>
+            <!-- 登录遮罩层 -->
+            <div id="loginshado">
+                <div id="login"></div>
+            </div>
+        </div>
+    </body>
+    <script>
+        // 页面刷新间隔时间（毫秒）
+        var loopTime=2000
+        
+        // 修改密码模型
+        var modelChangePassword={
+            divid:"login",            // 渲染容器ID
+            btntype:"changePassword", // 按钮类型
+            nodes:[
+                ["修改密码","","password"]  // [标签名, 值, 字段名]
+            ],
+            btns:[
+                ["修改","changePassword"]  // [按钮文本, 按钮类型]
+            ]
+        }
+        
+        // 主数据模型
+        var model=[
+            {
+                divid:"login",            // 渲染容器ID
+                btntype:"loginInit",      // 按钮类型
+                nodes:[
+                    ["账号","","username"],  // [标签名, 值, 字段名]
+                    ["密码","","password"]   // [标签名, 值, 字段名]
+                ],
+                btns:[
+                    ["登陆","login"]           // [按钮文本, 按钮类型]
+                ]
+            },
+            {
+                label:"电压电流",            // 导航标签
+                btntype:"VACollection",     // 按钮类型
+                divid:"content",            // 渲染容器ID
+                nodes:[
+                    ["总闸电压(V)","",'vol'],      // [标签名, 值, 字段名]
+                    ["总闸电流(mA)","",'cur'],     // [标签名, 值, 字段名]
+                    ["电流通道1(mA)","",'curr1'],  // [标签名, 值, 字段名]
+                    ["电流通道2(mA)","",'curr2'],  // [标签名, 值, 字段名]
+                    ["电流通道3(mA)","",'curr3'],  // [标签名, 值, 字段名]
+                    ["电流通道4(mA)","",'curr4'],  // [标签名, 值, 字段名]
+                ],
+            },
+            {
+                label:"传感器数据",            // 导航标签
+                btntype:"otherCollection",    // 按钮类型
+                divid:"content",              // 渲染容器ID
+                nodes:[
+                    ["温度1","",'temp1'],      // [标签名, 值, 字段名]
+                    ["湿度1","",'humi1'],      // [标签名, 值, 字段名]
+                    ["温度2","",'temp2'],      // [标签名, 值, 字段名]
+                    ["湿度2","",'humi2'],      // [标签名, 值, 字段名]
+                    ["角度","",'pose'],        // [标签名, 值, 字段名]
+                    ["箱门1","",'door1'],      // [标签名, 值, 字段名]
+                    ["箱门2","",'door2'],      // [标签名, 值, 字段名]
+                    ["箱门3","",'door3'],      // [标签名, 值, 字段名]
+                    ["箱门4","",'door4'],      // [标签名, 值, 字段名]
+					["水浸1","",'water1'],     // [标签名, 值, 字段名]
+					["水浸2","",'water2'],     // [标签名, 值, 字段名]
+                    ["漏电1","",'ld1'],        // [标签名, 值, 字段名]
+                    ["漏电2","",'ld2'],        // [标签名, 值, 字段名]
+                ],
+            },
+            {
+                label:"阈值设置",              // 导航标签
+                btntype:"ThresholdData",      // 按钮类型
+                divid:"content",              // 渲染容器ID
+                nodes:[
+                    ["高压(V)","<!--#aa-->",'aa'],        // [标签名, 值, 字段名]
+					["低压(V)","<!--#ab-->",'ab'],        // [标签名, 值, 字段名]
+                    ["电流(mA)","<!--#ac-->",'ac'],       // [标签名, 值, 字段名]
+                    ["姿态角度(°)","<!--#ad-->",'ad'],     // [标签名, 值, 字段名]
+                    ["温度_高","<!--#ae-->",'ae'],         // [标签名, 值, 字段名]
+                    ["温度_低","<!--#af-->",'af'],         // [标签名, 值, 字段名]
+                    ["湿度_高","<!--#ag-->",'ag'],         // [标签名, 值, 字段名]
+                    ["湿度_低","<!--#ah-->",'ah'],         // [标签名, 值, 字段名]
+                    ["漏电(mA)","<!--#am-->",'am'],        // [标签名, 值, 字段名]
+                ],
+                btns:[
+                    ["保存","threshold_save"]              // [按钮文本, 按钮类型]
+                ]
+            },
+            {
+                label:"开关状态",              // 导航标签
+                btntype:"switchStatus",       // 按钮类型
+                divid:"content",              // 渲染容器ID
+                nodes:[
+                    ["继电器1","",'sw1',{        // [标签名, 值, 字段名, 配置对象]
+                        type:"switch",             // 控件类型
+                    }],
+                    ["继电器2","",'sw2',{        // [标签名, 值, 字段名, 配置对象]
+                        type:"switch",             // 控件类型
+                    }],
+					["继电器3","",'sw3',{        // [标签名, 值, 字段名, 配置对象]
+                        type:"switch",             // 控件类型
+                    }],
+					["继电器4","",'sw4',{        // [标签名, 值, 字段名, 配置对象]
+                        type:"switch",             // 控件类型
+                    }],
+                ],
+            },
+            {
+                label:"北斗定位",              // 导航标签
+                btntype:"BeidouData",         // 按钮类型
+                divid:"content",              // 渲染容器ID
+                nodes:[
+                    ["卫星数量","",'bd_num'],      // [标签名, 值, 字段名]
+                    ["信号强度","",'bd_signal'],  // [标签名, 值, 字段名]
+                    ["定位状态","",'bd_status'],  // [标签名, 值, 字段名]
+                    ["经度","",'bd_lon'],        // [标签名, 值, 字段名]
+                    ["纬度","",'bd_lat'],        // [标签名, 值, 字段名]
+                    ["方向","",'bd_dir'],        // [标签名, 值, 字段名]
+                ],
+            },
+
+            {
+                label:"系统状态",              // 导航标签
+                divid:"content",              // 渲染容器ID
+                btntype:"systemStatus",       // 按钮类型
+                nodes:[
+                    ["终端序列号","",'no1'],       // [标签名, 值, 字段名]
+                    ["软件版本号","",'no2'],       // [标签名, 值, 字段名]
+                    ["硬件版本号","",'no3'],       // [标签名, 值, 字段名]
+                ],
+            },
+            {
+                label:"系统设置",              // 导航标签
+                divid:"content",              // 渲染容器ID
+                btntype:"systemSetting",      // 按钮类型
+                nodes:[
+                    ["同步时间","<!--#a-->",'a'],     // [标签名, 值, 字段名]
+                    ["本机ID","<!--#b-->",'b'],       // [标签名, 值, 字段名]
+                    ["设备名称","<!--#c-->",'c'],     // [标签名, 值, 字段名]
+                    ["登陆密码","<!--#d-->",'d'],     // [标签名, 值, 字段名]
+                    ["网络连接状态","<!--#C-->",'C'],  // [标签名, 值, 字段名]
+                    ['传输方式','','tran',{         // [标签名, 值, 字段名, 配置对象]
+                        type:"select",               // 控件类型
+                        options:["有线传输","无线传输","自动切换"],  // 下拉选项
+                    }],
+                ],
+                btns:[
+                    ["保存","set_save"],              // [按钮文本, 按钮类型]
+                ]
+            },
+            {
+                label:"无线网络",              // 导航标签
+                divid:"content",              // 渲染容器ID
+                btntype:"gprsSetting",        // 按钮类型
+                nodes:[
+                    ["信息强度","",'sign'],         // [标签名, 值, 字段名]
+                    ["模块状态","",'gprs'],         // [标签名, 值, 字段名]
+                    ["SIM卡ICCID","",'iccid'],      // [标签名, 值, 字段名]
+                    ["模块型号","",'model'],         // [标签名, 值, 字段名]
+                    ["模块IMEI","",'imei'],         // [标签名, 值, 字段名]
+                ]
+            },
+            {
+                label:"有线网络",              // 导航标签
+                divid:"content",              // 渲染容器ID
+                btntype:"networkSetting",     // 按钮类型
+                nodes:[
+                    ["IP","<!--#e-->",'e'],         // [标签名, 值, 字段名]
+                    ["子网掩码","<!--#f-->",'f'],     // [标签名, 值, 字段名]
+                    ["网关","<!--#g-->",'g'],         // [标签名, 值, 字段名]
+                    ["DNS","<!--#h-->","h"],        // [标签名, 值, 字段名]
+                    ["MAC","<!--#L-->","L"],        // [标签名, 值, 字段名]
+                    ["主网地址1","<!--#i-->","i"],    // [标签名, 值, 字段名]
+                    ["主网地址2","<!--#K-->","K"],    // [标签名, 值, 字段名]
+                    ["信号机地址","<!--#bc-->","bc"],  // [标签名, 值, 字段名]
+					["网络延时时间","<!--#N-->","N"],  // [标签名, 值, 字段名]
+                    ["组播IP","<!--#O-->","O"],      // [标签名, 值, 字段名]
+                    ["组播端口","<!--#P-->","P"],      // [标签名, 值, 字段名]
+                ],
+                btns:[
+                    ["保存","local_save"]             // [按钮文本, 按钮类型]
+                ]
+            },
+            {
+                label:"服务器设置",              // 导航标签
+                divid:"content",                // 渲染容器ID
+                btntype:"serverset",            // 按钮类型
+                nodes:[
+                    ["内网1地址","<!--#D-->",'D'],      // [标签名, 值, 字段名]
+                    ["内网1端口","<!--#E-->",'E'],      // [标签名, 值, 字段名]
+                    ["外网1地址","<!--#F-->",'F'],      // [标签名, 值, 字段名]
+                    ["外网1端口","<!--#G-->",'G'],      // [标签名, 值, 字段名]
+                    ["内网1地址_备份","<!--#ae-->",'ae'],  // [标签名, 值, 字段名]
+                    ["内网1端口_备份","<!--#af-->",'af'],  // [标签名, 值, 字段名]
+                    ["外网1地址_备份","<!--#ag-->",'ag'],  // [标签名, 值, 字段名]
+                    ["外网1端口_备份","<!--#ah-->",'ah'],  // [标签名, 值, 字段名]
+                    ["上报间隔时间","<!--#J-->",'J'],      // [标签名, 值, 字段名]
+                ],
+                btns:[
+                    ["保存","remote_save"]             // [按钮文本, 按钮类型]
+                ]
+            },
+            {
+                label:"升级服务器",              // 导航标签
+                divid:"content",                // 渲染容器ID
+                btntype:"update_addr",          // 按钮类型
+                nodes:[
+                    ["升级url","<!--#ba-->",'ba'],      // [标签名, 值, 字段名]
+                    ["升级端口","<!--#bb-->",'bb'],      // [标签名, 值, 字段名]
+                ],
+                btns:[
+                    ["保存","update_save"]             // [按钮文本, 按钮类型]
+                ]
+            },
+            {
+                label:"系统操作",              // 导航标签
+                divid:"content",              // 渲染容器ID
+                btntype:"system",             // 按钮类型
+                nodes:[],                      // 无节点
+                btns:[
+                    ["系统升级-有线","updatelwip"],   // [按钮文本, 按钮类型]
+					["系统升级-无线","updategprs"],   // [按钮文本, 按钮类型]
+                    ["恢复出厂","reset"],           // [按钮文本, 按钮类型]
+                    ["设备重启","reboot"],          // [按钮文本, 按钮类型]
+					["擦除存储芯片","eacres"]        // [按钮文本, 按钮类型]
+                ]
+            }
+        ]
+    </script>
+
+    <script>
+        // 视图对象 - 负责页面渲染和交互逻辑
+        var View={
+            // 初始化视图
+            init(model,nav){
+                this.model=model          // 数据模型
+                this.nav=nav              // 导航容器
+                this.selectindex=1        // 当前选中索引
+                this.loadcontent(0,this.model[0])  // 加载初始内容
+                this.loadnav(this.selectindex)     // 加载导航
+            },
+            // 循环更新页面
+            loop(){
+                    this.loadcontent(this.selectj,this.selectdata)  // 加载当前选中内容
+            },
+            // 生成导航标签HTML
+            labelhtml(i,style,label){
+                return [
+                    '<p onclick="View.setNav(',i,')" class="nav ',style,'">',  // 点击事件绑定
+                        label,  // 标签文本
+                    '<p>'
+                ].join('')
+            },
+            // 设置导航选中项
+            setNav(v){
+                document.getElementById('content').innerHTML=""  // 清空内容区
+                this.loadnav(v)  // 加载导航
+            },
+            // 加载导航
+            loadnav(v){
+                var html=""  // 导航HTML
+                for(var i=0;i<this.model.length;i++){
+                    if(this.model[i].label){  // 只处理有label的项
+                        html+=this.labelhtml(i,i==v?"blue":"",this.model[i].label)  // 生成导航标签
+                    }
+                }
+                this.loadcontent(v,this.model[v])  // 加载对应内容
+                this.nav.innerHTML=html  // 更新导航容器
+            },
+            // 生成输入框HTML
+            inputhtml(data,j,i){
+                data[1]=data[1].replace(/<.*>/g,'')  // 移除HTML标签
+                classname="from"
+                var checked=data[3]==1?"checked":"";
+                var s1=['<div class="switch">',
+                            '<label class="switch">',
+                                '<input type="checkbox" ',checked,' onchange="View.switchChange(',j,',',i,',3)">',
+                                '<div class="slider round"></div>',
+                            '</label>',
+                        '</div>'].join('')
+                var s2=data[3]!=undefined?s1:"";
+                return [
+                    '<div class="',classname,'">',
+                        '<span>',data[0],':</span>',  // 标签名
+                        '<input value="',data[1],'" name="',data[2],'"/>',  // 输入框
+                        s2,  // 开关控件
+                    '</div>'
+                ].join('')
+            },
+            // 开关状态改变处理
+            switchChange(j,i,key){
+                key=key||1  // 默认key为1
+                var data=View.model[j].nodes[i]  // 获取对应节点数据
+                data[key]=data[key]=='1'?'0':'1'  // 切换状态
+                console.log('switchChange')
+                View.click("switch",[['',data[key],data[2]+'_switch']])  // 触发点击事件
+            },
+            // 生成开关HTML
+            swichhtml(data,j,i){
+                checked=data[1]=='1'?'checked':""
+                return [
+                    '<div class="from">',
+                        '<span>',data[0],':</span>',  // 标签名
+                        '<label class="switch">',
+                            '<input type="checkbox" ',checked,' onchange="View.switchChange(',j,',',i,')">',
+                            '<div class="slider round"></div>',
+                        '</label>',
+                    '</div>'
+                ].join('')
+            },
+            // 选择框状态改变处理
+            selectChange(j,i){
+                var data=View.model[j].nodes[i]  // 获取对应节点数据
+                data[1]=document.getElementById('select'+j+''+i).value  // 更新值
+                console.log('selectChange',data)
+                View.click("select",[data])  // 触发点击事件
+            },
+            // 生成选择框HTML
+            selecthtml(data,j,i){
+                var rt=['<select id="select',j,i,'" onchange="View.selectChange(',j,',',i,')">'].join('')
+                for(var i=0;i<data[3].options.length;i++){
+                    console.log('selected',i,data[1],i==parseInt(data[1]))
+                    selected=i==parseInt(data[1])?'selected':''
+                    rt+='<option value="'+i+'" '+selected+'>'+data[3].options[i]+'</options>'
+                }
+                rt+='</select>'
+                return [
+                    '<div class="from">',
+                        '<span>',data[0],':</span>',  // 标签名
+                        rt,  // 选择框
+                    '</div>'
+                ].join('')
+            },
+            // 生成按钮HTML
+            btnhtml(i,data){
+                return [
+                    '<div style="text-align:center"><button class="button" onclick="View.click(\'',data[1],'\',',i,')">',
+                        data[0],  // 按钮文本
+                    '</button></div>'
+                ].join("")
+            },
+            // 渲染页面内容
+            render(s,data,j){
+
+                var html="";
+                console.log('loadcontent',s,data,j)
+                for(var i=0;i<data.nodes.length;i++){
+                    if(s[i]){
+                        data.nodes[i][1]=s[i]+''  // 更新节点值
+                    }
+                    if(data.nodes[i][3]&&typeof data.nodes[i][3]=='object'){
+                        if(data.nodes[i][3].type=="switch"){
+                            html+=this.swichhtml(data.nodes[i],j,i)  // 渲染开关
+                        }else{
+                            html+=this.selecthtml(data.nodes[i],j,i)  // 渲染选择框
+                        }
+                    }else{
+                        html+=this.inputhtml(data.nodes[i],j,i)  // 渲染输入框
+                    }
+                }
+                if(data.btns!=undefined){
+                    for(var i=0;i<data.btns.length;i++){
+                        html+=this.btnhtml(j,data.btns[i])  // 渲染按钮
+                    }
+                }
+                document.getElementById(data.divid).innerHTML=html  // 更新容器内容
+            },
+            // 加载页面内容
+            loadcontent(j,data){
+                this.selectj=j  // 当前选中索引
+                this.selectdata=data  // 当前选中数据
+                if(j==0){
+                    this.render([],data,j)  // 渲染登录页面
+                }else{
+                    if(document.getElementById(data.divid).querySelector('button')==null){
+                        this.get('/setting.cgi?btntype='+data.btntype,(s)=>this.render(s[1],data,j))  // 异步获取数据并渲染
+                    }
+
+                }
+            },
+            // 发送AJAX请求
+            get(url,back){
+                xmlhttp=null;
+                if (window.XMLHttpRequest)
+                {
+		            xmlhttp=new XMLHttpRequest();  // 现代浏览器
+                }
+                else if (window.ActiveXObject)
+		        {// code for IE6, IE5
+		            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");  // IE6/5
+		        }
+		        if (xmlhttp!=null)
+		        {
+                    xmlhttp.onreadystatechange=()=>{
+                        if (xmlhttp.readyState==4&&back){
+                            var data=xmlhttp.responseText
+                            try {
+                                data=JSON.parse(data.replace(/<.*>/g,''))  // 解析JSON响应
+                            } catch (error) {
+                                data=[500,'解析错误'+data,data.replace(/<.*>/g,'')]  // 解析错误处理
+                            }
+                            back(data)  // 回调处理
+                        }
+                        //console.log(xmlhttp.readyState,xmlhttp.status)
+                    }
+                    xmlhttp.open("GET",url,true);  // 打开连接
+                    xmlhttp.send(null);  // 发送请求
+                }
+		        else
+		        {
+		            alert("Your browser does not support XMLHTTP.");  // 浏览器不支持
+		        }
+            },
+            // 处理按钮点击事件
+            click(name,i){
+                var s='/setting.cgi?btntype='+name  // 请求URL
+                var nodes=i
+                if(typeof i=='number'){
+                    nodes=this.model[i].nodes  // 获取对应节点数据
+                }
+                if(i!=0){
+                    nodes=this.model[0].nodes.concat(nodes)  // 合并登录节点
+                }
+                var oj={}
+                nodes.forEach((element,n,a) => {
+                    var input=document.getElementsByName(element[2])[0]
+                    if(input){
+                        oj[element[2]]=input.value  // 获取输入值
+                        s=s+'&'+element[2]+'='+input.value  // 构建请求参数
+                    }else{
+                        oj[element[2]]=element[1]  // 使用默认值
+                        s=s+'&'+element[2]+'='+element[1]  // 构建请求参数
+                    }
+                });
+                console.log("get",name,oj)
+                if(name=="changePassword"||name=="set_save"){
+                    
+                    var map={changePassword:"password",set_save:"d"}
+                    let p=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[\s\S]{8,12}$/  // 密码格式正则
+                    if(!p.test(oj[map[name]])){
+                        return alert("请输入正确密码格式：\n密码长度:8-12\n密码由数字+大写英文字符+小写英文字符组成")
+                    }
+                }
+                this.get(s,(d)=>this.clickback(d,name))  // 发送请求并处理响应
+            },
+            // 点击事件回调处理
+            clickback(d,name){
+                console.log(name,d)
+                if(name=="login"&&d[2]=='1'){
+                    this.render([],modelChangePassword,0)  // 登录成功后显示修改密码界面
+                    return
+                }
+                document.getElementById('loginshado').style.display=d[0]==401?'':'none'  // 401错误时显示登录遮罩
+                if(d[1]){
+                    alert(d[1])  // 显示响应消息
+                }
+            }
+        }
+        
+        // 初始化视图
+        View.init(model,document.getElementById('nav'))
+        
+        // 设置定时刷新
+        if(loopTime){
+            setInterval(()=>View.loop(),loopTime)
+        }
+        //View.clickback([0,''])
+        //View.setNav(0)
+    </script>
+</html>

@@ -1,0 +1,7 @@
+
+.history/
+bootloader/.cache
+bootloader/Output
+main/.cache
+main/Output
+

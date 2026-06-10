@@ -1,0 +1,694 @@
+<html lang="zh-CN">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf8"/>
+        <style>
+            .flex{
+                flex-flow:row wrap;
+                display: flex;
+                width: 100%;
+                height: 100%;
+            }
+            *{
+                margin: 0;
+                padding: 0;
+                box-sizing:border-box;
+                cursor: pointer;
+
+            }
+            .switch {
+                position: relative;
+                display: inline-block;
+                width: 60px;
+                height: 34px;
+                margin-left: 10px;
+            }
+            .switch input {display:none;}
+
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
+
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 26px;
+                width: 26px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
+
+            input:checked + .slider {
+                background-color: #2196F3;
+            }
+
+            input:focus + .slider {
+                box-shadow: 0 0 1px #2196F3;
+            }
+
+            input:checked + .slider:before {
+                -webkit-transform: translateX(26px);
+                -ms-transform: translateX(26px);
+                transform: translateX(26px);
+            }
+
+            /* Rounded sliders */
+            .slider.round {
+                border-radius: 34px;
+            }
+
+            .slider.round:before {
+                border-radius: 50%;
+            }
+            .nav{
+                font-size: 40px;
+
+            }
+            .blue{
+                background: #00f9;
+            }
+            button{
+                padding: 10px;
+                width: 300px;
+
+            }
+            #content{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-top: 20px;
+                overflow-y: auto;
+            }
+
+            #loginshado{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+
+                padding-top: 100px;
+                width: 100%;
+                height: 100%;
+                background: #000f;
+                position: fixed;
+                display: flex;
+            }
+            #login{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                background: #fff;
+                width: 600px;
+                height: 400px;
+                justify-content: center;
+            }
+            .from {
+                display: flex;
+                margin: 20px 0;
+                width: 300px;
+
+            }
+
+            .from span{
+               min-width: 100px;
+               text-align: left;
+            }
+            input,select {
+                width: 200px;
+                height: 30px;
+                margin-left: 2%;
+                padding-left: 5px;
+                border-radius: 3px;
+                border: 1px solid #919191;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app" class="flex">
+            <div style="width:100%;height: 7%;border-bottom: 1px solid #000;align-items: center;display: flex;">
+                <h1 style="margin-left: 10px;">数据采集器<h1>
+            </div>
+            <div style="width: 15%;height: 86%;border-right: 1px solid #000; overflow-y: auto;" id="nav"></div>
+            <div style="width: 85%;height: 86%;" id="content"></div>
+            <div style="width: 100%;height: 7%;border-top: 1px solid #000;align-items: center;display: flex;justify-content:space-between;">
+                <h1><h1>
+                <h2 style="margin-left: 40px;color: red;"> </h2>
+            </div>
+            <div id="loginshado">
+                <div id="login"></div>
+            </div>
+        </div>
+    </body>
+    <script>
+        var loopTime=2000
+        var modelChangePassword={
+            divid:"login",
+            btntype:"changePassword",
+            nodes:[
+                ["修改密码","","password"]
+            ],
+            btns:[
+                ["修改","changePassword"]
+            ]
+        }
+        var model=[
+            {
+                divid:"login",
+                btntype:"loginInit",
+                nodes:[
+                    ["账号","","username"],
+                    ["密码","","password"]
+                ],
+                btns:[
+                    ["登陆","login"]
+                ]
+            },
+            {
+                label:"电能参数",
+                btntype:"VACollection",
+                divid:"content",
+                nodes:[
+                    ["总电压(V)","",'vol'],
+                    ["总电流(mA)","",'cur'],
+                    ["总功率(W)","",'totalpower'],
+                    ["总用电量(度)","",'totalelec'],
+                ],
+            },
+            {
+                label:"传感器数据",
+                btntype:"otherCollection",
+                divid:"content",
+                nodes:[
+                    ["温度","",'temp'],
+                    ["湿度","",'humi'],
+                    ["箱体姿态","",'pose'],
+                    ["箱门状态","",'door'],
+					["水浸状态","",'water'],
+                    ["漏电","",'ld'],
+                ],
+            },
+            {
+                label:"阈值设置",
+                btntype:"ThresholdData",
+                divid:"content",
+                nodes:[
+                    ["高压(V)","<!--#aa-->",'aa'],
+					["低压(V)","<!--#ab-->",'ab'],
+                    ["电流(mA)","<!--#ac-->",'ac'],
+                    ["姿态角度(°)","<!--#ad-->",'ad'],
+                    ["温度_高","<!--#ae-->",'ae'],
+                    ["温度_低","<!--#af-->",'af'],
+                    ["湿度_高","<!--#ag-->",'ag'],
+                    ["湿度_低","<!--#ah-->",'ah'],
+					["箱门时间","<!--#ak-->",'ak'],
+                    ["漏电(mA)","<!--#am-->",'am'],
+					["重启次数","<!--#bc-->",'bc'],
+                    ["重启时间","<!--#bd-->",'bd'],
+                ],
+                btns:[
+                    ["保存","threshold_save"]
+                ]
+            },
+            {
+                label:"开关状态",
+                btntype:"switchStatus",
+                divid:"content",
+                nodes:[
+                    ["继电器1","",'sw1',{
+                        type:"switch",
+                    }],
+                    ["继电器2","",'sw2',{
+                        type:"switch",
+                    }],
+					["继电器3","",'sw3',{
+                        type:"switch",
+                    }]
+                ],
+            },
+            {
+                label:"北斗定位",
+                btntype:"BeidouData",
+                divid:"content",
+                nodes:[
+                    ["卫星数量","",'bd_num'],
+                    ["信号强度","",'bd_signal'],
+                    ["定位状态","",'bd_status'],
+                    ["经度","",'bd_lon'],
+                    ["纬度","",'bd_lat'],
+                    ["方向","",'bd_dir'],
+                ],
+            },
+            {
+                label:"系统状态",
+                divid:"content",
+                btntype:"systemStatus",
+                nodes:[
+                    ["终端序列号","",'no1'],
+                    ["软件版本号","",'no2'],
+                    ["硬件版本号","",'no3'],
+                ],
+            },
+            {
+                label:"系统设置",
+                divid:"content",
+                btntype:"systemSetting",
+                nodes:[
+                    ["同步时间","<!--#a-->",'a'],
+                    ["本机ID","<!--#b-->",'b'],
+                    ["设备名称","<!--#c-->",'c'],
+                    ["登陆密码","<!--#d-->",'d'],
+                    ["网络连接状态","<!--#C-->",'C'],
+                    ['传输方式','','tran',{
+                        type:"select",
+                        options:["有线传输","无线传输","自动切换"],
+                    }],
+                    ['摄像机检测方式','','camera_tran',{
+                        type:"select",
+                        options:["PING方式","端口扫描","RTSP拉流测试"],
+                    }],
+                ],
+                btns:[
+                    ["保存","set_save"],
+                ]
+            },
+            {
+                label:"无线网络",
+                divid:"content",
+                btntype:"gprsSetting",
+                nodes:[
+                    ["信息强度","",'sign'],
+                    ["模块状态","",'gprs'],
+                    ["SIM卡ICCID","",'iccid'],
+                    ["模块型号","",'model'],
+                    ["模块IMEI","",'imei'],
+                ]
+            },
+            {
+                label:"有线网络",
+                divid:"content",
+                btntype:"networkSetting",
+                nodes:[
+                    ["IP","<!--#e-->",'e'],
+                    ["子网掩码","<!--#f-->",'f'],
+                    ["网关","<!--#g-->",'g'],
+                    ["DNS","<!--#h-->","h"],
+                    ["MAC","<!--#L-->","L"],
+                    ["主网检测地址1","<!--#i-->","i"],
+                    ["主网检测地址2","<!--#K-->","K"],
+					["网络延时时间","<!--#N-->","N"],
+                    ["组播IP","<!--#O-->","O"],
+                    ["组播端口","<!--#P-->","P"],
+                    ["交换机IP","<!--#bf-->","bf"],
+                ],
+                btns:[
+                    ["保存","local_save"]
+                ]
+            },
+            {
+                label:"摄像头设置",
+                divid:"content",
+                btntype:"otherSetting",
+                nodes:[
+                    ["摄像头1","<!--#m-->",'m'],
+                    ['品牌','','a_b',{ type:"select", options:["海康","大华","宇视"] }],
+                    ["摄像头2","<!--#n-->",'n'],
+                    ['品牌','','b_b',{ type:"select", options:["海康","大华","宇视"] }],
+                    ["摄像头3","<!--#o-->",'o'],
+                    ['品牌','','c_b',{ type:"select", options:["海康","大华","宇视"] }],
+                    ["摄像头4","<!--#p-->",'p'],
+                    ['品牌','','d_b',{ type:"select", options:["海康","大华","宇视"] }],
+                    ["摄像头5","<!--#q-->",'q'],
+                    ['品牌','','e_b',{ type:"select", options:["海康","大华","宇视"] }],
+                    ["摄像头6","<!--#r-->",'r'],
+                    ['品牌','','f_b',{ type:"select", options:["海康","大华","宇视"] }],
+                    ["ping间隔时间","<!--#s-->",'s'],
+                    ["ping间隔时间-设备","<!--#t-->",'t'],
+                ],
+                btns:[
+                    ["保存","camera_save"]
+                ]
+            },
+            {
+                label:"摄像机账号",
+                btntype:"carema_user",
+                divid:"content",
+                nodes:[
+                    ["摄像机1账号","",'name1'],
+                    ["摄像机1密码","",'password1'],
+                    ["摄像机2账号","",'name2'],
+                    ["摄像机2密码","",'password2'],
+                    ["摄像机3账号","",'name3'],
+                    ["摄像机3密码","",'password3'],
+                    ["摄像机4账号","",'name4'],
+                    ["摄像机4密码","",'password4'],
+                    ["摄像机5账号","",'name5'],
+                    ["摄像机5密码","",'password5'],
+                    ["摄像机6账号","",'name6'],
+                    ["摄像机6密码","",'password6'],
+                ],
+            },
+            {
+                label:"服务器设置",
+                divid:"content",
+                btntype:"serverset",
+                nodes:[
+                    ["内网1地址","<!--#D-->",'D'],
+                    ["内网1端口","<!--#E-->",'E'],
+                    ["外网1地址","<!--#F-->",'F'],
+                    ["外网1端口","<!--#G-->",'G'],
+                    ["内网1地址_备份","<!--#ae-->",'ae'],
+                    ["内网1端口_备份","<!--#af-->",'af'],
+                    ["外网1地址_备份","<!--#ag-->",'ag'],
+                    ["外网1端口_备份","<!--#ah-->",'ah'],
+                    ["上报间隔时间","<!--#J-->",'J'],
+                ],
+                btns:[
+                    ["保存","remote_save"]
+                ]
+            },
+            {
+                label:"升级服务器",
+                divid:"content",
+                btntype:"update_addr",
+                nodes:[
+                    ["升级url","<!--#ba-->",'ba'],
+                    ["升级端口","<!--#bb-->",'bb'],
+                ],
+                btns:[
+                    ["保存","update_save"]
+                ]
+            },
+            {
+                label:"SNMP配置",
+                divid:"content",
+                btntype:"snmp_set",
+                nodes:[
+                    ['设备类型','','dev_type',{
+                        type:"select",
+                        options:["海康","大华","宇视","光猫","交换机"],
+                    }],
+                    ['指令','','oid_cmd',{
+                        type:"select",
+                        options:["品牌", "型号", "序列号", "CPU使用率", "内存使用率", "实时码流", "MAC地址"],
+                    }],
+                    ["OID","<!--#be-->",'be'],
+                ],
+                btns:[
+                    ["保存","snmp_save"]
+                ]
+            },
+            {
+                label:"SNMP测试",
+                divid:"content",
+                btntype:"snmp_test",
+                nodes:[
+                    ['设备类型','','dev_type',{
+                        type:"select",
+                        options:["IPC1","IPC2","IPC3","IPC4","IPC5","IPC6","光猫","交换机"],
+                    }],
+                ],
+                btns:[
+                    ["发送","snmp_send"],
+                ]
+            },
+            {
+                label:"系统操作",
+                divid:"content",
+                btntype:"system",
+                nodes:[],
+                btns:[
+                    ["系统升级-有线","updatelwip"],
+					["系统升级-无线","updategprs"],
+					["基站定位","lbsgps"],
+                    ["恢复出厂","reset"],
+                    ["设备重启","reboot"],
+                    ["擦除存储芯片","eacres"],
+                    ["摄像机搜索","carema"],
+                    ["打印mib","printmib"],
+                    ["查询摄像机1","snmpcamera1"]
+                ]
+            }
+        ]
+    </script>
+
+    <script>
+        var View={
+            init(model,nav){
+                this.model=model
+                this.nav=nav
+                this.selectindex=1
+                this.loadcontent(0,this.model[0])
+                this.loadnav(this.selectindex)
+            },
+            loop(){
+                    this.loadcontent(this.selectj,this.selectdata)
+            },
+            labelhtml(i,style,label){
+                return [
+                    '<p onclick="View.setNav(',i,')" class="nav ',style,'">',
+                        label,
+                    '<p>'
+                ].join('')
+            },
+            setNav(v){
+                document.getElementById('content').innerHTML=""
+                this.loadnav(v)
+            },
+            loadnav(v){
+                var html=""
+                for(var i=0;i<this.model.length;i++){
+                    if(this.model[i].label){
+                        html+=this.labelhtml(i,i==v?"blue":"",this.model[i].label)
+                    }
+                }
+                this.loadcontent(v,this.model[v])
+                this.nav.innerHTML=html
+            },
+            inputhtml(data,j,i){
+                data[1]=data[1].replace(/<.*>/g,'')
+                classname="from"
+                var checked=data[3]==1?"checked":"";
+                var s1=['<div class="switch">',
+                            '<label class="switch">',
+                                '<input type="checkbox" ',checked,' onchange="View.switchChange(',j,',',i,',3)">',
+                                '<div class="slider round"></div>',
+                            '</label>',
+                        '</div>'].join('')
+                var s2=data[3]!=undefined?s1:"";
+                return [
+                    '<div class="',classname,'">',
+                        '<span>',data[0],':</span>',
+                        '<input value="',data[1],'" name="',data[2],'"/>',
+                        s2,
+                    '</div>'
+                ].join('')
+            },
+            switchChange(j,i,key){
+                key=key||1
+                var data=View.model[j].nodes[i]
+                data[key]=data[key]=='1'?'0':'1'
+                console.log('switchChange')
+                View.click("switch",[['',data[key],data[2]+'_switch']])
+            },
+            swichhtml(data,j,i){
+                checked=data[1]=='1'?'checked':""
+                return [
+                    '<div class="from">',
+                        '<span>',data[0],':</span>',
+                        '<label class="switch">',
+                            '<input type="checkbox" ',checked,' onchange="View.switchChange(',j,',',i,')">',
+                            '<div class="slider round"></div>',
+                        '</label>',
+                    '</div>'
+                ].join('')
+            },
+            selectChange(j,i){
+                var data=View.model[j].nodes[i]
+                data[1]=document.getElementById('select'+j+''+i).value
+                console.log('selectChange',data)
+                if (data[2] === 'dev_type') {
+                    var currentVals = View.model[j].nodes.map(n => n[1] || "0");
+                    var cmdNodeIndex = View.model[j].nodes.findIndex(n => n[2] === 'oid_cmd');
+                    if (cmdNodeIndex !== -1) {
+                        currentVals[cmdNodeIndex] = "0";
+                    }
+                    View.render(currentVals, View.model[j], j);
+                }
+                View.click("select",[data])
+            },
+            selecthtml(data,j,i){
+                var rt=['<select name="',data[2],'" id="select',j,i,'" onchange="View.selectChange(',j,',',i,')">'].join('')
+                for(var i=0;i<data[3].options.length;i++){
+                    console.log('selected',i,data[1],i==parseInt(data[1]))
+                    selected=i==parseInt(data[1])?'selected':''
+                    rt+='<option value="'+i+'" '+selected+'>'+data[3].options[i]+'</options>'
+                }
+                rt+='</select>'
+                return [
+                    '<div class="from">',
+                        '<span>',data[0],':</span>',
+                        rt,
+                    '</div>'
+                ].join('')
+            },
+            btnhtml(i,data){
+                return [
+                    '<div style="text-align:center"><button class="button" onclick="View.click(\'',data[1],'\',',i,')">',
+                        data[0],
+                    '</button></div>'
+                ].join("")
+            },
+            render(s,data,j){
+
+                var html="";
+                console.log('loadcontent',s,data,j)
+                for(var i=0;i<data.nodes.length;i++){
+                    if(s[i]){
+                        data.nodes[i][1]=s[i]+''
+                    }
+                    if (data.nodes[i][2] === 'oid_cmd') {
+                        var devTypeNode = data.nodes.find(n => n[2] === 'dev_type');
+                        if (devTypeNode) {
+                            var devTypeVal = parseInt(devTypeNode[1] || "0");
+                            if(devTypeVal <= 2) {
+                                data.nodes[i][3].options = ["品牌", "型号", "序列号", "CPU使用率", "内存使用率", "实时码流", "MAC地址"];
+                            } else if(devTypeVal == 3) {
+                                data.nodes[i][3].options = ["品牌", "型号", "光功率", "端口状态"];
+                            } else if(devTypeVal == 4) {
+                                data.nodes[i][3].options = ["品牌", "型号", "端口状态", "POE状态", "POE端口功率"];
+                            }
+                        }
+                    }
+                    var item_html = "";
+                    if(data.nodes[i][3]&&typeof data.nodes[i][3]=='object'){
+                        if(data.nodes[i][3].type=="switch"){
+                            item_html=this.swichhtml(data.nodes[i],j,i)
+                        }else{
+                            item_html=this.selecthtml(data.nodes[i],j,i)
+                        }
+                    }else{
+                        item_html=this.inputhtml(data.nodes[i],j,i)
+                    }
+
+                    if (data.nodes[i][0].indexOf('摄像头') === 0 && data.nodes[i][0].length > 3) {
+                        html += '<div style="display:flex; flex-direction:row; width:650px; justify-content: flex-start;">' + item_html;
+                    } else if (data.nodes[i][0] === '品牌' && i > 0 && data.nodes[i-1][0].indexOf('摄像头') === 0 && data.nodes[i-1][0].length > 3) {
+                        // 为了紧凑显示，覆盖一下 .from 的宽度，并去除“品牌”文字
+                        item_html = item_html.replace('class="from"', 'class="from" style="width:220px; margin-left:10px;"');
+                        item_html = item_html.replace('<span>品牌:</span>', '');
+                        html += item_html + '</div>';
+                    } else {
+                        html += item_html;
+                    }
+                }
+                if(data.btns!=undefined){
+                    for(var i=0;i<data.btns.length;i++){
+                        html+=this.btnhtml(j,data.btns[i])
+                    }
+                }
+                document.getElementById(data.divid).innerHTML=html
+            },
+            loadcontent(j,data){
+                this.selectj=j
+                this.selectdata=data
+                if(j==0){
+                    this.render([],data,j)
+                }else{
+                    if(document.getElementById(data.divid).querySelector('button')==null){
+                        this.get('/setting.cgi?btntype='+data.btntype,(s)=>this.render(s[1],data,j))
+                    }
+
+                }
+            },
+            get(url,back){
+                xmlhttp=null;
+                if (window.XMLHttpRequest)
+                {
+		            xmlhttp=new XMLHttpRequest();
+                }
+                else if (window.ActiveXObject)
+		        {// code for IE6, IE5
+		            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+		        }
+		        if (xmlhttp!=null)
+		        {
+                    xmlhttp.onreadystatechange=()=>{
+                        if (xmlhttp.readyState==4&&back){
+                            var data=xmlhttp.responseText
+                            try {
+                                data=JSON.parse(data.replace(/<.*>/g,''))
+                            } catch (error) {
+                                data=[500,'解析错误'+data,data.replace(/<.*>/g,'')]
+                            }
+                            back(data)
+                        }
+                        //console.log(xmlhttp.readyState,xmlhttp.status)
+                    }
+                    xmlhttp.open("GET",url,true);
+                    xmlhttp.send(null);
+                }
+		        else
+		        {
+		            alert("Your browser does not support XMLHTTP.");
+		        }
+            },
+            click(name,i){
+                var s='/setting.cgi?btntype='+name
+                var nodes=i
+                if(typeof i=='number'){
+                    nodes=this.model[i].nodes
+                }
+                if(i!=0){
+                    nodes=this.model[0].nodes.concat(nodes)
+                }
+                var oj={}
+                nodes.forEach((element,n,a) => {
+                    var input=document.getElementsByName(element[2])[0]
+                    if(input){
+                        oj[element[2]]=input.value
+                        s=s+'&'+element[2]+'='+input.value
+                    }else{
+                        oj[element[2]]=element[1]
+                        s=s+'&'+element[2]+'='+element[1]
+                    }
+                });
+                console.log("get",name,oj)
+                if(name=="changePassword"||name=="set_save"){
+                    
+                    var map={changePassword:"password",set_save:"d"}
+                    let p=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[\s\S]{8,12}$/
+                    if(!p.test(oj[map[name]])){
+                        return alert("请输入正确密码格式：\n密码长度:8-12\n密码由数字+大写英文字符+小写英文字符组成")
+                    }
+                }
+                this.get(s,(d)=>this.clickback(d,name))
+            },
+            clickback(d,name){
+                console.log(name,d)
+                if(name=="login"&&d[2]=='1'){
+                    this.render([],modelChangePassword,0)
+                    return
+                }
+                document.getElementById('loginshado').style.display=d[0]==401?'':'none'
+                if(d[1]){
+                    alert(d[1])
+                }
+            }
+        }
+        View.init(model,document.getElementById('nav'))
+        if(loopTime){
+            setInterval(()=>View.loop(),loopTime)
+        }
+        //View.clickback([0,''])
+        //View.setNav(0)
+    </script>
+</html>
