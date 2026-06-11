@@ -1,11 +1,11 @@
 /*
 *********************************************************************************************************
 *
-*	模块名称 : cpu内部falsh操作模块
-*	文件名称 : bsp_cpu_flash.h
-*	版    本 : V1.0
+*    模块名称 : cpu内部falsh操作模块
+*    文件名称 : bsp_cpu_flash.h
+*    版    本 : V1.0
 *
-*	Copyright (C), 2013-2014, 安富莱电子 www.armfly.com
+*    Copyright (C), 2026-2026, 蜂鸟 www.flybee.com
 *
 *********************************************************************************************************
 */
@@ -15,11 +15,16 @@
 
 #include "./SYSTEM/sys/sys.h"
 
-#define CPU_FLASH_BASE_ADDR      (uint32_t)(FLASH_BASE)		/* 0x08000000 */
+/*
+*********************************************************************************************************
+*                                     宏定义
+*********************************************************************************************************
+*/
+#define CPU_FLASH_BASE_ADDR      (uint32_t)(FLASH_BASE)        /* 0x08000000 */
 #define CPU_FLASH_END_ADDR       (uint32_t)(0x080FFFFF)
 
-#define CPU_FLASH_SIZE       	(1 * 1024 * 1024)	/* FLASH总容量 */
-#define CPU_FLASH_SECTOR_SIZE	(128 * 1024)		/* 扇区大小，字节 */
+#define CPU_FLASH_SIZE           (1 * 1024 * 1024)    /* FLASH总容量 */
+#define CPU_FLASH_SECTOR_SIZE    (128 * 1024)        /* 扇区大小，字节 */
 
 /* base address of the FMC sectors */
 #define ADDR_FMC_SECTOR_0     ((uint32_t)0x08000000) /*!< base address of sector 0, 16 kbytes */
@@ -36,11 +41,16 @@
 #define ADDR_FMC_SECTOR_11    ((uint32_t)0x080E0000) /*!< base address of sector 11, 128 kbytes */
 
 
-#define FLASH_IS_EQU		0   /* Flash内容和待写入的数据相等，不需要擦除和写操作 */
-#define FLASH_REQ_WRITE		1	/* Flash不需要擦除，直接写 */
-#define FLASH_REQ_ERASE		2	/* Flash需要先擦除,再写 */
-#define FLASH_PARAM_ERR		3	/* 函数参数错误 */
+#define FLASH_IS_EQU           0   /* Flash内容和待写入的数据相等，不需要擦除和写操作 */
+#define FLASH_REQ_WRITE        1    /* Flash不需要擦除，直接写 */
+#define FLASH_REQ_ERASE        2    /* Flash需要先擦除,再写 */
+#define FLASH_PARAM_ERR        3    /* 函数参数错误 */
 
+/*
+*********************************************************************************************************
+*                                     提供给其他C文件调用的函数
+*********************************************************************************************************
+*/
 uint8_t bsp_ReadCpuFlash(uint32_t _ulFlashAddr, uint8_t *_ucpDst, uint32_t _ulSize);
 uint8_t bsp_WriteCpuFlash(uint32_t _ulFlashAddr, uint8_t *_ucpSrc, uint32_t _ulSize);
 uint8_t bsp_CmpCpuFlash(uint32_t _ulFlashAddr, uint8_t *_ucpBuf, uint32_t _ulSize);
@@ -50,5 +60,5 @@ void bsp_EraseCpuFlash(uint32_t _ulFlashAddr);
 void flash_test(void);
 #endif
 
-/****************************************** END OF FILE **********************************************/
+/**************************************** END OF FILE **************************************************/
 

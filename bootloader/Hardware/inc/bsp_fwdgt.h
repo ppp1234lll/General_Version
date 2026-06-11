@@ -1,12 +1,27 @@
+/*
+*********************************************************************************************************
+*
+*    模块名称 : fwdgt操作模块
+*    文件名称 : bsp_fwdgt.h
+*    版    本 : V1.0
+*
+*    Copyright (C), 2026-2026, 蜂鸟 www.flybee.com
+*
+*********************************************************************************************************
+*/
+
 #ifndef _BSP_FWDGT_H_
 #define _BSP_FWDGT_H_
 
 #include "./SYSTEM/sys/sys.h"
 
-void bsp_InitFwdgt(uint8_t prer,uint16_t rlr);//FWDGT初始化
-void FeedFwdgt(void);  //喂狗函数
+// 外部函数声明
+void bsp_InitFwdgt(uint8_t prer,uint16_t rlr);      // FWDGT初始化
+void FeedFwdgt(void);                               // 喂狗函数
 
+// 测试函数
 void fwdgt_test(void);
 #endif
 
+/**************************************** END OF FILE **************************************************/
 

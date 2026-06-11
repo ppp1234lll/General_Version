@@ -5,3 +5,5 @@ bootloader/Output
 main/.cache
 main/Output
 
+main/HexBin.bat
+bootloader/HexBin.bat

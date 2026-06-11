@@ -1,0 +1,25 @@
+
+程序名字： bootloader
+
+工程目录文件夹简介：
+    名称                 作用
+    APP                 存放用户文件
+    Drivers             存放GD官方驱动文件
+    Hardware            存放板级相关的驱动层文件
+    Middlewares         存放第三方中间层文件
+    Output              存放工程编译输出文件
+    Projects            存放 MDK 工程文件
+    User                存放 HAL 库用户配置文件、 main.c、中断处理文件
+    Doc                 说明文件
+    keilkill.bat        删除编译器编译后的无关文件
+
+文件修改说明：
+1、地址：
+    升级文件存储地址          main.h
+    app主程序跳转地址         main.h
+2、板级驱动文件：
+    看门狗开启               bsp_fwdgt.c
+    LED引脚定义              bsp_led.c
+    NOR FLASH驱动           bsp_spi_bus.c   bsp_spi_flash.c
+    按键引脚定义             bsp_key.h
+    调试串口                bsp_usart5.c

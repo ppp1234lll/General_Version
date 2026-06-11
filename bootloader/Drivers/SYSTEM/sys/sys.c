@@ -101,30 +101,30 @@ void sys_soft_reset(void)
 
 /*
 *********************************************************************************************************
-*	函 数 名: Error_Handler
-*	形    参: file : 源代码文件名称。关键字 __FILE__ 表示源代码文件名。
-*			  line ：代码行号。关键字 __LINE__ 表示源代码行号
-*	返 回 值: 无
-*		Error_Handler(__FILE__, __LINE__);
+*    函 数 名: Error_Handler
+*    形    参: file : 源代码文件名称。关键字 __FILE__ 表示源代码文件名。
+*              line ：代码行号。关键字 __LINE__ 表示源代码行号
+*    返 回 值: 无
+*        Error_Handler(__FILE__, __LINE__);
 *********************************************************************************************************
 */
 void Error_Handler(char *file, uint32_t line)
 {
-	/* 
-		用户可以添加自己的代码报告源代码文件名和代码行号，比如将错误文件和行号打印到串口
-	*/
+    /* 
+        用户可以添加自己的代码报告源代码文件名和代码行号，比如将错误文件和行号打印到串口
+    */
     
-	printf("Wrong parameters value: file %s on line %d\r\n", file, line);
+    printf("Wrong parameters value: file %s on line %d\r\n", file, line);
     
-	/* 这是一个死循环，断言失败时程序会在此处死机，以便于用户查错 */
-	if (line == 0)
-	{
-		return;
-	}
-	
-	while(1)
-	{
-	}
+    /* 这是一个死循环，断言失败时程序会在此处死机，以便于用户查错 */
+    if (line == 0)
+    {
+        return;
+    }
+    
+    while(1)
+    {
+    }
 }
 
 
