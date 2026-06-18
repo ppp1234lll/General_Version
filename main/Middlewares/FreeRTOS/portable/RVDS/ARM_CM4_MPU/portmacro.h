@@ -1,29 +1,23 @@
 /*
  * FreeRTOS Kernel V10.4.6
  * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
  * SPDX-License-Identifier: MIT
- *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  * the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  * https://www.FreeRTOS.org
  * https://github.com/FreeRTOS
- *
  */
 
 
@@ -38,10 +32,8 @@
 
 /*-----------------------------------------------------------
  * Port specific definitions.
- *
  * The settings in this file configure FreeRTOS correctly for the
  * given hardware and compiler.
- *
  * These settings should not be altered.
  *-----------------------------------------------------------
  */
@@ -99,18 +91,14 @@ typedef unsigned long    UBaseType_t;
  * The TEX, Shareable (S), Cacheable (C) and Bufferable (B) bits define the
  * memory type, and where necessary the cacheable and shareable properties
  * of the memory region.
- *
  * The TEX, C, and B bits together indicate the memory type of the region,
  * and:
  * - For Normal memory, the cacheable properties of the region.
  * - For Device memory, whether the region is shareable.
- *
  * For Normal memory regions, the S bit indicates whether the region is
  * shareable. For Strongly-ordered and Device memory, the S bit is ignored.
- *
  * See the following two tables for setting TEX, S, C and B bits for
  * unprivileged flash, privileged flash and privileged RAM regions.
- *
  +-----+---+---+------------------------+--------------------------------------------------------+-------------------------+
  | TEX | C | B | Memory type            |  Description or Normal region cacheability             |  Shareable?             |
  +-----+---+---+------------------------+--------------------------------------------------------+-------------------------+
@@ -295,7 +283,6 @@ extern void vResetPrivilege( void );
 
 /**
  * @brief Checks whether or not the processor is privileged.
- *
  * @return 1 if the processor is already privileged, 0 otherwise.
  */
 #define portIS_PRIVILEGED()      xIsPrivileged()

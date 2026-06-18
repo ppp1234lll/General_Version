@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2016 Elias Oenal.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,7 +25,6 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * Author: Elias Oenal <lwip@eliasoenal.com>
  */
 
@@ -53,7 +49,6 @@ snmpv3_engine_id_changed(void)
 }
 
 /** According to RFC3414 2.2.2.
- *
  * The number of times that the SNMP engine has
  * (re-)initialized itself since snmpEngineID
  * was last configured.
@@ -71,7 +66,6 @@ snmpv3_get_engine_boots_internal(void)
 }
 
 /** RFC3414 2.2.2.
- *
  * Once the timer reaches 2147483647 it gets reset to zero and the
  * engine boot ups get incremented.
  */
@@ -95,9 +89,7 @@ snmpv3_get_engine_time_internal(void)
 
 /* This function ignores the byte order suggestion in RFC3414
  * since it simply doesn't influence the effectiveness of an IV.
- *
  * Implementing RFC3826 priv param algorithm if LWIP_RAND is available.
- *
  * @todo: This is a potential thread safety issue.
  */
 err_t

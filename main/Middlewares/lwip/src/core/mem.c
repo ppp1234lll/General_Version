@@ -1,17 +1,13 @@
 /**
  * @file
  * Dynamic memory manager
- *
  * This is a lightweight replacement for the standard C library malloc().
- *
  * If you want to use the standard C library malloc() instead, define
  * MEM_LIBC_MALLOC to 1 in your lwipopts.h
- *
  * To let mem_malloc() use pools (prevents fragmentation and is much faster than
  * a heap but might waste some memory), define MEM_USE_POOLS to 1, define
  * MEMP_USE_CUSTOM_POOLS to 1 and create a file "lwippools.h" that includes a list
  * of pools like this (more pools can be added between _START and _END):
- *
  * Define three pools with sizes 256, 512, and 1512 bytes
  * LWIP_MALLOC_MEMPOOL_START
  * LWIP_MALLOC_MEMPOOL(20, 256)
@@ -23,10 +19,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -34,7 +28,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -45,12 +38,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
  *         Simon Goldschmidt
- *
  */
 
 #include "lwip/opt.h"
@@ -88,7 +78,6 @@
 /**
  * Check if a mep element was victim of an overflow or underflow
  * (e.g. the restricted area after/before it has been altered)
- *
  * @param p the mem element to check
  * @param size allocated size of the element
  * @param descr1 description of the element source shown on error
@@ -184,10 +173,8 @@ mem_trim(void *mem, mem_size_t size)
 
 /**
  * Allocate a block of memory with a minimum of 'size' bytes.
- *
  * @param size is the minimum size of the requested block in bytes.
  * @return pointer to allocated memory or NULL if no free memory was found.
- *
  * Note that the returned value must always be aligned (as defined by MEM_ALIGNMENT).
  */
 void *
@@ -208,7 +195,6 @@ mem_malloc(mem_size_t size)
 }
 
 /** Put memory back on the heap
- *
  * @param rmem is the pointer as returned by a previous call to mem_malloc()
  */
 void
@@ -230,7 +216,6 @@ mem_free(void *rmem)
 /**
  * Allocate memory: determine the smallest pool that is big enough
  * to contain an element of 'size' and get an element from that pool.
- *
  * @param size the size in bytes of the memory needed
  * @return a pointer to the allocated memory or NULL if the pool is empty
  */
@@ -288,7 +273,6 @@ mem_malloc(mem_size_t size)
  * Free memory previously allocated by mem_malloc. Loads the pool number
  * and calls memp_free with that pool number to put the element back into
  * its pool
- *
  * @param rmem the memory element to free
  */
 void
@@ -450,10 +434,8 @@ mem_to_ptr(void *mem)
  * "Plug holes" by combining adjacent empty struct mems.
  * After this function is through, there should not exist
  * one empty struct mem pointing to another empty struct mem.
- *
  * @param mem this points to a struct mem which just has been freed
  * @internal this function is only called by mem_free() and mem_trim()
- *
  * This assumes access to the heap is protected by the calling function
  * already.
  */
@@ -596,7 +578,6 @@ mem_sanity(void)
 
 /**
  * Put a struct mem back on the heap
- *
  * @param rmem is the data portion of a struct mem as returned by a previous
  *             call to mem_malloc()
  */
@@ -674,7 +655,6 @@ mem_free(void *rmem)
 
 /**
  * Shrink memory returned by mem_malloc().
- *
  * @param rmem pointer to memory allocated by mem_malloc the is to be shrunk
  * @param new_size required size after shrinking (needs to be smaller than or
  *                equal to the previous size)
@@ -808,10 +788,8 @@ mem_trim(void *rmem, mem_size_t new_size)
 
 /**
  * Allocate a block of memory with a minimum of 'size' bytes.
- *
  * @param size_in is the minimum size of the requested block in bytes.
  * @return pointer to allocated memory or NULL if no free memory was found.
- *
  * Note that the returned value will always be aligned (as defined by MEM_ALIGNMENT).
  */
 void *
@@ -975,9 +953,7 @@ mem_calloc(mem_size_t count, mem_size_t size)
 /**
  * Contiguously allocates enough space for count objects that are size bytes
  * of memory each and returns a pointer to the allocated memory.
- *
  * The allocated memory is filled with bytes of value zero.
- *
  * @param count number of objects to allocate
  * @param size size of the objects to allocate
  * @return pointer to allocated memory / NULL pointer if there is an error

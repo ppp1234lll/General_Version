@@ -1,11 +1,9 @@
 /**
  * @file
  * Network Interface Sequential API module
- *
  * @defgroup netifapi NETIF API
  * @ingroup sequential_api
  * Thread-safe functions to be called from non-TCPIP threads
- *
  * @defgroup netifapi_netif NETIF related
  * @ingroup netifapi
  * To be called from non-TCPIP threads
@@ -14,7 +12,6 @@
 /*
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -22,7 +19,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -33,9 +29,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  */
 
 #include "lwip/opt.h"
@@ -153,7 +147,6 @@ netifapi_do_netif_common(struct tcpip_api_call_data *m)
  * @ingroup netifapi_arp
  * Add or update an entry in the ARP cache.
  * For an update, ipaddr is used to find the cache entry.
- *
  * @param ipaddr IPv4 address of cache entry
  * @param ethaddr hardware address mapped to ipaddr
  * @param type type of ARP cache entry
@@ -184,7 +177,6 @@ netifapi_arp_add(const ip4_addr_t *ipaddr, struct eth_addr *ethaddr, enum netifa
 /**
  * @ingroup netifapi_arp
  * Remove an entry in the ARP cache identified by ipaddr
- *
  * @param ipaddr IPv4 address of cache entry
  * @param type type of ARP cache entry
  * @return ERR_OK: entry removed, else error from err_t
@@ -215,7 +207,6 @@ netifapi_arp_remove(const ip4_addr_t *ipaddr, enum netifapi_arp_entry type)
  * @ingroup netifapi_netif
  * Call netif_add() in a thread-safe way by running that function inside the
  * tcpip_thread context.
- *
  * @note for params @see netif_add()
  */
 err_t
@@ -260,7 +251,6 @@ netifapi_netif_add(struct netif *netif,
  * @ingroup netifapi_netif
  * Call netif_set_addr() in a thread-safe way by running that function inside the
  * tcpip_thread context.
- *
  * @note for params @see netif_set_addr()
  */
 err_t
@@ -296,7 +286,6 @@ netifapi_netif_set_addr(struct netif *netif,
 /**
  * call the "errtfunc" (or the "voidfunc" if "errtfunc" is NULL) in a thread-safe
  * way by running that function inside the tcpip_thread context.
- *
  * @note use only for functions where there is only "netif" parameter.
  */
 err_t
@@ -319,7 +308,6 @@ netifapi_netif_common(struct netif *netif, netifapi_void_fn voidfunc,
 * @ingroup netifapi_netif
 * Call netif_name_to_index() in a thread-safe way by running that function inside the
 * tcpip_thread context.
-*
 * @param name the interface name of the netif
 * @param idx output index of the found netif
 */
@@ -350,7 +338,6 @@ netifapi_netif_name_to_index(const char *name, u8_t *idx)
 * @ingroup netifapi_netif
 * Call netif_index_to_name() in a thread-safe way by running that function inside the
 * tcpip_thread context.
-*
 * @param idx the interface index of the netif
 * @param name output name of the found netif, empty '\0' string if netif not found.
 *             name should be of at least NETIF_NAMESIZE bytes

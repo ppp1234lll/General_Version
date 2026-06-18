@@ -1,16 +1,13 @@
 /*
 *********************************************************************************************************
-*
-*    模块名称 : cpu内部falsh操作模块(for STM32H743 H750)
-*    文件名称 : bsp_cpu_flash.c
-*    版    本 : V1.0
-*    说    明 : 提供读写CPU内部Flash的函数
+*    函 数 名: cpu内部falsh操作模块(for STM32H743 H750)
+*    功能说明: bsp_cpu_flash.c
+*    形    参: V1.0
+*    返 回 值: 提供读写CPU内部Flash的函数
 *    修改记录 :
 *        版本号   日期          作者     说明
 *        V1.0    2026-06-10   zb/zh    正式发布
-*
 *    Copyright (C), 2026-2026, 蜂鸟 www.flybee.com
-*
 *********************************************************************************************************
 */
 
@@ -61,8 +58,8 @@ uint32_t bsp_GetSector(uint32_t Address)
 *********************************************************************************************************
 *    函 数 名: bsp_ReadCpuFlash
 *    功能说明: 读取CPU Flash的内容
-*    形    参:  _ucpDst : 目标缓冲区
-*             _ulFlashAddr : 起始地址
+*    形    参: _ucpDst : 目标缓冲区
+*    返 回 值: 起始地址
 *             _ulSize : 数据大小（单位是字节）
 *    返 回 值: 0=成功，1=失败
 *********************************************************************************************************
@@ -95,7 +92,7 @@ uint8_t bsp_ReadCpuFlash(uint32_t _ulFlashAddr, uint8_t *_ucpDst, uint32_t _ulSi
 *    函 数 名: bsp_CmpCpuFlash
 *    功能说明: 比较Flash指定地址的数据.
 *    形    参: _ulFlashAddr : Flash地址
-*             _ucpBuf : 数据缓冲区
+*    返 回 值: 数据缓冲区
 *             _ulSize : 数据大小（单位是字节）
 *    返 回 值:
 *            FLASH_IS_EQU        0   Flash内容和待写入的数据相等，不需要擦除和写操作
@@ -159,11 +156,6 @@ uint8_t bsp_CmpCpuFlash(uint32_t _ulFlashAddr, uint8_t *_ucpBuf, uint32_t _ulSiz
 *    功能说明: 擦除CPU FLASH一个扇区 （128KB)
 *    形    参: _ulFlashAddr : Flash地址
 *    返 回 值: 0 成功， 1 失败
-*              HAL_OK       = 0x00,
-*              HAL_ERROR    = 0x01,
-*              HAL_BUSY     = 0x02,
-*              HAL_TIMEOUT  = 0x03
-*
 *********************************************************************************************************
 */
 void bsp_EraseCpuFlash(uint32_t _ulFlashAddr)
@@ -300,7 +292,7 @@ err:
 *    函 数 名: bsp_WriteCpuFlash_Save
 *    功能说明: 写数据到CPU 内部Flash。 保存ReadAddr地址的2K字节数据
 *    形    参: ReadAddr : 读取地址
-*             WriteAddr : 写入地址
+*    返 回 值: 写入地址
 *             pBuffer : 数据缓冲区
 *             NumToWrite : 数据大小（单位是字节, 必须是32字节整数倍）
 *    返 回 值: 0-成功，1-数据长度或地址溢出，2-写Flash出错(估计Flash寿命到)

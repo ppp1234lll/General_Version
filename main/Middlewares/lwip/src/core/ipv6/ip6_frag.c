@@ -1,16 +1,13 @@
 /**
  * @file
- *
  * IPv6 fragmentation and reassembly.
  */
 
 /*
  * Copyright (c) 2010 Inico Technologies Ltd.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -18,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -29,12 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Ivan Delamer <delamer@inicotech.com>
- *
- *
  * Please coordinate changes and requests with Ivan Delamer
  * <delamer@inicotech.com>
  */
@@ -141,7 +133,6 @@ ip6_reass_tmr(void)
  * Free a datagram (struct ip6_reassdata) and all its pbufs.
  * Updates the total count of enqueued pbufs (ip6_reass_pbufcount),
  * sends an ICMP time exceeded packet.
- *
  * @param ipr datagram to free
  */
 static void
@@ -227,7 +218,6 @@ ip6_reass_free_complete_datagram(struct ip6_reassdata *ipr)
 /**
  * Free the oldest datagram to make room for enqueueing new fragments.
  * The datagram ipr is not freed!
- *
  * @param ipr ip6_reassdata for the current fragment
  * @param pbufs_needed number of pbufs needed to enqueue
  *        (used for freeing other datagrams if not enough space)
@@ -263,7 +253,6 @@ ip6_reass_remove_oldest_datagram(struct ip6_reassdata *ipr, int pbufs_needed)
 
 /**
  * Reassembles incoming IPv6 fragments into an IPv6 datagram.
- *
  * @param p points to the IPv6 Fragment Header
  * @return NULL if reassembly is incomplete, pbuf pointing to
  *         IPv6 Header if reassembly is complete
@@ -720,14 +709,11 @@ ip6_frag_free_pbuf_custom(struct pbuf *p)
 
 /**
  * Fragment an IPv6 datagram if too large for the netif or path MTU.
- *
  * Chop the datagram in MTU sized chunks and send them in order
  * by pointing PBUF_REFs into p
- *
  * @param p ipv6 packet to send
  * @param netif the netif on which to send
  * @param dest destination ipv6 address to which to send
- *
  * @return ERR_OK if sent successfully, err_t otherwise
  */
 err_t

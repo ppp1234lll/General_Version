@@ -6,12 +6,9 @@
 /*
  * Copyright (c) 2017 Benjamin Aigner
  * Copyright (c) 2015 Inico Technologies Ltd. , Author: Ivan Delamer <delamer@inicotech.com>
- *
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -19,7 +16,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -30,9 +26,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * Author: Benjamin Aigner <aignerb@technikum-wien.at>
- *
  * Based on the original 6lowpan implementation of lwIP ( @see 6lowpan.c)
  */
 
@@ -45,7 +39,6 @@
  * so most of the code is re-used.
  * Compared to 6LoWPAN, much functionality is already implemented in
  * lower BLE layers (fragmenting, session management,...).
- *
  * Usage:
  * - add this netif
  *   - don't add IPv4 addresses (no IPv4 support in RFC7668), pass 'NULL','NULL','NULL'
@@ -56,7 +49,6 @@
  *   - allocate a @ref PBUF_RAW buffer
  *   - let the pbuf struct point to the incoming data or copy it to the buffer
  *   - call netif->input
- *
  * @todo:
  * - further testing
  * - support compression contexts
@@ -95,15 +87,12 @@ static struct lowpan6_link_addr rfc7668_peer_addr;
 /**
  * @ingroup rfc7668if
  *  convert BT address to EUI64 addr
- *
  * This method converts a Bluetooth MAC address to an EUI64 address,
  * which is used within IPv6 communication
- *
  * @param dst IPv6 destination space
  * @param src BLE MAC address source
  * @param public_addr If the LWIP_RFC7668_LINUX_WORKAROUND_PUBLIC_ADDRESS
  * option is set, bit 0x02 will be set if param=0 (no public addr); cleared otherwise
- *
  * @see LWIP_RFC7668_LINUX_WORKAROUND_PUBLIC_ADDRESS
  */
 void
@@ -128,12 +117,9 @@ ble_addr_to_eui64(u8_t *dst, const u8_t *src, int public_addr)
 /**
  * @ingroup rfc7668if
  *  convert EUI64 address to Bluetooth MAC addr
- *
  * This method converts an EUI64 address to a Bluetooth MAC address,
- *
  * @param dst BLE MAC address destination
  * @param src IPv6 source
- *
  */
 void
 eui64_to_ble_addr(u8_t *dst, const u8_t *src)
@@ -214,16 +200,13 @@ rfc7668_set_peer_addr_mac48(struct netif *netif, const u8_t *peer_addr, size_t p
 }
 
 /** Encapsulate IPv6 frames for BLE transmission
- *
  * This method implements the IPv6 header compression:
  *  *) According to RFC6282
  *  *) See Figure 2, contains base format of bit positions
  *  *) Fragmentation not necessary (done at L2CAP layer of BLE)
  * @note Currently the pbuf allocation uses 256 bytes. If longer packets are used (possible due to MTU=1480Bytes), increase it here!
- *
  * @param p Pbuf struct, containing the payload data
  * @param netif Output network interface. Should be of RFC7668 type
- *
  * @return Same as netif->output.
  */
 static err_t
@@ -288,12 +271,9 @@ rfc7668_compress(struct netif *netif, struct pbuf *p)
 /**
  * @ingroup rfc7668if
  * Set context id IPv6 address
- *
  * Store one IPv6 address to a given context id.
- *
  * @param idx Context id
  * @param context IPv6 addr for this context
- *
  * @return ERR_OK (if everything is fine), ERR_ARG (if the context id is out of range), ERR_VAL (if contexts disabled)
  */
 err_t
@@ -317,11 +297,9 @@ rfc7668_set_context(u8_t idx, const ip6_addr_t *context)
 /**
  * @ingroup rfc7668if
  * Compress outgoing IPv6 packet and pass it on to netif->linkoutput
- *
  * @param netif The lwIP network interface which the IP packet will be sent on.
  * @param q The pbuf(s) containing the IP packet to be sent.
  * @param ip6addr The IP address of the packet destination.
- *
  * @return See rfc7668_compress
  */
 err_t
@@ -336,11 +314,9 @@ rfc7668_output(struct netif *netif, struct pbuf *q, const ip6_addr_t *ip6addr)
 /**
  * @ingroup rfc7668if
  * Process a received raw payload from an L2CAP channel
- *
  * @param p the received packet, p->payload pointing to the
  *        IPv6 header (maybe compressed)
  * @param netif the network interface on which the packet was received
- *
  * @return ERR_OK if everything was fine
  */
 err_t
@@ -398,12 +374,9 @@ rfc7668_input(struct pbuf * p, struct netif *netif)
 /**
  * @ingroup rfc7668if
  * Initialize the netif
- *
  * No flags are used (broadcast not possible, not ethernet, ...)
  * The shortname for this netif is "BT"
- *
  * @param netif the network interface to be initialized as RFC7668 netif
- *
  * @return ERR_OK if everything went fine
  */
 err_t
@@ -429,11 +402,9 @@ rfc7668_if_init(struct netif *netif)
 #if !NO_SYS
 /**
  * Pass a received packet to tcpip_thread for input processing
- *
  * @param p the received packet, p->payload pointing to the
  *          IEEE 802.15.4 header.
  * @param inp the network interface on which the packet was received
- *
  * @return see @ref tcpip_inpkt, same return values
  */
 err_t

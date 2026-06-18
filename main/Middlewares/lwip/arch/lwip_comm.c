@@ -7,41 +7,15 @@
  * @brief       lwIP配置驱动
  * @license     Copyright (c) 2020-2032, 广州市星翼电子科技有限公司
  ****************************************************************************************************
- * @attention
- *
- * 实验平台:正点原子 阿波罗 f429开发板
- * 在线视频:www.yuanzige.com
- * 技术论坛:www.openedv.com
- * 公司网址:www.alientek.com
- * 购买地址:openedv.taobao.com
- *
- * 修改说明
- * V1.0 20211202
- * 第一次发布
- *
- ****************************************************************************************************
  */
- 
+
 #include "lwip_comm.h"
-#include "netif/etharp.h"
-#include "lwip/dhcp.h"
-#include "lwip/mem.h"
-#include "lwip/memp.h"
-#include "lwip/init.h"
-#include "ethernetif.h"
-#include "lwip/timeouts.h"
-#include "lwip/tcpip.h"
-#include "./MALLOC/malloc.h"
-#include "bsp.h"
-#include "FreeRTOS.h"
-#include "semphr.h"
-#include "task.h"
-#include "bsp_enet.h"
+#include "main.h"
 
 
 extern xSemaphoreHandle g_rx_semaphore;
-__lwip_dev g_lwipdev;                                       /* lwip控制结构体 */
-struct netif lwip_netif;					// 定义一个全局的网络接口
+__lwip_dev g_lwipdev;                       /* lwip控制结构体 */
+struct netif lwip_netif;                    // 定义一个全局的网络接口
 
 #ifdef LWIP_PROVIDE_ERRNO
 int errno;
@@ -62,70 +36,70 @@ void lwip_link_thread( void * argument );                   /* 链路线程 */
  */
 void lwip_comm_default_ip_set(__lwip_dev *lwipx)
 {
-	
-		static uint8_t last_domename[128] = {0};
-	struct local_ip_t *param;
-	struct remote_ip *remote;
-	int    ip[4] = {0};
-	int    ret   = 0;
-	
-	remote = app_get_remote_network_function();
-	param = app_get_local_network_function();	
+    
+    static uint8_t last_domename[128] = {0};
+    struct local_ip_t *param;
+    struct remote_ip *remote;
+    int    ip[4] = {0};
+    int    ret   = 0;
+    
+    remote = app_get_remote_network_function();
+    param = app_get_local_network_function();    
 
-	/* 获取本地IP */
-	lwipx->ip[0] = param->ip[0];	
-	lwipx->ip[1] = param->ip[1];
-	lwipx->ip[2] = param->ip[2];
-	lwipx->ip[3] = param->ip[3];
-	
-	/* 获取本地子网掩码 */
-	lwipx->netmask[0] = param->netmask[0];	
-	lwipx->netmask[1] = param->netmask[1];
-	lwipx->netmask[2] = param->netmask[2];
-	lwipx->netmask[3] = param->netmask[3];
-	
-	/* 获取默认网关 */
-	lwipx->gateway[0] = param->gateway[0];	
-	lwipx->gateway[1] = param->gateway[1];
-	lwipx->gateway[2] = param->gateway[2];
-	lwipx->gateway[3] = param->gateway[3];	
-	
-	/* 获取MAC */
-	lwipx->mac[0] = param->mac[0]; 	// 高三字节(IEEE称之为组织唯一ID,OUI)地址固定为:2.0.0
-	lwipx->mac[1] = param->mac[1];
-	lwipx->mac[2] = param->mac[2];
-	lwipx->mac[3] = param->mac[3]; 	// 低三字节用STM32的唯一ID
-	lwipx->mac[4] = param->mac[4];
-	lwipx->mac[5] = param->mac[5]; 
-	
-	lwipx->dns[0] = param->dns[0];
-	lwipx->dns[1] = param->dns[1];
-	lwipx->dns[2] = param->dns[2];
-	lwipx->dns[3] = param->dns[3];
-	
-	/* 获取远端IP */
-	ret = sscanf((char*)remote->inside_iporname,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
-	if(ret != 4)
-	{
-		if (memcmp(last_domename,remote->inside_iporname,128) != 0) {
-			memcpy(last_domename,remote->inside_iporname,128);
-			lwipx->domename = 0; 		// 通过域名获取ip
-		}
-		/* 内外连接地址是域名 */
-		lwipx->iporname = 1;
-	}
-	else
-	{
-		lwipx->iporname = 0;
-		/* 内外连接地址是IP */
-		lwipx->remoteip[0]=ip[0];	
-		lwipx->remoteip[1]=ip[1];
-		lwipx->remoteip[2]=ip[2];
-		lwipx->remoteip[3]=ip[3];
-	}
-	
-	/* 获取远端端口 */
-	lwipx->remoteport = remote->inside_port;
+    /* 获取本地IP */
+    lwipx->ip[0] = param->ip[0];    
+    lwipx->ip[1] = param->ip[1];
+    lwipx->ip[2] = param->ip[2];
+    lwipx->ip[3] = param->ip[3];
+    
+    /* 获取本地子网掩码 */
+    lwipx->netmask[0] = param->netmask[0];    
+    lwipx->netmask[1] = param->netmask[1];
+    lwipx->netmask[2] = param->netmask[2];
+    lwipx->netmask[3] = param->netmask[3];
+    
+    /* 获取默认网关 */
+    lwipx->gateway[0] = param->gateway[0];    
+    lwipx->gateway[1] = param->gateway[1];
+    lwipx->gateway[2] = param->gateway[2];
+    lwipx->gateway[3] = param->gateway[3];    
+    
+    /* 获取MAC */
+    lwipx->mac[0] = param->mac[0];     // 高三字节(IEEE称之为组织唯一ID,OUI)地址固定为:2.0.0
+    lwipx->mac[1] = param->mac[1];
+    lwipx->mac[2] = param->mac[2];
+    lwipx->mac[3] = param->mac[3];     // 低三字节用STM32的唯一ID
+    lwipx->mac[4] = param->mac[4];
+    lwipx->mac[5] = param->mac[5]; 
+    
+    lwipx->dns[0] = param->dns[0];
+    lwipx->dns[1] = param->dns[1];
+    lwipx->dns[2] = param->dns[2];
+    lwipx->dns[3] = param->dns[3];
+    
+    /* 获取远端IP */
+    ret = sscanf((char*)remote->inside_iporname,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
+    if(ret != 4)
+    {
+        if (memcmp(last_domename,remote->inside_iporname,128) != 0) {
+            memcpy(last_domename,remote->inside_iporname,128);
+            lwipx->domename = 0;         // 通过域名获取ip
+        }
+        /* 内外连接地址是域名 */
+        lwipx->iporname = 1;
+    }
+    else
+    {
+        lwipx->iporname = 0;
+        /* 内外连接地址是IP */
+        lwipx->remoteip[0]=ip[0];    
+        lwipx->remoteip[1]=ip[1];
+        lwipx->remoteip[2]=ip[2];
+        lwipx->remoteip[3]=ip[3];
+    }
+    
+    /* 获取远端端口 */
+    lwipx->remoteport = remote->inside_port;
 //    /* 默认远端IP为:192.168.2.134 */
 //    lwipx->remoteip[0] = 192;
 //    lwipx->remoteip[1] = 168;
@@ -177,8 +151,6 @@ uint8_t lwip_comm_init(void)
 
     lwip_comm_default_ip_set(&g_lwipdev);           /* 设置默认IP等信息 */
 
-#if LWIP_DHCP                                       /* 使用动态IP */
-#else   /* 使用静态IP */
     IP4_ADDR(&ipaddr, g_lwipdev.ip[0], g_lwipdev.ip[1], g_lwipdev.ip[2], g_lwipdev.ip[3]);
     IP4_ADDR(&netmask, g_lwipdev.netmask[0], g_lwipdev.netmask[1], g_lwipdev.netmask[2], g_lwipdev.netmask[3]);
     IP4_ADDR(&gw, g_lwipdev.gateway[0], g_lwipdev.gateway[1], g_lwipdev.gateway[2], g_lwipdev.gateway[3]);
@@ -186,17 +158,18 @@ uint8_t lwip_comm_init(void)
     printf("静态IP地址........................%d.%d.%d.%d\r\n", g_lwipdev.ip[0], g_lwipdev.ip[1], g_lwipdev.ip[2], g_lwipdev.ip[3]);
     printf("子网掩码..........................%d.%d.%d.%d\r\n", g_lwipdev.netmask[0], g_lwipdev.netmask[1], g_lwipdev.netmask[2], g_lwipdev.netmask[3]);
     printf("默认网关..........................%d.%d.%d.%d\r\n", g_lwipdev.gateway[0], g_lwipdev.gateway[1], g_lwipdev.gateway[2], g_lwipdev.gateway[3]);
-//    g_lwipdev.dhcpstatus = 0XFF;
-#endif  /* 向网卡列表中添加一个网口 */
+
+    /* 向网卡列表中添加一个网口 */
     netif_init_flag = netif_add(&g_lwip_netif, (const ip_addr_t *)&ipaddr, (const ip_addr_t *)&netmask, (const ip_addr_t *)&gw, NULL, &ethernetif_init, &tcpip_input);
     
     if (netif_init_flag == NULL)
     {
+		g_lwipdev.init = 0;
         return 1;                                   /* 网卡添加失败 */
     }
     else                                            /* 网口添加成功后,设置netif为默认值,并且打开netif网口 */
     {
-			  g_lwipdev.init = 1;
+        g_lwipdev.init = 1;
         netif_set_default(&g_lwip_netif);           /* 设置netif为默认网口 */
 
 #if LWIP_NETIF_LINK_CALLBACK
@@ -211,15 +184,14 @@ uint8_t lwip_comm_init(void)
                        LWIP_LINK_TASK_PRIO);        /* 任务的优先级 */
         taskEXIT_CRITICAL();           /* 退出临界区 */
 #endif
-
     }
     g_lwipdev.link_status = LWIP_LINK_OFF;          /* 链接标记为0 */
-		
-	/* 启动网络功能 */
-	igmp_init();
-	httpd_init();
-	icmp_pcb_init();
-	dns_init();
+        
+    /* 启动网络功能 */
+    igmp_init();
+    httpd_init();
+    lwip_ping_multi_init();
+    dns_init();
 
     return 0;                                       /* 操作OK. */
 }
@@ -247,18 +219,19 @@ void lwip_link_thread( void * argument )
             link_again_num ++ ;
             if (link_again_num >= 2)                    /* 网线一段时间没有插入 */
             {
-                vTaskDelay(100);
                 continue;
             }
             else                                        /* 关闭虚拟网卡及以太网中断 */
             {
-							  led_control_function(LD_LAN,LD_OFF);
+                led_control_function(LD_LAN,LD_OFF);
+                led_control_function(LD_LAN_EXT,LD_OFF);
+				g_lwipdev.netif_state = 0;			  
                 enet_disable();
                 enet_interrupt_disable(ENET_DMA_INT_NIE);
                 enet_interrupt_disable(ENET_DMA_INT_RIE);                
                 netif_set_down(netif);
                 netif_set_link_down(netif);
-                
+                eth_set_network_reset();  // 关闭网络链接
                 printf("ETH链路断开\r\n");
             }
         }
@@ -268,7 +241,9 @@ void lwip_link_thread( void * argument )
 
             if (g_lwipdev.link_status == LWIP_LINK_OFF)/* 开启以太网及虚拟网卡 */
             {
-							  led_control_function(LD_LAN,LD_ON);
+                led_control_function(LD_LAN,LD_ON);
+                led_control_function(LD_LAN_EXT,LD_ON);
+				g_lwipdev.netif_state = 1;
                 g_lwipdev.link_status = LWIP_LINK_ON;
                 enet_enable();
                 enet_interrupt_enable(ENET_DMA_INT_NIE);
@@ -285,10 +260,10 @@ void lwip_link_thread( void * argument )
 
 /*
 *********************************************************************************************************
-*	函 数 名: ENET_IRQHandler
-*	功能说明: 以太网中断服务函数.  
-*	形    参: 无
-*	返 回 值: 无
+*    函 数 名: ENET_IRQHandler
+*    功能说明: 以太网中断服务函数.
+*    形    参: 无
+*    返 回 值: 无
 *********************************************************************************************************
 */
 void ENET_IRQHandler(void)
@@ -311,125 +286,104 @@ void ENET_IRQHandler(void)
     }
 }
 
-/************************************************************
-*
-* Function name	: lwip_stop_function
-* Description	: 网络停止函数
-* Parameter		: 
-* Return		: 
-*	
-************************************************************/
-void lwip_stop_function(void)
-{
-	if(g_lwipdev.init == 1) 
-	{
-		if(g_lwipdev.netif_state == 1) 
-		{
-			g_lwipdev.netif_state = 0;
-			netif_set_down(&lwip_netif); // 关闭网卡
-		}
-	}
-}
 
-
-/************************************************************
-*
-* Function name	: lwip_get_mac_addr
-* Description	: 获取网卡MAC地址
-* Parameter		: 
-* Return		: 
-*	
-************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: lwip_get_mac_addr
+*    功能说明: 获取网卡MAC地址
+*    形    参: 
+*    返 回 值: 
+*********************************************************************************************************
+*/
 uint8_t *lwip_get_mac_addr(void)
 {
-	static uint8_t temp[20] = {0};
-	
-	sprintf((char*)temp,"%02x-%02x-%02x-%02x-%02x-%02x",g_lwipdev.mac[0],
-														g_lwipdev.mac[1],
-														g_lwipdev.mac[2],
-														g_lwipdev.mac[3],
-														g_lwipdev.mac[4],
-														g_lwipdev.mac[5]);
-	
-	return temp;
+    static uint8_t temp[20] = {0};
+    
+    sprintf((char*)temp,"%02x-%02x-%02x-%02x-%02x-%02x",g_lwipdev.mac[0],
+                                                        g_lwipdev.mac[1],
+                                                        g_lwipdev.mac[2],
+                                                        g_lwipdev.mac[3],
+                                                        g_lwipdev.mac[4],
+                                                        g_lwipdev.mac[5]);
+    
+    return temp;
 }
 
-/************************************************************
-*
-* Function name	: lwip_updata_remote_network_infor
-* Description	: 更新远端参数
-* Parameter		: 
-* Return		: 
-*	
-************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: lwip_updata_remote_network_infor
+*    功能说明: 更新远端参数
+*    形    参: 
+*    返 回 值: 
+*********************************************************************************************************
+*/
 void lwip_updata_remote_network_infor(__lwip_dev *lwipx)
 {
-	static uint8_t sg_last_domename[128] = {0};
-	struct remote_ip *remote = NULL;
-	int 			 ret 	 = 0;
-	int				 ip[4]   = {0};
-	
-	remote = app_get_remote_network_function();
-	
-	/* 获取远端IP */
-	ret = sscanf((char*)remote->inside_iporname,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
-	if(ret != 4)
-	{
-		/* 内外连接地址是域名 */
-		lwipx->iporname = 1;
-		if (memcmp(sg_last_domename,remote->inside_iporname,128) != 0) {
-			memcpy(sg_last_domename,remote->inside_iporname,128);
-			
-			lwipx->domename = 0; 		// 通过域名获取ip
-		}
-	}
-	else
-	{
-		lwipx->domename = 0; 	
-		lwipx->iporname = 0;
-		/* 内外连接地址是IP */
-		lwipx->remoteip[0]=ip[0];	
-		lwipx->remoteip[1]=ip[1];
-		lwipx->remoteip[2]=ip[2];
-		lwipx->remoteip[3]=ip[3];
-	}
-	
-	/* 获取远端端口 */
-	lwipx->remoteport = remote->inside_port;
+    static uint8_t sg_last_domename[128] = {0};
+    struct remote_ip *remote = NULL;
+    int              ret      = 0;
+    int                 ip[4]   = {0};
+    
+    remote = app_get_remote_network_function();
+    
+    /* 获取远端IP */
+    ret = sscanf((char*)remote->inside_iporname,"%d.%d.%d.%d",&ip[0],&ip[1],&ip[2],&ip[3]);
+    if(ret != 4)
+    {
+        /* 内外连接地址是域名 */
+        lwipx->iporname = 1;
+        if (memcmp(sg_last_domename,remote->inside_iporname,128) != 0) {
+            memcpy(sg_last_domename,remote->inside_iporname,128);
+            
+            lwipx->domename = 0;         // 通过域名获取ip
+        }
+    }
+    else
+    {
+        lwipx->domename = 0;     
+        lwipx->iporname = 0;
+        /* 内外连接地址是IP */
+        lwipx->remoteip[0]=ip[0];    
+        lwipx->remoteip[1]=ip[1];
+        lwipx->remoteip[2]=ip[2];
+        lwipx->remoteip[3]=ip[3];
+    }
+    
+    /* 获取远端端口 */
+    lwipx->remoteport = remote->inside_port;
 }
 
-/************************************************************
-*
-* Function name	: lwip_start_function
-* Description	: 网络启动函数
-* Parameter		: 
-* Return		: 
-*	
-************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: lwip_start_function
+*    功能说明: 网络启动函数
+*    形    参: 
+*    返 回 值: 
+*********************************************************************************************************
+*/
 int8_t lwip_start_function(void)
 {
-	if(g_lwipdev.init == 0) {
-		lwip_comm_init();
-	}
-	
-	if(g_lwipdev.init == 1) {
-//		ETH_MACDMA_Config(); 					// 重新配置MAC和DMA
-//		enet_mac_dma_config();
-		lwip_comm_default_ip_set(&g_lwipdev);		// 设置默认IP等信息
+    if(g_lwipdev.init == 0) {
+        lwip_comm_init();
+    }
+    
+    if(g_lwipdev.init == 1) 
+	{
+//        enet_mac_dma_config();
+        lwip_comm_default_ip_set(&g_lwipdev);        // 设置默认IP等信息
 
-		printf("\n本机IP: %d.%d.%d.%d\n", g_lwipdev.ip[0],g_lwipdev.ip[1],g_lwipdev.ip[2],g_lwipdev.ip[3]);
-		IP4_ADDR(&g_lwip_netif.ip_addr,g_lwipdev.ip[0],g_lwipdev.ip[1],g_lwipdev.ip[2],g_lwipdev.ip[3]);
-		IP4_ADDR(&g_lwip_netif.netmask,g_lwipdev.netmask[0],g_lwipdev.netmask[1] ,g_lwipdev.netmask[2],g_lwipdev.netmask[3]);
-		IP4_ADDR(&g_lwip_netif.gw,g_lwipdev.gateway[0],g_lwipdev.gateway[1],g_lwipdev.gateway[2],g_lwipdev.gateway[3]);
-		
-//		HAL_ETH_Start_IT(&g_eth_handler);
-		netif_set_up(&g_lwip_netif);
-		netif_set_link_up(&g_lwip_netif); // 打开netif网口
-		
-		led_control_function(LD_LAN,LD_ON);
-		g_lwipdev.netif_state = 1;
-	}
-	
-	return 0;
+        printf("\n本机IP: %d.%d.%d.%d\n", g_lwipdev.ip[0],g_lwipdev.ip[1],g_lwipdev.ip[2],g_lwipdev.ip[3]);
+        IP4_ADDR(&g_lwip_netif.ip_addr,g_lwipdev.ip[0],g_lwipdev.ip[1],g_lwipdev.ip[2],g_lwipdev.ip[3]);
+        IP4_ADDR(&g_lwip_netif.netmask,g_lwipdev.netmask[0],g_lwipdev.netmask[1] ,g_lwipdev.netmask[2],g_lwipdev.netmask[3]);
+        IP4_ADDR(&g_lwip_netif.gw,g_lwipdev.gateway[0],g_lwipdev.gateway[1],g_lwipdev.gateway[2],g_lwipdev.gateway[3]);
+        
+        netif_set_up(&g_lwip_netif);
+        netif_set_link_up(&g_lwip_netif); // 打开netif网口
+        
+        led_control_function(LD_LAN,LD_ON);
+        g_lwipdev.netif_state = 1;
+    }
+    
+    return 0;
 }
 

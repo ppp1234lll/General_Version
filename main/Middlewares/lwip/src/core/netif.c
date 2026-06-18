@@ -1,16 +1,12 @@
 /**
  * @file
  * lwIP network interface abstraction
- *
  * @defgroup netif Network interface (NETIF)
  * @ingroup callbackstyle_api
- *
  * @defgroup netif_ip4 IPv4 address handling
  * @ingroup netif
- *
  * @defgroup netif_ip6 IPv6 address handling
  * @ingroup netif
- *
  * @defgroup netif_cd Client data handling
  * Store data (void*) on a netif for application usage.
  * @see @ref LWIP_NUM_NETIF_CLIENT_DATA
@@ -20,10 +16,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -31,7 +25,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -42,9 +35,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
  */
 
@@ -153,7 +144,6 @@ struct netif* netif_get_loopif(void)
 
 /**
  * Initialize a lwip network interface structure for a loopback interface
- *
  * @param netif the lwip network interface structure for this loopif
  * @return ERR_OK if the loopif is initialized
  *         ERR_MEM if private data couldn't be allocated
@@ -243,7 +233,6 @@ netif_input(struct pbuf *p, struct netif *inp)
 /**
  * @ingroup netif
  * Add a network interface to the list of lwIP netifs.
- *
  * Same as @ref netif_add but without IPv4 addresses
  */
 struct netif *
@@ -259,7 +248,6 @@ netif_add_noaddr(struct netif *netif, void *state, netif_init_fn init, netif_inp
 /**
  * @ingroup netif
  * Add a network interface to the list of lwIP netifs.
- *
  * @param netif a pre-allocated netif structure
  * @param ipaddr IP address for the new netif
  * @param netmask network mask for the new netif
@@ -280,7 +268,6 @@ netif_add_noaddr(struct netif *netif, void *state, netif_init_fn init, netif_inp
  * IPv6: Don't forget to call netif_create_ip6_linklocal_address() after
  * setting the MAC address in struct netif.hwaddr
  * (IPv6 requires a link-local address).
- *
  * @return netif, or NULL if failed.
  */
 struct netif *
@@ -510,10 +497,8 @@ netif_do_set_ipaddr(struct netif *netif, const ip4_addr_t *ipaddr, ip_addr_t *ol
 /**
  * @ingroup netif_ip4
  * Change the IP address of a network interface
- *
  * @param netif the network interface to change
  * @param ipaddr the new IP address
- *
  * @note call netif_set_addr() if you also want to change netmask and
  * default gateway
  */
@@ -570,10 +555,8 @@ netif_do_set_netmask(struct netif *netif, const ip4_addr_t *netmask, ip_addr_t *
 /**
  * @ingroup netif_ip4
  * Change the netmask of a network interface
- *
  * @param netif the network interface to change
  * @param netmask the new netmask
- *
  * @note call netif_set_addr() if you also want to change ip address and
  * default gateway
  */
@@ -632,10 +615,8 @@ netif_do_set_gw(struct netif *netif, const ip4_addr_t *gw, ip_addr_t *old_gw)
 /**
  * @ingroup netif_ip4
  * Change the default gateway for a network interface
- *
  * @param netif the network interface to change
  * @param gw the new default gateway
- *
  * @note call netif_set_addr() if you also want to change ip address and netmask
  */
 void
@@ -669,7 +650,6 @@ netif_set_gw(struct netif *netif, const ip4_addr_t *gw)
  * @ingroup netif_ip4
  * Change IP address configuration for a network interface (including netmask
  * and default gateway).
- *
  * @param netif the network interface to change
  * @param ipaddr the new IP address
  * @param netmask the new netmask
@@ -757,7 +737,6 @@ netif_set_addr(struct netif *netif, const ip4_addr_t *ipaddr, const ip4_addr_t *
 /**
  * @ingroup netif
  * Remove a network interface from the list of lwIP netifs.
- *
  * @param netif the network interface to remove
  */
 void
@@ -842,7 +821,6 @@ netif_remove(struct netif *netif)
  * @ingroup netif
  * Set a network interface as the default network interface
  * (used to output all packets for which no specific route is found)
- *
  * @param netif the default network interface
  */
 void
@@ -1111,7 +1089,6 @@ netif_set_link_callback(struct netif *netif, netif_status_callback_fn link_callb
  * TCP/IP thread.
  * In callback mode, the user has the responsibility to call netif_poll() in 
  * the main loop of their application.
- *
  * @param netif the lwip network interface structure
  * @param p the (IP) packet to 'send'
  * @return ERR_OK if the packet has been sent
@@ -1357,11 +1334,9 @@ netif_alloc_client_data_id(void)
 /**
  * @ingroup netif_ip6
  * Change an IPv6 address of a network interface
- *
  * @param netif the network interface to change
  * @param addr_idx index of the IPv6 address
  * @param addr6 the new IPv6 address
- *
  * @note call netif_ip6_addr_set_state() to set the address valid/temptative
  */
 void
@@ -1378,7 +1353,6 @@ netif_ip6_addr_set(struct netif *netif, s8_t addr_idx, const ip6_addr_t *addr6)
 
 /*
  * Change an IPv6 address of a network interface (internal version taking 4 * u32_t)
- *
  * @param netif the network interface to change
  * @param addr_idx index of the IPv6 address
  * @param i0 word0 of the new IPv6 address
@@ -1438,7 +1412,6 @@ netif_ip6_addr_set_parts(struct netif *netif, s8_t addr_idx, u32_t i0, u32_t i1,
  * Change the state of an IPv6 address of a network interface
  * (INVALID, TEMPTATIVE, PREFERRED, DEPRECATED, where TEMPTATIVE
  * includes the number of checks done, see ip6_addr.h)
- *
  * @param netif the network interface to change
  * @param addr_idx index of the IPv6 address
  * @param state the new IPv6 address state
@@ -1504,11 +1477,9 @@ netif_ip6_addr_set_state(struct netif *netif, s8_t addr_idx, u8_t state)
  * Checks if a specific local address is present on the netif and returns its
  * index. Depending on its state, it may or may not be assigned to the
  * interface (as per RFC terminology).
- *
  * The given address may or may not be zoned (i.e., have a zone index other
  * than IP6_NO_ZONE). If the address is zoned, it must have the correct zone
  * for the given netif, or no match will be found.
- *
  * @param netif the netif to check
  * @param ip6addr the IPv6 address to find
  * @return >= 0: address found, this is its index
@@ -1542,7 +1513,6 @@ netif_get_ip6_addr_match(struct netif *netif, const ip6_addr_t *ip6addr)
 /**
  * @ingroup netif_ip6
  * Create a link-local IPv6 address on a netif (stored in slot 0)
- *
  * @param netif the netif to create the address on
  * @param from_mac_48bit if != 0, assume hwadr is a 48-bit MAC address (std conversion)
  *                       if == 0, use hwaddr directly as interface ID
@@ -1610,7 +1580,6 @@ netif_create_ip6_linklocal_address(struct netif *netif, u8_t from_mac_48bit)
  * This function allows for the easy addition of a new IPv6 address to an interface.
  * It takes care of finding an empty slot and then sets the address tentative
  * (to make sure that all the subsequent processing happens).
- *
  * @param netif netif to add the address on
  * @param ip6addr address to add
  * @param chosen_idx if != NULL, the chosen IPv6 address index will be stored here
@@ -1684,7 +1653,6 @@ netif_null_output_ip4(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipa
 * @ingroup netif
 * Return the interface index for the netif with name
 * or NETIF_NO_INDEX if not found/on error
-*
 * @param name the name of the netif
 */
 u8_t
@@ -1702,7 +1670,6 @@ netif_name_to_index(const char *name)
 * @ingroup netif
 * Return the interface name for the netif matching index
 * or NULL if not found/on error
-*
 * @param idx the interface index of the netif
 * @param name char buffer of at least NETIF_NAMESIZE bytes
 */
@@ -1723,7 +1690,6 @@ netif_index_to_name(u8_t idx, char *name)
 /**
 * @ingroup netif
 * Return the interface for the netif index
-*
 * @param idx index of netif to find
 */
 struct netif *
@@ -1747,7 +1713,6 @@ netif_get_by_index(u8_t idx)
 /**
  * @ingroup netif
  * Find a network interface by searching for its name
- *
  * @param name the name of the netif (like netif->name) plus concatenated number
  * in ascii representation (e.g. 'en0')
  */

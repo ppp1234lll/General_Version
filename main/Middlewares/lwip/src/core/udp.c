@@ -3,7 +3,6 @@
  * User Datagram Protocol module<br>
  * The code for the User Datagram Protocol UDP & UDPLite (RFC 3828).<br>
  * See also @ref udp_raw
- *
  * @defgroup udp_raw UDP
  * @ingroup callbackstyle_api
  * User Datagram Protocol module<br>
@@ -13,10 +12,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -24,7 +21,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -35,11 +31,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 /* @todo Check the use of '(struct udp_pcb).chksum_len_rx'!
@@ -93,7 +86,6 @@ udp_init(void)
 
 /**
  * Allocate a new local UDP port.
- *
  * @return a new (free) local UDP port number
  */
 static u16_t
@@ -120,7 +112,6 @@ again:
 
 /** Common code to see if the current input packet matches the pcb
  * (current input packet is accessed via ip(4/6)_current_* macros)
- *
  * @param pcb pcb to check
  * @param inp network interface on which the datagram was received (only used for IPv4)
  * @param broadcast 1 if his is an IPv4 broadcast (global or subnet-only), 0 otherwise (only used for IPv4)
@@ -180,15 +171,12 @@ udp_input_local_match(struct udp_pcb *pcb, struct netif *inp, u8_t broadcast)
 
 /**
  * Process an incoming UDP datagram.
- *
  * Given an incoming UDP datagram (as a chain of pbufs) this function
  * finds a corresponding UDP PCB and hands over the pbuf to the pcbs
  * recv function. If no pcb is found or the datagram is incorrect, the
  * pbuf is freed.
- *
  * @param p pbuf to be demultiplexed to a UDP PCB (p->payload pointing to the UDP header)
  * @param inp network interface on which the datagram was received.
- *
  */
 void
 udp_input(struct pbuf *p, struct netif *inp)
@@ -445,22 +433,17 @@ chkerr:
 /**
  * @ingroup udp_raw
  * Sends the pbuf p using UDP. The pbuf is not deallocated.
- *
- *
  * @param pcb UDP PCB used to send the data.
  * @param p chain of pbuf's to be sent.
- *
  * The datagram will be sent to the current remote_ip & remote_port
  * stored in pcb. If the pcb is not bound to a port, it will
  * automatically be bound to a random port.
- *
  * @return lwIP error code.
  * - ERR_OK. Successful. No error occurred.
  * - ERR_MEM. Out of memory.
  * - ERR_RTE. Could not find route to destination address.
  * - ERR_VAL. No PCB or PCB is dual-stack
  * - More errors could be returned by lower protocol layers.
- *
  * @see udp_disconnect() udp_sendto()
  */
 err_t
@@ -501,19 +484,14 @@ udp_send_chksum(struct udp_pcb *pcb, struct pbuf *p,
 /**
  * @ingroup udp_raw
  * Send data to a specified address using UDP.
- *
  * @param pcb UDP PCB used to send the data.
  * @param p chain of pbuf's to be sent.
  * @param dst_ip Destination IP address.
  * @param dst_port Destination UDP port.
- *
  * dst_ip & dst_port are expected to be in the same byte order as in the pcb.
- *
  * If the PCB already has a remote address association, it will
  * be restored after the data is sent.
- *
  * @return lwIP error code (@see udp_send for possible error codes)
- *
  * @see udp_disconnect() udp_send()
  */
 err_t
@@ -604,20 +582,15 @@ udp_sendto_chksum(struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *dst_ip,
  * @ingroup udp_raw
  * Send data to a specified address using UDP.
  * The netif used for sending can be specified.
- *
  * This function exists mainly for DHCP, to be able to send UDP packets
  * on a netif that is still down.
- *
  * @param pcb UDP PCB used to send the data.
  * @param p chain of pbuf's to be sent.
  * @param dst_ip Destination IP address.
  * @param dst_port Destination UDP port.
  * @param netif the netif used for sending.
- *
  * dst_ip & dst_port are expected to be in the same byte order as in the pcb.
- *
  * @return lwIP error code (@see udp_send for possible error codes)
- *
  * @see udp_disconnect() udp_send()
  */
 err_t
@@ -911,21 +884,17 @@ udp_sendto_if_src_chksum(struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *d
 /**
  * @ingroup udp_raw
  * Bind an UDP PCB.
- *
  * @param pcb UDP PCB to be bound with a local address ipaddr and port.
  * @param ipaddr local IP address to bind with. Use IP_ANY_TYPE to
  * bind to all local interfaces.
  * @param port local UDP port to bind with. Use 0 to automatically bind
  * to a random port between UDP_LOCAL_PORT_RANGE_START and
  * UDP_LOCAL_PORT_RANGE_END.
- *
  * ipaddr & port are expected to be in the same byte order as in the pcb.
- *
  * @return lwIP error code.
  * - ERR_OK. Successful. No error occurred.
  * - ERR_USE. The specified ipaddr and port are already bound to by
  * another UDP PCB.
- *
  * @see udp_disconnect()
  */
 err_t
@@ -1036,10 +1005,8 @@ udp_bind(struct udp_pcb *pcb, const ip_addr_t *ipaddr, u16_t port)
  * After calling this function, all packets received via this PCB
  * are guaranteed to have come in via the specified netif, and all
  * outgoing packets will go out via the specified netif.
- *
  * @param pcb UDP PCB to be bound.
  * @param netif netif to bind udp pcb to. Can be NULL.
- *
  * @see udp_disconnect()
  */
 void
@@ -1058,17 +1025,12 @@ udp_bind_netif(struct udp_pcb *pcb, const struct netif *netif)
  * @ingroup udp_raw
  * Sets the remote end of the pcb. This function does not generate any
  * network traffic, but only sets the remote address of the pcb.
- *
  * @param pcb UDP PCB to be connected with remote address ipaddr and port.
  * @param ipaddr remote IP address to connect with.
  * @param port remote UDP port to connect with.
- *
  * @return lwIP error code
- *
  * ipaddr & port are expected to be in the same byte order as in the pcb.
- *
  * The udp pcb is bound to a random local port if not already bound.
- *
  * @see udp_disconnect()
  */
 err_t
@@ -1123,7 +1085,6 @@ udp_connect(struct udp_pcb *pcb, const ip_addr_t *ipaddr, u16_t port)
  * @ingroup udp_raw
  * Remove the remote end of the pcb. This function does not generate
  * any network traffic, but only removes the remote address of the pcb.
- *
  * @param pcb the udp pcb to disconnect.
  */
 void
@@ -1153,7 +1114,6 @@ udp_disconnect(struct udp_pcb *pcb)
  * @ingroup udp_raw
  * Set a receive callback for a UDP PCB.
  * This callback will be called when receiving a datagram for the pcb.
- *
  * @param pcb the pcb for which to set the recv callback
  * @param recv function pointer of the callback function
  * @param recv_arg additional argument to pass to the callback function
@@ -1173,10 +1133,8 @@ udp_recv(struct udp_pcb *pcb, udp_recv_fn recv, void *recv_arg)
 /**
  * @ingroup udp_raw
  * Removes and deallocates the pcb.
- *
  * @param pcb UDP PCB to be removed. The PCB is removed from the list of
  * UDP PCB's and the data structure is freed from memory.
- *
  * @see udp_new()
  */
 void
@@ -1213,10 +1171,8 @@ udp_remove(struct udp_pcb *pcb)
  * pcb is not active until it has either been bound to a local address
  * or connected to a remote address.
  * @see MEMP_NUM_UDP_PCB
- *
  * @return The UDP PCB which was created. NULL if the PCB data structure
  * could not be allocated.
- *
  * @see udp_remove()
  */
 struct udp_pcb *
@@ -1249,13 +1205,11 @@ udp_new(void)
  * The pcb is not active until it has either been bound to a local address
  * or connected to a remote address.
  * @see MEMP_NUM_UDP_PCB
- *
  * @param type IP address type, see @ref lwip_ip_addr_type definitions.
  * If you want to listen to IPv4 and IPv6 (dual-stack) packets,
  * supply @ref IPADDR_TYPE_ANY as argument and bind to @ref IP_ANY_TYPE.
  * @return The UDP PCB which was created. NULL if the PCB data structure
  * could not be allocated.
- *
  * @see udp_remove()
  */
 struct udp_pcb *
@@ -1278,7 +1232,6 @@ udp_new_ip_type(u8_t type)
 }
 
 /** This function is called from netif.c when address is changed
- *
  * @param old_addr IP address of the netif before change
  * @param new_addr IP address of the netif after change
  */
@@ -1301,7 +1254,6 @@ void udp_netif_ip_addr_changed(const ip_addr_t *old_addr, const ip_addr_t *new_a
 #if UDP_DEBUG
 /**
  * Print UDP header information for debug purposes.
- *
  * @param udphdr pointer to the udp header in memory.
  */
 void

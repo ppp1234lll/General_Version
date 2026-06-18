@@ -1,16 +1,13 @@
 /**
  * @file
  * This is the IPv4 packet segmentation and reassembly implementation.
- *
  */
 
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -18,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -29,13 +25,10 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Jani Monoses <jani@iv.ro>
  *         Simon Goldschmidt
  * original reassembly code by Adam Dunkels <adam@sics.se>
- *
  */
 
 #include "lwip/opt.h"
@@ -58,7 +51,6 @@
  * - fragments must not overlap (e.g. due to different routes),
  *   currently, overlapping or duplicate fragments are thrown away
  *   if IP_REASS_CHECK_OVERLAP=1 (the default)!
- *
  * @todo: work with IP header options
  */
 
@@ -121,7 +113,6 @@ static int ip_reass_free_complete_datagram(struct ip_reassdata *ipr, struct ip_r
 /**
  * Reassembly timer base function
  * for both NO_SYS == 0 and 1 (!).
- *
  * Should be called every 1000 msec (defined by IP_TMR_INTERVAL).
  */
 void
@@ -155,7 +146,6 @@ ip_reass_tmr(void)
  * Free a datagram (struct ip_reassdata) and all its pbufs.
  * Updates the total count of enqueued pbufs (ip_reass_pbufcount),
  * SNMP counters and sends an ICMP time exceeded packet.
- *
  * @param ipr datagram to free
  * @param prev the previous datagram in the linked list
  * @return the number of pbufs freed
@@ -217,7 +207,6 @@ ip_reass_free_complete_datagram(struct ip_reassdata *ipr, struct ip_reassdata *p
 /**
  * Free the oldest datagram to make room for enqueueing new fragments.
  * The datagram 'fraghdr' belongs to is not freed!
- *
  * @param fraghdr IP header of the current fragment
  * @param pbufs_needed number of pbufs needed to enqueue
  *        (used for freeing other datagrams if not enough space)
@@ -495,7 +484,6 @@ ip_reass_chain_frag_into_datagram_and_validate(struct ip_reassdata *ipr, struct 
 
 /**
  * Reassembles incoming IP fragments into an IP datagram.
- *
  * @param p points to a pbuf chain of the fragment
  * @return NULL if reassembly is incomplete, ? otherwise
  */
@@ -726,14 +714,11 @@ ipfrag_free_pbuf_custom(struct pbuf *p)
 
 /**
  * Fragment an IP datagram if too large for the netif.
- *
  * Chop the datagram in MTU sized chunks and send them in order
  * by pointing PBUF_REFs into p.
- *
  * @param p ip packet to send
  * @param netif the netif on which to send
  * @param dest destination ip address to which to send
- *
  * @return ERR_OK if sent successfully, err_t otherwise
  */
 err_t

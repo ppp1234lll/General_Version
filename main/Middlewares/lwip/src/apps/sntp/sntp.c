@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2007-2009 Frédéric Bernon, Simon Goldschmidt
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,9 +25,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Frédéric Bernon, Simon Goldschmidt
  */
 
@@ -38,15 +33,11 @@
 /**
  * @defgroup sntp SNTP
  * @ingroup apps
- *
  * This is simple "SNTP" client for the lwIP raw API.
  * It is a minimal implementation of SNTPv4 as specified in RFC 4330.
- *
  * You need to increase MEMP_NUM_SYS_TIMEOUT by one if you use SNTP!
- *
  * For a list of some public NTP servers, see this link:
  * http://support.ntp.org/bin/view/Servers/NTPPoolServers
- *
  * @todo:
  * - complete SNTP_CHECK_RESPONSE checks 3 and 4
  */
@@ -364,7 +355,6 @@ sntp_initialize_request(struct sntp_msg *req)
 
 /**
  * Retry: send a new request (and increase retry timeout).
- *
  * @param arg is unused (only necessary to conform to sys_timeout)
  */
 static void
@@ -401,7 +391,6 @@ sntp_retry(void *arg)
  * try the next server or retry the current server and increase the retry
  * timeout if only one server is available.
  * (implicitly, SNTP_MAX_SERVERS > 1)
- *
  * @param arg is unused (only necessary to conform to sys_timeout)
  */
 static void
@@ -554,7 +543,6 @@ sntp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, const ip_addr_t *addr,
 }
 
 /** Actually send an sntp request to a server.
- *
  * @param server_addr resolved IP address of the SNTP server
  */
 static void
@@ -619,7 +607,6 @@ sntp_dns_found(const char *hostname, const ip_addr_t *ipaddr, void *arg)
 
 /**
  * Send out an sntp request.
- *
  * @param arg is unused (only necessary to conform to sys_timeout)
  */
 static void
@@ -762,7 +749,6 @@ sntp_getoperatingmode(void)
 /**
  * @ingroup sntp
  * Gets the server reachability shift register as described in RFC 5905.
- *
  * @param idx the index of the NTP server
  */
 u8_t
@@ -794,7 +780,6 @@ sntp_servermode_dhcp(int set_servers_from_dhcp)
 /**
  * @ingroup sntp
  * Initialize one of the NTP servers by IP address
- *
  * @param idx the index of the NTP server to set must be < SNTP_MAX_SERVERS
  * @param server IP address of the NTP server to set
  */
@@ -820,7 +805,6 @@ sntp_setserver(u8_t idx, const ip_addr_t *server)
 #if LWIP_DHCP && SNTP_GET_SERVERS_FROM_DHCP
 /**
  * Initialize one of the NTP servers by IP address, required by DHCP
- *
  * @param num the index of the NTP server to set must be < SNTP_MAX_SERVERS
  * @param server IP address of the NTP server to set
  */
@@ -847,7 +831,6 @@ dhcp_set_ntp_servers(u8_t num, const ip4_addr_t *server)
 #if LWIP_IPV6_DHCP6 && SNTP_GET_SERVERS_FROM_DHCPV6
 /**
  * Initialize one of the NTP servers by IP address, required by DHCPV6
- *
  * @param num the number of NTP server addresses to set must be < SNTP_MAX_SERVERS
  * @param server array of IP address of the NTP servers to set
  */
@@ -874,7 +857,6 @@ dhcp6_set_ntp_servers(u8_t num_ntp_servers, ip_addr_t* ntp_server_addrs)
 /**
  * @ingroup sntp
  * Obtain one of the currently configured by IP address (or DHCP) NTP servers
- *
  * @param idx the index of the NTP server
  * @return IP address of the indexed NTP server or "ip_addr_any" if the NTP
  *         server has not been configured by address (or at all).
@@ -892,7 +874,6 @@ sntp_getserver(u8_t idx)
  * @ingroup sntp
  * Check if a Kiss-of-Death has been received from this server (only valid for
  * SNTP_MAX_SERVERS > 1).
- *
  * @param idx the index of the NTP server
  * @return 1 if a KoD has been received, 0 if not.
  */
@@ -912,7 +893,6 @@ sntp_getkodreceived(u8_t idx)
 #if SNTP_SERVER_DNS
 /**
  * Initialize one of the NTP servers by name
- *
  * @param idx the index of the NTP server to set must be < SNTP_MAX_SERVERS
  * @param server DNS name of the NTP server to set, to be resolved at contact
  *        time.  Note sntp stores the pointer, it doesn't copy the string.
@@ -931,7 +911,6 @@ sntp_setservername(u8_t idx, const char *server)
 
 /**
  * Obtain one of the currently configured by name NTP servers.
- *
  * @param idx the index of the NTP server
  * @return IP address of the indexed NTP server or NULL if the NTP
  *         server has not been configured by name (or at all)

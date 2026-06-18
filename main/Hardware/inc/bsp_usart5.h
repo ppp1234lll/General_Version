@@ -12,6 +12,10 @@ void bsp_InitUsart5_DMA(void);
 void bsp_InitUsart5(uint32_t baudrate);
 void usart5_send_str(uint8_t *buff, uint16_t len);
 void usart5_send_char(uint8_t ch);
+void usart5_dma_rx_enable(void);
+
+uint8_t *usart5_rx_get_frame(void);
+
 void usart5_test(void);
 
 #endif

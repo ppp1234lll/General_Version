@@ -1,12 +1,8 @@
 /**
  * \file sha1.h
- *
  *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
  *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
  *  All rights reserved.
- *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -56,14 +52,12 @@ extern "C" {
 
 /**
  * \brief          SHA-1 context setup
- *
  * \param ctx      context to be initialized
  */
 void sha1_starts( sha1_context *ctx );
 
 /**
  * \brief          SHA-1 process buffer
- *
  * \param ctx      SHA-1 context
  * \param input    buffer holding the  data
  * \param ilen     length of the input data
@@ -72,7 +66,6 @@ void sha1_update( sha1_context *ctx, const unsigned char *input, int ilen );
 
 /**
  * \brief          SHA-1 final digest
- *
  * \param ctx      SHA-1 context
  * \param output   SHA-1 checksum result
  */
@@ -80,7 +73,6 @@ void sha1_finish( sha1_context *ctx, unsigned char output[20] );
 
 /**
  * \brief          Output = SHA-1( input buffer )
- *
  * \param input    buffer holding the  data
  * \param ilen     length of the input data
  * \param output   SHA-1 checksum result

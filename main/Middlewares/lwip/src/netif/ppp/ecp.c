@@ -1,25 +1,19 @@
 /*
  * ecp.c - PPP Encryption Control Protocol.
- *
  * Copyright (c) 2002 Google, Inc.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
- *
  * 3. The name(s) of the authors of this software must not be used to
  *    endorse or promote products derived from this software without
  *    prior written permission.
- *
  * THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
  * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
@@ -27,27 +21,20 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
  * Derived from ccp.c, which is:
- *
  * Copyright (c) 1994-2002 Paul Mackerras. All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- *
  * 2. The name(s) of the authors of this software must not be used to
  *    endorse or promote products derived from this software without
  *    prior written permission.
- *
  * 3. Redistributions of any form whatsoever must retain the following
  *    acknowledgment:
  *    "This product includes software developed by Paul Mackerras
  *     <paulus@samba.org>".
- *
  * THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
  * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
@@ -92,8 +79,8 @@ static void ecp_protrej (int unit);
 */
 #if PRINTPKT_SUPPORT
 static int  ecp_printpkt (const u_char *pkt, int len,
-			      void (*printer) (void *, char *, ...),
-			      void *arg);
+                  void (*printer) (void *, char *, ...),
+                  void *arg);
 #endif /* PRINTPKT_SUPPORT */
 /*
 static void ecp_datainput (int unit, u_char *pkt, int len);
@@ -129,10 +116,10 @@ const struct protent ecp_protent = {
 };
 
 fsm ecp_fsm[NUM_PPP];
-ecp_options ecp_wantoptions[NUM_PPP];	/* what to request the peer to use */
-ecp_options ecp_gotoptions[NUM_PPP];	/* what the peer agreed to do */
-ecp_options ecp_allowoptions[NUM_PPP];	/* what we'll agree to do */
-ecp_options ecp_hisoptions[NUM_PPP];	/* what we agreed to do */
+ecp_options ecp_wantoptions[NUM_PPP];    /* what to request the peer to use */
+ecp_options ecp_gotoptions[NUM_PPP];    /* what the peer agreed to do */
+ecp_options ecp_allowoptions[NUM_PPP];    /* what we'll agree to do */
+ecp_options ecp_hisoptions[NUM_PPP];    /* what we agreed to do */
 
 static const fsm_callbacks ecp_callbacks = {
     NULL, /* ecp_resetci, */

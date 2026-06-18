@@ -3,16 +3,13 @@
  * Stack-internal timers implementation.
  * This file includes timer callbacks for stack-internal timers as well as
  * functions to set up or stop timers and check for expired timers.
- *
  */
 
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -20,7 +17,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -31,12 +27,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
  *         Simon Goldschmidt
- *
  */
 
 #include "lwip/opt.h"
@@ -137,7 +130,6 @@ static int tcpip_tcp_timer_active;
 
 /**
  * Timer callback function that calls tcp_tmr() and reschedules itself.
- *
  * @param arg unused argument
  */
 static void
@@ -222,7 +214,6 @@ sys_timeout_abs(u32_t abs_time, sys_timeout_handler handler, void *arg)
 
 /**
  * Timer callback function that calls cyclic->handler() and reschedules itself.
- *
  * @param arg unused argument
  */
 #if !LWIP_TESTMODE
@@ -277,7 +268,6 @@ void sys_timeouts_init(void)
  * following cases:
  * - while waiting for a message using sys_timeouts_mbox_fetch()
  * - by calling sys_check_timeouts() (NO_SYS==1 only)
- *
  * @param msecs time in milliseconds after that the timer should expire
  * @param handler callback function to call when msecs have elapsed
  * @param arg argument to pass to the callback function
@@ -309,7 +299,6 @@ sys_timeout(u32_t msecs, sys_timeout_handler handler, void *arg)
  * Go through timeout list (for this task only) and remove the first matching
  * entry (subsequent entries remain untouched), even though the timeout has not
  * triggered yet.
- *
  * @param handler callback function that would be called by the timeout
  * @param arg callback argument that would be passed to handler
 */
@@ -345,7 +334,6 @@ sys_untimeout(sys_timeout_handler handler, void *arg)
  * Handle timeouts for NO_SYS==1 (i.e. without using
  * tcpip_thread/sys_timeouts_mbox_fetch(). Uses sys_now() to call timeout
  * handler functions when timeouts expire.
- *
  * Must be called periodically from your main loop.
  */
 void

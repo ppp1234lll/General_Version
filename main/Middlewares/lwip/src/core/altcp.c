@@ -2,7 +2,6 @@
  * @file
  * @defgroup altcp Application layered TCP Functions
  * @ingroup altcp_api
- *
  * This file contains the common functions for altcp to work.
  * For more details see @ref altcp_api.
  */
@@ -10,7 +9,6 @@
 /**
  * @defgroup altcp_api Application layered TCP Introduction
  * @ingroup callbackstyle_api
- *
  * Overview
  * --------
  * altcp (application layered TCP connection API; to be used from TCPIP thread)
@@ -19,7 +17,6 @@
  * e.g. add SSL/TLS (see LWIP_ALTCP_TLS) or proxy-connect support to an application
  * written for the tcp callback API without that application knowing the
  * protocol details.
- *
  * * This interface mimics the tcp callback API to the application while preventing
  *   direct linking (much like virtual functions).
  * * This way, an application can make use of other application layer protocols
@@ -27,12 +24,10 @@
  * * This is achieved by simply including "lwip/altcp.h" instead of "lwip/tcp.h",
  *   replacing "struct tcp_pcb" with "struct altcp_pcb" and prefixing all functions
  *   with "altcp_" instead of "tcp_".
- *
  * With altcp support disabled (LWIP_ALTCP==0), applications written against the
  * altcp API can still be compiled but are directly linked against the tcp.h
  * callback API and then cannot use layered protocols. To minimize code changes
  * in this case, the use of altcp_allocators is strongly suggested.
- *
  * Usage
  * -----
  * To make use of this API from an existing tcp raw API application:
@@ -54,7 +49,6 @@
  *   provided.
  * * Another altcp layer is proxy-connect to use TLS behind a HTTP proxy (see
  *   @ref altcp_proxyconnect.h)
- *
  * altcp_allocator_t
  * -----------------
  * An altcp allocator is created by the application by combining an allocator
@@ -65,19 +59,15 @@
  *   altcp_tls_alloc, conf
  * };
  * \endcode
- *
- *
  * struct altcp_tls_config
  * -----------------------
  * The struct altcp_tls_config holds state that is needed to create new TLS client
  * or server connections (e.g. certificates and private keys).
- *
  * It is not defined by lwIP itself but by the TLS port (e.g. altcp_tls to mbedTLS
  * adaption). However, the parameters used to create it are defined in @ref
  * altcp_tls.h (see @ref altcp_tls_create_config_server_privkey_cert for servers
  * and @ref altcp_tls_create_config_client / @ref altcp_tls_create_config_client_2wayauth
  * for clients).
- *
  * For mbedTLS, ensure that certificates can be parsed by 'mbedtls_x509_crt_parse()' and
  * private keys can be parsed by 'mbedtls_pk_parse_key()'.
  */
@@ -85,10 +75,8 @@
 /*
  * Copyright (c) 2017 Simon Goldschmidt
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -96,7 +84,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -107,11 +94,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Simon Goldschmidt <goldsimon@gmx.de>
- *
  */
 
 #include "lwip/opt.h"
@@ -180,7 +164,6 @@ altcp_new(altcp_allocator_t *allocator)
  * @ingroup altcp
  * altcp_new_ip_type: called by applications to allocate a new pcb with the help of an
  * allocator function.
- *
  * @param allocator allocator function and argument
  * @param ip_type IP version of the pcb (@ref lwip_ip_addr_type)
  * @return a new altcp_pcb or NULL on error

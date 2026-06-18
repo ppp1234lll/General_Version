@@ -9,6 +9,17 @@
 
 #include "bsp.h"
 #include "bsp_enet.h"
+#include "lwipopts.h"
+
+// 以太网复位引脚
+#define ENET_RESET_GPIO_CLK               RCU_GPIOA
+#define ENET_RESET_GPIO_PORT              GPIOA
+#define ENET_RESET_PIN                    GPIO_PIN_6
+
+// 以太网地址引脚
+#define ENET_ADDR_GPIO_CLK               RCU_GPIOB
+#define ENET_ADDR_GPIO_PORT              GPIOB
+#define ENET_ADDR_PIN                    GPIO_PIN_0
 
 static __IO uint32_t enet_init_status = 0;
 
@@ -18,18 +29,18 @@ static void nvic_configuration(void);
 
 /*
 *********************************************************************************************************
-*	函 数 名: enet_system_setup
-*	功能说明: 初始化以太网系统GPIO、时钟、MAC、DMA、SysTick.  
-*	形    参: 无
-*	返 回 值: 无
+*    函 数 名: enet_system_setup
+*    功能说明: 初始化以太网系统GPIO、时钟、MAC、DMA、SysTick.
+*    形    参: 无
+*    返 回 值: 无
 *********************************************************************************************************
 */
-#define ENET_INIT_RETRY_MAX   3
+#define ENET_INIT_RETRY_MAX   1
 #define ENET_INIT_RETRY_DELAY_MS  100
 
 void enet_system_setup(void)
 {
-	  uint8_t retry_count = 0;
+    uint8_t retry_count = 0;
     /* configure the NVIC for ENET */
     nvic_configuration();
 
@@ -38,8 +49,8 @@ void enet_system_setup(void)
 
     /* configure the ethernet MAC/DMA */
 //    enet_mac_dma_config();
-	
-	   do {
+    
+    do {
         /* configure the ethernet MAC/DMA */
         enet_mac_dma_config();
 
@@ -49,14 +60,16 @@ void enet_system_setup(void)
 
         retry_count++;
         printf("Ethernet init failed, retrying (%d/%d)...\r\n", retry_count, ENET_INIT_RETRY_MAX);
-        vTaskDelay(ENET_INIT_RETRY_DELAY_MS);
+        delay_ms(ENET_INIT_RETRY_DELAY_MS);
 
     } while(retry_count < ENET_INIT_RETRY_MAX);
 
-    if(0 == enet_init_status) {
-        while(1) {
-					Error_Handler(__FILE__, __LINE__);
-        }
+    if(0 == enet_init_status) 
+    {
+        printf("Ethernet init failed!!!\r\n");
+        // while(1) {
+        //     Error_Handler(__FILE__, __LINE__);
+        // }
     }
 
     enet_interrupt_enable(ENET_DMA_INT_NIE);
@@ -70,10 +83,10 @@ void enet_system_setup(void)
 
 /*
 *********************************************************************************************************
-*	函 数 名: enet_mac_dma_config
-*	功能说明: 初始化以太网MAC/DMA.  
-*	形    参: 无
-*	返 回 值: 无
+*    函 数 名: enet_mac_dma_config
+*    功能说明: 初始化以太网MAC/DMA.
+*    形    参: 无
+*    返 回 值: 无
 *********************************************************************************************************
 */
 static void enet_mac_dma_config(void)
@@ -108,10 +121,10 @@ static void enet_mac_dma_config(void)
 
 /*
 *********************************************************************************************************
-*	函 数 名: nvic_configuration
-*	功能说明: 初始化NVIC.  
-*	形    参: 无
-*	返 回 值: 无
+*    函 数 名: nvic_configuration
+*    功能说明: 初始化NVIC.
+*    形    参: 无
+*    返 回 值: 无
 *********************************************************************************************************
 */
 static void nvic_configuration(void)
@@ -121,10 +134,10 @@ static void nvic_configuration(void)
 
 /*
 *********************************************************************************************************
-*	函 数 名: enet_gpio_config
-*	功能说明: 初始化GPIO.  
-*	形    参: 无
-*	返 回 值: 无
+*    函 数 名: enet_gpio_config
+*    功能说明: 初始化GPIO.
+*    形    参: 无
+*    返 回 值: 无
 *********************************************************************************************************
 */
 static void enet_gpio_config(void)
@@ -175,49 +188,46 @@ static void enet_gpio_config(void)
     gpio_mode_set(GPIOC, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO_PIN_4);
     gpio_output_options_set(GPIOC, GPIO_OTYPE_PP, GPIO_OSPEED_MAX, GPIO_PIN_4);
 
-	/* PC5: ETH_RMII_RXD1 */
-	gpio_mode_set(GPIOC, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO_PIN_5);
-	gpio_output_options_set(GPIOC, GPIO_OTYPE_PP, GPIO_OSPEED_MAX, GPIO_PIN_5);
+    /* PC5: ETH_RMII_RXD1 */
+    gpio_mode_set(GPIOC, GPIO_MODE_AF, GPIO_PUPD_NONE, GPIO_PIN_5);
+    gpio_output_options_set(GPIOC, GPIO_OTYPE_PP, GPIO_OSPEED_MAX, GPIO_PIN_5);
 
-	gpio_af_set(GPIOC, GPIO_AF_11, GPIO_PIN_1);
-	gpio_af_set(GPIOC, GPIO_AF_11, GPIO_PIN_4);
-	gpio_af_set(GPIOC, GPIO_AF_11, GPIO_PIN_5);
+    gpio_af_set(GPIOC, GPIO_AF_11, GPIO_PIN_1);
+    gpio_af_set(GPIOC, GPIO_AF_11, GPIO_PIN_4);
+    gpio_af_set(GPIOC, GPIO_AF_11, GPIO_PIN_5);
 
-	// 复位
-	gpio_mode_set(ENET_RESET_GPIO_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE,ENET_RESET_PIN);
-	gpio_output_options_set(ENET_RESET_GPIO_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ,ENET_RESET_PIN);
+    // 复位
+    gpio_mode_set(ENET_RESET_GPIO_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE,ENET_RESET_PIN);
+    gpio_output_options_set(ENET_RESET_GPIO_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ,ENET_RESET_PIN);
 
-	/* 地址 */
-	gpio_mode_set(ENET_ADDR_GPIO_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE,ENET_ADDR_PIN);
-	gpio_output_options_set(ENET_ADDR_GPIO_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ,ENET_ADDR_PIN);
+    /* 地址 */
+    gpio_mode_set(ENET_ADDR_GPIO_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE,ENET_ADDR_PIN);
+    gpio_output_options_set(ENET_ADDR_GPIO_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ,ENET_ADDR_PIN);
 
     gpio_bit_reset(ENET_ADDR_GPIO_PORT, ENET_ADDR_PIN); // 地址0
-	/* 硬复位 */
-	gpio_bit_reset(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
-	delay_ms(50);	
-	gpio_bit_set(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
+    /* 硬复位 */
+    gpio_bit_reset(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
+    delay_ms(50);    
+    gpio_bit_set(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
     delay_ms(50);
-
 }
 
 /*
 *********************************************************************************************************
-*	函 数 名: enet_hard_reset
-*	功能说明: 硬件复位函数.  
-*	形    参: 无
-*	返 回 值: 无
+*    函 数 名: enet_hard_reset
+*    功能说明: 硬件复位函数.
+*    形    参: 无
+*    返 回 值: 无
 *********************************************************************************************************
 */
 void enet_hard_reset(void)
 {
     gpio_bit_reset(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
-	delay_ms(50);	
+    delay_ms(50);    
     gpio_bit_set(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
-	delay_ms(100);
+    delay_ms(100);
 
-	enet_mac_dma_config();
+    enet_mac_dma_config();
 }
-
-
 
 

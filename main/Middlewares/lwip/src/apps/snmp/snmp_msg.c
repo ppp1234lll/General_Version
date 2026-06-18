@@ -7,10 +7,8 @@
  * Copyright (c) 2006 Axon Digital Design B.V., The Netherlands.
  * Copyright (c) 2016 Elias Oenal.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -18,7 +16,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -29,7 +26,6 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * Author: Christiaan Simons <christiaan.simons@axon.tv>
  *         Martin Hentschel <info@cl-soft.de>
  *         Elias Oenal <lwip@eliasoenal.com>
@@ -174,7 +170,6 @@ snmp_get_community(void)
  * Sets SNMP community string.
  * The string itself (its storage) must be valid throughout the whole life of
  * program (or until it is changed to sth else).
- *
  * @param community is a pointer to new community string
  */
 void
@@ -212,7 +207,6 @@ snmp_get_community_trap(void)
  * Sets SNMP community string for write-access.
  * The string itself (its storage) must be valid throughout the whole life of
  * program (or until it is changed to sth else).
- *
  * @param community is a pointer to new write-access community string
  */
 void
@@ -229,7 +223,6 @@ snmp_set_community_write(const char *const community)
  * Sets SNMP community string used for sending traps.
  * The string itself (its storage) must be valid throughout the whole life of
  * program (or until it is changed to sth else).
- *
  * @param community is a pointer to new trap community string
  */
 void
@@ -500,7 +493,6 @@ snmp_process_varbind(struct snmp_request *request, struct snmp_varbind *vb, u8_t
 
 /**
  * Service an internal or external event for SNMP GET.
- *
  * @param request points to the associated message process state
  */
 static err_t
@@ -536,7 +528,6 @@ snmp_process_get_request(struct snmp_request *request)
 
 /**
  * Service an internal or external event for SNMP GET.
- *
  * @param request points to the associated message process state
  */
 static err_t
@@ -572,7 +563,6 @@ snmp_process_getnext_request(struct snmp_request *request)
 
 /**
  * Service an internal or external event for SNMP GETBULKT.
- *
  * @param request points to the associated message process state
  */
 static err_t
@@ -670,7 +660,6 @@ snmp_process_getbulk_request(struct snmp_request *request)
 
 /**
  * Service an internal or external event for SNMP SET.
- *
  * @param request points to the associated message process state
  */
 static err_t
@@ -781,7 +770,6 @@ snmp_process_set_request(struct snmp_request *request)
 
 /**
  * Checks and decodes incoming SNMP message header, logs header errors.
- *
  * @param request points to the current message request state return
  * @return
  * - ERR_OK SNMP header is sane and accepted
@@ -887,7 +875,6 @@ snmp_parse_inbound_frame(struct snmp_request *request)
     /* RFC3414 msgSecurityParameters
      * The User-based Security Model defines the contents of the OCTET
      * STRING as a SEQUENCE.
-     *
      * We skip the protective dummy OCTET STRING header
      * to access the SEQUENCE header.
      */

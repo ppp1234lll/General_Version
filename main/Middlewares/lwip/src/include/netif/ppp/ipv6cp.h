@@ -1,29 +1,22 @@
 /*
  * ipv6cp.h - PPP IPV6 Control Protocol.
- *
  * Copyright (c) 1999 Tommi Komulainen.  All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
- *
  * 3. The name(s) of the authors of this software must not be used to
  *    endorse or promote products derived from this software without
  *    prior written permission.
- *
  * 4. Redistributions of any form whatsoever must retain the following
  *    acknowledgment:
  *    "This product includes software developed by Tommi Komulainen
  *     <Tommi.Komulainen@iki.fi>".
- *
  * THE AUTHORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
  * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS, IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
@@ -31,7 +24,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
  */
 
 /*  Original version, based on RFC2023 :
@@ -93,24 +85,17 @@
 
 /*
  * Derived from :
- *
- *
  * ipcp.h - IP Control Protocol definitions.
- *
  * Copyright (c) 1984-2000 Carnegie Mellon University. All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
- *
  * 3. The name "Carnegie Mellon University" must not be used to
  *    endorse or promote products derived from this software without
  *    prior written permission. For permission or any legal
@@ -121,12 +106,10 @@
  *      Pittsburgh, PA  15213-3890
  *      (412) 268-4387, fax: (412) 268-7395
  *      tech-transfer@andrew.cmu.edu
- *
  * 4. Redistributions of any form whatsoever must retain the following
  *    acknowledgment:
  *    "This product includes software developed by Computing Services
  *     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
- *
  * CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
  * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
@@ -134,7 +117,6 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- *
  * $Id: ipv6cp.h,v 1.7 2002/12/04 23:03:32 paulus Exp $
  */
 
@@ -142,7 +124,7 @@
 #if PPP_SUPPORT && PPP_IPV6_SUPPORT  /* don't build if not configured for use in lwipopts.h */
 
 #ifndef IPV6CP_H
-#define	IPV6CP_H
+#define    IPV6CP_H
 
 #include "eui64.h"
 
@@ -153,13 +135,13 @@ extern "C" {
 /*
  * Options.
  */
-#define CI_IFACEID	1	/* Interface Identifier */
+#define CI_IFACEID    1    /* Interface Identifier */
 #ifdef IPV6CP_COMP
-#define CI_COMPRESSTYPE	2	/* Compression Type     */
+#define CI_COMPRESSTYPE    2    /* Compression Type     */
 #endif /* IPV6CP_COMP */
 
 /* No compression types yet defined.
- *#define IPV6CP_COMP	0x004f
+ *#define IPV6CP_COMP    0x004f
  */
 typedef struct ipv6cp_options {
     unsigned int neg_ifaceid    :1;  /* Negotiate interface identifier? */

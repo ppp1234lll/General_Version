@@ -1,25 +1,20 @@
 /**
  * @file
- *
  * @defgroup dhcp6 DHCPv6
  * @ingroup ip6
  * DHCPv6 client: IPv6 address autoconfiguration as per
  * RFC 3315 (stateful DHCPv6) and
  * RFC 3736 (stateless DHCPv6).
- *
  * For now, only stateless DHCPv6 is implemented!
- *
  * TODO:
  * - enable/disable API to not always start when RA is received
  * - stateful DHCPv6 (for now, only stateless DHCPv6 for DNS and NTP servers works)
  * - create Client Identifier?
  * - only start requests if a valid local address is available on the netif
  * - only start information requests if required (not for every RA)
- *
  * dhcp6_enable_stateful() enables stateful DHCPv6 for a netif (stateless disabled)<br>
  * dhcp6_enable_stateless() enables stateless DHCPv6 for a netif (stateful disabled)<br>
  * dhcp6_disable() disable DHCPv6 for a netif
- *
  * When enabled, requests are only issued after receipt of RA with the
  * corresponding bits set.
  */
@@ -27,10 +22,8 @@
 /*
  * Copyright (c) 2018 Simon Goldschmidt
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -38,7 +31,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -49,9 +41,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Simon Goldschmidt <goldsimon@gmx.de>
  */
 
@@ -177,7 +167,6 @@ dhcp6_dec_pcb_refcount(void)
  * @ingroup dhcp6
  * Set a statically allocated struct dhcp6 to work with.
  * Using this prevents dhcp6_start to allocate it using mem_malloc.
- *
  * @param netif the netif for which to set the struct dhcp
  * @param dhcp6 (uninitialised) dhcp6 struct allocated by the application
  */
@@ -197,10 +186,8 @@ dhcp6_set_struct(struct netif *netif, struct dhcp6 *dhcp6)
 /**
  * @ingroup dhcp6
  * Removes a struct dhcp6 from a netif.
- *
  * ATTENTION: Only use this when not using dhcp6_set_struct() to allocate the
  *            struct dhcp6 since the memory is passed back to the heap.
- *
  * @param netif the netif from which to remove the struct dhcp
  */
 void dhcp6_cleanup(struct netif *netif)
@@ -289,10 +276,8 @@ dhcp6_stateful_enabled(struct dhcp6 *dhcp6)
  * Enable stateful DHCPv6 on this netif
  * Requests are sent on receipt of an RA message with the
  * ND6_RA_FLAG_MANAGED_ADDR_CONFIG flag set.
- *
  * A struct dhcp6 will be allocated for this netif if not
  * set via @ref dhcp6_set_struct before.
- *
  * @todo: stateful DHCPv6 not supported, yet
  */
 err_t
@@ -308,7 +293,6 @@ dhcp6_enable_stateful(struct netif *netif)
  * Enable stateless DHCPv6 on this netif
  * Requests are sent on receipt of an RA message with the
  * ND6_RA_FLAG_OTHER_CONFIG flag set.
- *
  * A struct dhcp6 will be allocated for this netif if not
  * set via @ref dhcp6_set_struct before.
  */
@@ -365,7 +349,6 @@ dhcp6_disable(struct netif *netif)
 
 /**
  * Create a DHCPv6 request, fill in common headers
- *
  * @param netif the netif under DHCPv6 control
  * @param dhcp6 dhcp6 control struct
  * @param message_type message type of the request
@@ -609,7 +592,6 @@ dhcp6_nd6_ra_trigger(struct netif *netif, u8_t managed_addr_config, u8_t other_c
 
 /**
  * Parse the DHCPv6 message and extract the DHCPv6 options.
- *
  * Extract the DHCPv6 options (offset + length) so that we can later easily
  * check for them or extract the contents.
  */
@@ -767,7 +749,6 @@ free_pbuf_and_return:
 
 /**
  * A DHCPv6 request has timed out.
- *
  * The timer that was started with the DHCPv6 request has
  * timed out, indicating no response was received in time.
  */
@@ -791,7 +772,6 @@ dhcp6_timeout(struct netif *netif, struct dhcp6 *dhcp6)
 /**
  * DHCPv6 timeout handling (this function must be called every 500ms,
  * see @ref DHCP6_TIMER_MSECS).
- *
  * A DHCPv6 server is expected to respond within a short period of time.
  * This timer checks whether an outstanding DHCPv6 request is timed out.
  */

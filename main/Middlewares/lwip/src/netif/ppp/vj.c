@@ -1,10 +1,8 @@
 /*
  * Routines to compress and uncompess tcp packets (for transmission
  * over low speed serial lines.
- *
  * Copyright (c) 1989 Regents of the University of California.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms are permitted
  * provided that the above copyright notice and this paragraph are
  * duplicated in all such forms and that any documentation,
@@ -16,14 +14,11 @@
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- *
  * Van Jacobson (van@helios.ee.lbl.gov), Dec 31, 1989:
  *   Initial distribution.
- *
  * Modified June 1993 by Paul Mackerras, paulus@cs.anu.edu.au,
  * so that the entire packet being decompressed doesn't have
  * to be in contiguous memory (just the compressed header).
- *
  * Modified March 1998 by Guy Lancaster, glanca@gesn.com,
  * for a 16 bit processor.
  */
@@ -223,7 +218,6 @@ vj_compress_tcp(struct vjcompress *comp, struct pbuf **pb)
       || (*(struct vj_u32_t*)th).v != (((struct vj_u32_t*)&cs->cs_ip)[IPH_HL(&cs->cs_ip)]).v) {
     /*
      * Wasn't the first -- search for it.
-     *
      * States are kept in a circularly linked list with
      * last_cs pointing to the end of the list.  The
      * list is kept in lru order by moving a state to the

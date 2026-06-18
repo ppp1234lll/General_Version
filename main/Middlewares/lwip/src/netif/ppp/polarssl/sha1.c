@@ -1,12 +1,8 @@
 /*
  *  FIPS-180-1 compliant SHA-1 implementation
- *
  *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
  *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
  *  All rights reserved.
- *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -34,7 +30,6 @@
  */
 /*
  *  The SHA-1 standard was published by NIST in 1993.
- *
  *  http://www.itl.nist.gov/fipspubs/fip180-1.htm
  */
 

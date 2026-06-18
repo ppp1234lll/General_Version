@@ -1,12 +1,8 @@
 /**
  * \file des.h
- *
  *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
  *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
  *  All rights reserved.
- *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -58,7 +54,6 @@ extern "C" {
 
 /**
  * \brief          DES key schedule (56-bit, encryption)
- *
  * \param ctx      DES context to be initialized
  * \param key      8-byte secret key
  */
@@ -66,7 +61,6 @@ void des_setkey_enc( des_context *ctx, unsigned char key[8] );
 
 /**
  * \brief          DES key schedule (56-bit, decryption)
- *
  * \param ctx      DES context to be initialized
  * \param key      8-byte secret key
  */
@@ -74,7 +68,6 @@ void des_setkey_dec( des_context *ctx, unsigned char key[8] );
 
 /**
  * \brief          DES-ECB block encryption/decryption
- *
  * \param ctx      DES context
  * \param input    64-bit input block
  * \param output   64-bit output block

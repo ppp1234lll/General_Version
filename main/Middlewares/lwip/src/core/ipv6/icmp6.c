@@ -1,16 +1,13 @@
 /**
  * @file
- *
  * IPv6 version of ICMP, as per RFC 4443.
  */
 
 /*
  * Copyright (c) 2010 Inico Technologies Ltd.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -18,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -29,12 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Ivan Delamer <delamer@inicotech.com>
- *
- *
  * Please coordinate changes and requests with Ivan Delamer
  * <delamer@inicotech.com>
  */
@@ -72,10 +64,8 @@ static void icmp6_send_response_with_addrs_and_netif(struct pbuf *p, u8_t code, 
 
 /**
  * Process an input ICMPv6 message. Called by ip6_input.
- *
  * Will generate a reply for echo requests. Other messages are forwarded
  * to nd6_input, or mld6_input.
- *
  * @param p the mld packet, p->payload pointing to the icmpv6 header
  * @param inp the netif on which this packet was received
  */
@@ -208,10 +198,8 @@ icmp6_input(struct pbuf *p, struct netif *inp)
 
 /**
  * Send an icmpv6 'destination unreachable' packet.
- *
  * This function must be used only in direct response to a packet that is being
  * received right now. Otherwise, address zones would be lost.
- *
  * @param p the input packet for which the 'unreachable' should be sent,
  *          p->payload pointing to the IPv6 header
  * @param c ICMPv6 code for the unreachable type
@@ -224,10 +212,8 @@ icmp6_dest_unreach(struct pbuf *p, enum icmp6_dur_code c)
 
 /**
  * Send an icmpv6 'packet too big' packet.
- *
  * This function must be used only in direct response to a packet that is being
  * received right now. Otherwise, address zones would be lost.
- *
  * @param p the input packet for which the 'packet too big' should be sent,
  *          p->payload pointing to the IPv6 header
  * @param mtu the maximum mtu that we can accept
@@ -240,10 +226,8 @@ icmp6_packet_too_big(struct pbuf *p, u32_t mtu)
 
 /**
  * Send an icmpv6 'time exceeded' packet.
- *
  * This function must be used only in direct response to a packet that is being
  * received right now. Otherwise, address zones would be lost.
- *
  * @param p the input packet for which the 'time exceeded' should be sent,
  *          p->payload pointing to the IPv6 header
  * @param c ICMPv6 code for the time exceeded type
@@ -257,11 +241,9 @@ icmp6_time_exceeded(struct pbuf *p, enum icmp6_te_code c)
 /**
  * Send an icmpv6 'time exceeded' packet, with explicit source and destination
  * addresses.
- *
  * This function may be used to send a response sometime after receiving the
  * packet for which this response is meant. The provided source and destination
  * addresses are used primarily to retain their zone information.
- *
  * @param p the input packet for which the 'time exceeded' should be sent,
  *          p->payload pointing to the IPv6 header
  * @param c ICMPv6 code for the time exceeded type
@@ -278,11 +260,9 @@ icmp6_time_exceeded_with_addrs(struct pbuf *p, enum icmp6_te_code c,
 
 /**
  * Send an icmpv6 'parameter problem' packet.
- *
  * This function must be used only in direct response to a packet that is being
  * received right now. Otherwise, address zones would be lost and the calculated
  * offset would be wrong (calculated against ip6_current_header()).
- *
  * @param p the input packet for which the 'param problem' should be sent,
  *          p->payload pointing to the IP header
  * @param c ICMPv6 code for the param problem type
@@ -298,7 +278,6 @@ icmp6_param_problem(struct pbuf *p, enum icmp6_pp_code c, const void *pointer)
 /**
  * Send an ICMPv6 packet in response to an incoming packet.
  * The packet is sent *to* ip_current_src_addr() on ip_current_netif().
- *
  * @param p the input packet for which the response should be sent,
  *          p->payload pointing to the IPv6 header
  * @param code Code of the ICMPv6 header
@@ -325,7 +304,6 @@ icmp6_send_response(struct pbuf *p, u8_t code, u32_t data, u8_t type)
 
 /**
  * Send an ICMPv6 packet in response to an incoming packet.
- *
  * Call this function if the packet is NOT sent as a direct response to an
  * incoming packet, but rather sometime later (e.g. for a fragment reassembly
  * timeout). The caller must provide the zoned source and destination addresses
@@ -333,7 +311,6 @@ icmp6_send_response(struct pbuf *p, u8_t code, u32_t data, u8_t type)
  * reason for this approach is that while the addresses themselves are part of
  * the original packet, their zone information is not, thus possibly resulting
  * in a link-local response being sent over the wrong link.
- *
  * @param p the input packet for which the response should be sent,
  *          p->payload pointing to the IPv6 header
  * @param code Code of the ICMPv6 header
@@ -371,7 +348,6 @@ icmp6_send_response_with_addrs(struct pbuf *p, u8_t code, u32_t data, u8_t type,
 
 /**
  * Send an ICMPv6 packet (with srd/dst address and netif given).
- *
  * @param p the input packet for which the response should be sent,
  *          p->payload pointing to the IPv6 header
  * @param code Code of the ICMPv6 header

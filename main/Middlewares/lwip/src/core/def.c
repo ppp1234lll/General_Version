@@ -1,17 +1,13 @@
 /**
  * @file
  * Common functions used throughout the stack.
- *
  * These are reference implementations of the byte swapping functions.
  * Again with the aim of being simple, correct and fully portable.
  * Byte swapping is the second thing you would want to optimize. You will
  * need to port it to your architecture and in your cc.h:
- *
  * \#define lwip_htons(x) your_htons
  * \#define lwip_htonl(x) your_htonl
- *
  * Note lwip_ntohs() and lwip_ntohl() are merely references to the htonx counterparts.
- *
  * If you \#define them to htons() and htonl(), you should
  * \#define LWIP_DONT_PROVIDE_BYTEORDER_FUNCTIONS to prevent lwIP from
  * defining htonx/ntohx compatibility macros.
@@ -29,10 +25,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -40,7 +34,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -51,11 +44,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Simon Goldschmidt
- *
  */
 
 #include "lwip/opt.h"
@@ -68,7 +58,6 @@
 #if !defined(lwip_htons)
 /**
  * Convert an u16_t from host- to network byte order.
- *
  * @param n u16_t in host byte order
  * @return n in network byte order
  */
@@ -82,7 +71,6 @@ lwip_htons(u16_t n)
 #if !defined(lwip_htonl)
 /**
  * Convert an u32_t from host- to network byte order.
- *
  * @param n u32_t in host byte order
  * @return n in network byte order
  */

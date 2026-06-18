@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2017 Simon Goldschmidt.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,11 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Simon Goldschmidt <goldsimon@gmx.de>
- *
  */
 
 /**
@@ -43,7 +37,6 @@
  * On transmit, the bridge selects the outgoing port(s).
  * On receive, the port netif calls into the bridge (via its netif->input function) and
  * the bridge selects the port(s) (and/or its netif->input function) to pass the received pbuf to.
- *
  * Usage:
  * - add the port netifs just like you would when using them as dedicated netif without a bridge
  *   - only NETIF_FLAG_ETHARP/NETIF_FLAG_ETHERNET netifs are supported as bridge ports
@@ -61,12 +54,9 @@
  *   NOTE: the passed 'input' function depends on BRIDGEIF_PORT_NETIFS_OUTPUT_DIRECT setting,
  *         which controls where the forwarding is done (netif low level input context vs. tcpip_thread)
  * - set up all ports netifs and the bridge netif
- *
  * - When adding a port netif, NETIF_FLAG_ETHARP flag will be removed from a port
  *   to prevent ETHARP working on that port netif (we only want one IP per bridge not per port).
  * - When adding a port netif, its input function is changed to call into the bridge.
- *
- *
  * @todo:
  * - compact static FDB entries (instead of walking the whole array)
  * - add FDB query/read access
@@ -399,11 +389,9 @@ bridgeif_tcpip_input(struct pbuf *p, struct netif *netif)
 /**
  * @ingroup bridgeif
  * Initialization function passed to netif_add().
- *
  * ATTENTION: A pointer to a @ref bridgeif_initdata_t must be passed as 'state'
  *            to @ref netif_add when adding the bridge. I supplies MAC address
  *            and controls memory allocation (number of ports, FDB size).
- *
  * @param netif the lwip network interface structure for this ethernetif
  * @return ERR_OK if the loopif is initialized
  *         ERR_MEM if private data couldn't be allocated

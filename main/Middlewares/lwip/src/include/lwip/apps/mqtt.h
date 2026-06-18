@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2016 Erik Andersson
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,11 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Erik Andersson
- *
  */
 #ifndef LWIP_HDR_APPS_MQTT_CLIENT_H
 #define LWIP_HDR_APPS_MQTT_CLIENT_H
@@ -119,11 +113,9 @@ typedef enum
  * Function prototype for mqtt connection status callback. Called when
  * client has connected to the server after initiating a mqtt connection attempt by
  * calling mqtt_client_connect() or when connection is closed by server or an error
- *
  * @param client MQTT client itself
  * @param arg Additional argument to pass to the callback function
  * @param status Connect result code or disconnection notification @see mqtt_connection_status_t
- *
  */
 typedef void (*mqtt_connection_cb_t)(mqtt_client_t *client, void *arg, mqtt_connection_status_t status);
 
@@ -140,13 +132,11 @@ enum {
  * @ingroup mqtt
  * Function prototype for MQTT incoming publish data callback function. Called when data
  * arrives to a subscribed topic @see mqtt_subscribe
- *
  * @param arg Additional argument to pass to the callback function
  * @param data User data, pointed object, data may not be referenced after callback return,
           NULL is passed when all publish data are delivered
  * @param len Length of publish data fragment
  * @param flags MQTT_DATA_FLAG_LAST set when this call contains the last part of data from publish message
- *
  */
 typedef void (*mqtt_incoming_data_cb_t)(void *arg, const u8_t *data, u16_t len, u8_t flags);
 
@@ -155,7 +145,6 @@ typedef void (*mqtt_incoming_data_cb_t)(void *arg, const u8_t *data, u16_t len, 
  * @ingroup mqtt
  * Function prototype for MQTT incoming publish function. Called when an incoming publish
  * arrives to a subscribed topic @see mqtt_subscribe
- *
  * @param arg Additional argument to pass to the callback function
  * @param topic Zero terminated Topic text string, topic may not be referenced after callback return
  * @param tot_len Total length of publish data, if set to 0 (no publish payload) data callback will not be invoked

@@ -1,72 +1,56 @@
 /*
  * FreeRTOS Kernel V10.4.6
  * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
  * SPDX-License-Identifier: MIT
- *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  * the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  * https://www.FreeRTOS.org
  * https://github.com/FreeRTOS
- *
  */
 
 /*
  * A sample implementation of pvPortMalloc() that allows the heap to be defined
  * across multiple non-contigous blocks and combines (coalescences) adjacent
  * memory blocks as they are freed.
- *
  * See heap_1.c, heap_2.c, heap_3.c and heap_4.c for alternative
  * implementations, and the memory management pages of https://www.FreeRTOS.org
  * for more information.
- *
  * Usage notes:
- *
  * vPortDefineHeapRegions() ***must*** be called before pvPortMalloc().
  * pvPortMalloc() will be called if any task objects (tasks, queues, event
  * groups, etc.) are created, therefore vPortDefineHeapRegions() ***must*** be
  * called before any other objects are defined.
- *
  * vPortDefineHeapRegions() takes a single parameter.  The parameter is an array
  * of HeapRegion_t structures.  HeapRegion_t is defined in portable.h as
- *
  * typedef struct HeapRegion
  * {
  *  uint8_t *pucStartAddress; << Start address of a block of memory that will be part of the heap.
  *  size_t xSizeInBytes;      << Size of the block of memory.
  * } HeapRegion_t;
- *
  * The array is terminated using a NULL zero sized region definition, and the
  * memory regions defined in the array ***must*** appear in address order from
  * low address to high address.  So the following is a valid example of how
  * to use the function.
- *
  * HeapRegion_t xHeapRegions[] =
  * {
  *  { ( uint8_t * ) 0x80000000UL, 0x10000 }, << Defines a block of 0x10000 bytes starting at address 0x80000000
  *  { ( uint8_t * ) 0x90000000UL, 0xa0000 }, << Defines a block of 0xa0000 bytes starting at address of 0x90000000
  *  { NULL, 0 }                << Terminates the array.
  * };
- *
  * vPortDefineHeapRegions( xHeapRegions ); << Pass the array into vPortDefineHeapRegions().
- *
  * Note 0x80000000 is the lower address so appears in the array first.
- *
  */
 #include <stdlib.h>
 

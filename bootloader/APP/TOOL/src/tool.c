@@ -27,11 +27,10 @@ uint32_t complement_to_original(uint32_t data)
 }
 
 /************************************************************
-*
-* Function name    : hex_to_dec
-* Description    : 字符串转十六进制（用于解析URL编码的特殊字符）
-* Parameter        : buff - 2字节字符串（如"2F"→0x2F）
-* Return        : 转换后的十六进制值
+*    ? ? ?: hex_to_dec
+*    ????: 字符串转十六进制（用于解析URL编码的特殊字符）
+*    ?    ?: buff - 2字节字符串（如"2F"→0x2F）
+*    ? ? ?: 转换后的十六进制值
 *    
 ************************************************************/
 int8_t hex_to_dec(char c)
@@ -55,11 +54,9 @@ int8_t hex_to_dec(char c)
     }
 }
 /************************************************************
-*
-* Function name    : str_to_hex
-* Description    : 字符转hex
-* Parameter        : 
-* Return        : 
+*    ? ? ?: str_to_hex
+*    ????: 字符转hex
+*    ?    ?: * Return        : 
 *    
 ************************************************************/
 uint8_t str_to_hex(uint8_t *buff)

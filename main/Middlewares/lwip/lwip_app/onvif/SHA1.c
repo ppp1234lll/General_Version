@@ -1,11 +1,8 @@
 
 /*
 * sha1.c
-*
-* Description:
-* This file implements the Secure Hashing Algorithm 1 as
+*    ????: * This file implements the Secure Hashing Algorithm 1 as
 * defined in FIPS PUB 180-1 published April 17, 1995.
-*
 * The SHA-1, produces a 160-bit message digest for a given
 * data stream. It should take about 2**n steps to find a
 * message with the same digest as a given message and
@@ -13,21 +10,18 @@
 * when n is the digest size in bits. Therefore, this
 * algorithm can serve as a means of providing a
 * "fingerprint" for a message.
-*
 * Portability Issues:
 * SHA-1 is defined in terms of 32-bit "words". This code
 * uses <stdint.h> (included via "sha1.h" to define 32 and 8
 * bit unsigned integer types. If your C compiler does not
 * support 32 bit unsigned integers, this code is not
 * appropriate.
-*
 * Caveats:
 * SHA-1 is designed to work with messages less than 2^64 bits
 * long. Although SHA-1 allows a message digest to be generated
 * for messages of any number of bits less than 2^64, this
 * implementation only works with messages with a length that is
 * a multiple of the size of an 8-bit character.
-*
 */
 #include "SHA1.h"
 
@@ -46,18 +40,13 @@ void SHA1PadMessage(SHA1Context *);
 void SHA1ProcessMessageBlock(SHA1Context *);
 /*
 * SHA1Reset
-*
-* Description:
-* This function will initialize the SHA1Context in preparation
+*    ????: * This function will initialize the SHA1Context in preparation
 * for computing a new SHA1 message digest.
-*
 * Parameters:
 * context: [in/out]
 * The context to reset.
-*
 * Returns:
 * sha Error Code.
-*
 */
 int SHA1Reset(SHA1Context *context)//初始化状态
 {
@@ -81,22 +70,17 @@ int SHA1Reset(SHA1Context *context)//初始化状态
 
 /*
 * SHA1Result
-*
-* Description:
-* This function will return the 160-bit message digest into the
+*    ????: * This function will return the 160-bit message digest into the
 * Message_Digest array provided by the caller.
 * NOTE: The first octet of hash is stored in the 0th element,
 * the last octet of hash in the 19th element.
-*
 * Parameters:
 * context: [in/out]
 * The context to use to calculate the SHA-1 hash.
 * Message_Digest: [out]
 * Where the digest is returned.
-*
 * Returns:
 * sha Error Code.
-*
 */
 int SHA1Result( SHA1Context *context,uint8_t Message_Digest[SHA1HashSize])
 {
@@ -132,11 +116,8 @@ int SHA1Result( SHA1Context *context,uint8_t Message_Digest[SHA1HashSize])
 
 /*
 * SHA1Input
-*
-* Description:
-* This function accepts an array of octets as the next portion
+*    ????: * This function accepts an array of octets as the next portion
 * of the message.
-*
 * Parameters:
 * context: [in/out]
 * The SHA context to update
@@ -145,10 +126,8 @@ int SHA1Result( SHA1Context *context,uint8_t Message_Digest[SHA1HashSize])
 * the message.
 * length: [in]
 * The length of the message in message_array
-*
 * Returns:
 * sha Error Code.
-*
 */
 
 int SHA1Input( SHA1Context *context,const uint8_t *message_array,unsigned length)
@@ -195,22 +174,16 @@ int SHA1Input( SHA1Context *context,const uint8_t *message_array,unsigned length
 
 /*
 * SHA1ProcessMessageBlock
-*
-* Description:
-* This function will process the next 512 bits of the message
+*    ????: * This function will process the next 512 bits of the message
 * stored in the Message_Block array.
-*
 * Parameters:
 * None.
-*
 * Returns:
 * Nothing.
-*
 * Comments:
 * Many of the variable names in this code, especially the
 * single character names, were used because those were the
 * names used in the publication.
-*
 */
 
 void SHA1ProcessMessageBlock(SHA1Context *context)
@@ -293,9 +266,7 @@ void SHA1ProcessMessageBlock(SHA1Context *context)
 
 /*
 * SHA1PadMessage
-*
-* Description:
-* According to the standard, the message must be padded to an even
+*    ????: * According to the standard, the message must be padded to an even
 * 512 bits. The first padding bit must be a ’1’. The last 64
 * bits represent the length of the original message. All bits in
 * between should be 0. This function will pad the message
@@ -303,7 +274,6 @@ void SHA1ProcessMessageBlock(SHA1Context *context)
 * accordingly. It will also call the ProcessMessageBlock function
 * provided appropriately. When it returns, it can be assumed that
 * the message digest has been computed.
-*
 * Parameters:
 * context: [in/out]
 * The context to pad
@@ -311,7 +281,6 @@ void SHA1ProcessMessageBlock(SHA1Context *context)
 * The appropriate SHA*ProcessMessageBlock function
 * Returns:
 * Nothing.
-*
 */
 
 void SHA1PadMessage(SHA1Context *context)

@@ -1,29 +1,23 @@
 /*
  * FreeRTOS Kernel V10.4.6
  * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
  * SPDX-License-Identifier: MIT
- *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  * the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  * https://www.FreeRTOS.org
  * https://github.com/FreeRTOS
- *
  */
 
 /* Standard includes. */
@@ -268,6 +262,8 @@ typedef struct tskTaskControlBlock       /* The old naming convention is used to
 
     #if ( ( portSTACK_GROWTH > 0 ) || ( configRECORD_STACK_HIGH_ADDRESS == 1 ) )
         StackType_t * pxEndOfStack; /*< Points to the highest valid address for the stack. */
+	#else
+        UBaseType_t     uxSizeOfStack;      /*< Support For CmBacktrace >*/
     #endif
 
     #if ( portCRITICAL_NESTING_IN_TCB == 1 )
@@ -305,7 +301,6 @@ typedef struct tskTaskControlBlock       /* The old naming convention is used to
          * newlib and must provide system-wide implementations of the necessary
          * stubs. Be warned that (at the time of writing) the current newlib design
          * implements a system-wide malloc() that must be provided with locks.
-         *
          * See the third party link http://www.nadler.com/embedded/newlibAndFreeRTOS.html
          * for additional information. */
         struct  _reent xNewLib_reent;
@@ -432,19 +427,15 @@ static void prvInitialiseTaskLists( void ) PRIVILEGED_FUNCTION;
  * The idle task, which as all tasks is implemented as a never ending loop.
  * The idle task is automatically created and added to the ready lists upon
  * creation of the first user task.
- *
  * The portTASK_FUNCTION_PROTO() macro is used to allow port/compiler specific
  * language extensions.  The equivalent prototype for this function is:
- *
  * void prvIdleTask( void *pvParameters );
- *
  */
 static portTASK_FUNCTION_PROTO( prvIdleTask, pvParameters ) PRIVILEGED_FUNCTION;
 
 /*
  * Utility to free all memory allocated by the scheduler to hold a TCB,
  * including the stack pointed to by the TCB.
- *
  * This does not free memory allocated by the task itself (i.e. memory
  * allocated by calls to pvPortMalloc from within the tasks application code).
  */
@@ -472,7 +463,6 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
  * Fills an TaskStatus_t structure with information on each task that is
  * referenced from the pxList list (which may be a ready list, a delayed list,
  * a suspended list, etc.).
- *
  * THIS FUNCTION IS INTENDED FOR DEBUGGING ONLY, AND SHOULD NOT BE CALLED FROM
  * NORMAL APPLICATION CODE.
  */
@@ -509,7 +499,6 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
 /*
  * Return the amount of time, in ticks, that will pass before the kernel will
  * next move a task from the Blocked state to the Running state.
- *
  * This conditional compilation should use inequality to 0, not equality to 1.
  * This is to ensure portSUPPRESS_TICKS_AND_SLEEP() can be called when user
  * defined low power mode implementations require configUSE_TICKLESS_IDLE to be
@@ -862,7 +851,7 @@ static void prvInitialiseNewTask( TaskFunction_t pxTaskCode,
 
             /* Check the alignment of the calculated top of stack is correct. */
             configASSERT( ( ( ( portPOINTER_SIZE_TYPE ) pxTopOfStack & ( portPOINTER_SIZE_TYPE ) portBYTE_ALIGNMENT_MASK ) == 0UL ) );
-
+            pxNewTCB->uxSizeOfStack = ulStackDepth;   /*< Support For CmBacktrace >*/
             #if ( configRECORD_STACK_HIGH_ADDRESS == 1 )
                 {
                     /* Also record the stack's high address, which may assist
@@ -1359,7 +1348,6 @@ static void prvAddNewTaskToReadyList( TCB_t * pxNewTCB )
                  * scheduler is suspended will not get placed in the ready
                  * list or removed from the blocked list until the scheduler
                  * is resumed.
-                 *
                  * This task cannot be in an event list as it is the currently
                  * executing task. */
                 prvAddCurrentTaskToDelayedList( xTicksToDelay, pdFALSE );
@@ -3105,12 +3093,10 @@ void vTaskPlaceOnEventList( List_t * const pxEventList,
     /* Place the event list item of the TCB in the appropriate event list.
      * This is placed in the list in priority order so the highest priority task
      * is the first to be woken by the event.
-     *
      * Note: Lists are sorted in ascending order by ListItem_t.xItemValue.
      * Normally, the xItemValue of a TCB's ListItem_t members is:
      *      xItemValue = ( configMAX_PRIORITIES - uxPriority )
      * Therefore, the event list is sorted in descending priority order.
-     *
      * The queue that contains the event list is locked, preventing
      * simultaneous access from interrupts. */
     vListInsert( pxEventList, &( pxCurrentTCB->xEventListItem ) );
@@ -3191,11 +3177,9 @@ BaseType_t xTaskRemoveFromEventList( const List_t * const pxEventList )
     /* The event list is sorted in priority order, so the first in the list can
      * be removed as it is known to be the highest priority.  Remove the TCB from
      * the delayed list, and add it to the ready list.
-     *
      * If an event is for a queue that is locked then this function will never
      * get called - the lock count on the queue will get modified instead.  This
      * means exclusive access to the event list is guaranteed here.
-     *
      * This function assumes that a check has already been made to ensure that
      * pxEventList is not empty. */
     pxUnblockedTCB = listGET_OWNER_OF_HEAD_ENTRY( pxEventList ); /*lint !e9079 void * is used as this macro is used with timers and co-routines too.  Alignment is known to be fine as the type of the pointer stored and retrieved is the same. */
@@ -3431,12 +3415,9 @@ void vTaskMissedYield( void )
  * -----------------------------------------------------------
  * The Idle task.
  * ----------------------------------------------------------
- *
  * The portTASK_FUNCTION() macro is used to allow port/compiler specific
  * language extensions.  The equivalent prototype for this function is:
- *
  * void prvIdleTask( void *pvParameters );
- *
  */
 static portTASK_FUNCTION( prvIdleTask, pvParameters )
 {
@@ -3473,7 +3454,6 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )
                  * timesliced.  If a task that is sharing the idle priority is ready
                  * to run then the idle task should yield before the end of the
                  * timeslice.
-                 *
                  * A critical region is not required here as we are just reading from
                  * the list, and an occasional incorrect value will not matter.  If
                  * the ready list at the idle priority contains more than one task
@@ -4445,17 +4425,14 @@ static void prvResetNextTaskUnblockTime( void )
 
         /*
          * PLEASE NOTE:
-         *
          * This function is provided for convenience only, and is used by many
          * of the demo applications.  Do not consider it to be part of the
          * scheduler.
-         *
          * vTaskList() calls uxTaskGetSystemState(), then formats part of the
          * uxTaskGetSystemState() output into a human readable table that
          * displays task: names, states, priority, stack usage and task number.
          * Stack usage specified as the number of unused StackType_t words stack can hold
          * on top of stack - not the number of bytes.
-         *
          * vTaskList() has a dependency on the sprintf() C library function that
          * might bloat the code size, use a lot of stack, and provide different
          * results on different platforms.  An alternative, tiny, third party,
@@ -4463,7 +4440,6 @@ static void prvResetNextTaskUnblockTime( void )
          * many of the FreeRTOS/Demo sub-directories in a file called
          * printf-stdarg.c (note printf-stdarg.c does not provide a full
          * snprintf() implementation!).
-         *
          * It is recommended that production systems call uxTaskGetSystemState()
          * directly to get access to raw stats data, rather than indirectly
          * through a call to vTaskList().
@@ -4557,16 +4533,13 @@ static void prvResetNextTaskUnblockTime( void )
 
         /*
          * PLEASE NOTE:
-         *
          * This function is provided for convenience only, and is used by many
          * of the demo applications.  Do not consider it to be part of the
          * scheduler.
-         *
          * vTaskGetRunTimeStats() calls uxTaskGetSystemState(), then formats part
          * of the uxTaskGetSystemState() output into a human readable table that
          * displays the amount of time each task has spent in the Running state
          * in both absolute and percentage terms.
-         *
          * vTaskGetRunTimeStats() has a dependency on the sprintf() C library
          * function that might bloat the code size, use a lot of stack, and
          * provide different results on different platforms.  An alternative,
@@ -4574,7 +4547,6 @@ static void prvResetNextTaskUnblockTime( void )
          * sprintf() is provided in many of the FreeRTOS/Demo sub-directories in
          * a file called printf-stdarg.c (note printf-stdarg.c does not provide
          * a full snprintf() implementation!).
-         *
          * It is recommended that production systems call uxTaskGetSystemState()
          * directly to get access to raw stats data, rather than indirectly
          * through a call to vTaskGetRunTimeStats().
@@ -5440,3 +5412,48 @@ static void prvAddCurrentTaskToDelayedList( TickType_t xTicksToWait,
     #endif
 
 #endif /* if ( configINCLUDE_FREERTOS_TASK_C_ADDITIONS_H == 1 ) */
+
+
+/*-----------------------------------------------------------*/
+/*< Support For CmBacktrace >*/
+//uint32_t * vTaskStackAddr()
+//{
+//    return pxCurrentTCB->pxStack;
+//}
+
+//uint32_t vTaskStackSize()
+//{
+//    #if ( portSTACK_GROWTH > 0 )
+//    
+//    return (pxNewTCB->pxEndOfStack - pxNewTCB->pxStack + 1);
+//    
+//    #else /* ( portSTACK_GROWTH > 0 )*/
+//    
+//    return pxCurrentTCB->uxSizeOfStack;
+//    
+//    #endif /* ( portSTACK_GROWTH > 0 )*/
+//}
+
+//char * vTaskName()
+//{
+//    return pxCurrentTCB->pcTaskName;
+//}
+
+//void TaskTcbPrintf(void)
+//{
+//        printf("\"pcbcount\",    %d,\r\n", configMAX_PRIORITIES);
+//        printf("\"tskTCB_pxTopOfStack_off\", %d,\r\n",          (int)&((((struct tskTaskControlBlock*)0)->pxTopOfStack)));       
+//        printf("\"tskTCB_uxPriority_off\",   %d,\r\n",          (int)&((((struct tskTaskControlBlock*)0)->uxPriority)));
+//        printf("\"tskTCB_pxStack_off\",      %d,\r\n",          (int)&((((struct tskTaskControlBlock*)0)->pxStack)));
+//        printf("\"tskTCB_pcTaskName_off\",      %d,\r\n",       (int)&((((struct tskTaskControlBlock*)0)->pcTaskName)));
+//        printf("\"tskTCB_ulRunTimeCounter_off\",       %d,\r\n",(int)&((((struct tskTaskControlBlock*)0)->ulRunTimeCounter)));         
+//}
+
+
+//void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) 
+//{
+//	printf("task %s overflow\n", pcTaskName);
+//}
+
+/*-----------------------------------------------------------*/
+

@@ -1,6 +1,6 @@
 #ifndef _GSM_H_
 #define _GSM_H_
-#include "bsp.h"
+#include "./SYSTEM/sys/sys.h"
 
 /* ²ÎÊý */
 #define GSM_TCP_CONNECT_TIME (3)
@@ -24,10 +24,6 @@ void gsm_set_tcp_cmd(uint8_t cmd);
 void gsm_set_network_reset_function(void);
 void gsm_set_module_reset_function(void);
 
-int8_t gsm_gps_task_function(void);
-double gsm_get_location_information_function(uint8_t mode);
-void gsm_run_gps_task_function(void);
-void *gsm_get_gprs_information_function(void);
 
 int8_t gsm_network_status_check(void);
 #endif

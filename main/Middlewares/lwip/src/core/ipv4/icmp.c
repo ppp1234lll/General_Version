@@ -1,16 +1,13 @@
 /**
  * @file
  * ICMP - Internet Control Message Protocol
- *
  */
 
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -18,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -29,11 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 /* Some ICMP messages should be passed to the transport protocols. This
@@ -70,10 +63,8 @@ static void icmp_send_response(struct pbuf *p, u8_t type, u8_t code);
 
 /**
  * Processes ICMP input packets, called from ip_input().
- *
  * Currently only processes icmp echo requests and sends
  * out the echo response.
- *
  * @param p the icmp echo request packet, p->payload pointing to the icmp header
  * @param inp the netif on which this packet was received
  */
@@ -114,7 +105,7 @@ icmp_input(struct pbuf *p, struct netif *inp)
       /* This is OK, echo reply might have been parsed by a raw PCB
          (as obviously, an echo request has been sent, too). */
       MIB2_STATS_INC(mib2.icmpinechoreps);
-		lwip_ping_echo_reply(); // 监测到应答
+        lwip_ping_echo_reply(); // 监测到应答
       break;
     case ICMP_ECHO:
       MIB2_STATS_INC(mib2.icmpinechos);
@@ -302,7 +293,6 @@ icmperr:
  * Send an icmp 'destination unreachable' packet, called from ip_input() if
  * the transport layer protocol is unknown and from udp_input() if the local
  * port is not bound.
- *
  * @param p the input packet for which the 'unreachable' should be sent,
  *          p->payload pointing to the IP header
  * @param t type of the 'unreachable' packet
@@ -317,7 +307,6 @@ icmp_dest_unreach(struct pbuf *p, enum icmp_dur_type t)
 #if IP_FORWARD || IP_REASSEMBLY
 /**
  * Send a 'time exceeded' packet, called from ip_forward() if TTL is 0.
- *
  * @param p the input packet for which the 'time exceeded' should be sent,
  *          p->payload pointing to the IP header
  * @param t type of the 'time exceeded' packet
@@ -333,7 +322,6 @@ icmp_time_exceeded(struct pbuf *p, enum icmp_te_type t)
 
 /**
  * Send an icmp packet in response to an incoming packet.
- *
  * @param p the input packet for which the 'unreachable' should be sent,
  *          p->payload pointing to the IP header
  * @param type Type of the ICMP header

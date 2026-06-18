@@ -6,43 +6,33 @@
 /**
  * @defgroup pbuf Packet buffers (PBUF)
  * @ingroup infrastructure
- *
  * Packets are built from the pbuf data structure. It supports dynamic
  * memory allocation for packet contents or can reference externally
  * managed packet contents both in RAM and ROM. Quick allocation for
  * incoming packets is provided through pools with fixed sized pbufs.
- *
  * A packet may span over multiple pbufs, chained as a singly linked
  * list. This is called a "pbuf chain".
- *
  * Multiple packets may be queued, also using this singly linked list.
  * This is called a "packet queue".
- *
  * So, a packet queue consists of one or more pbuf chains, each of
  * which consist of one or more pbufs. CURRENTLY, PACKET QUEUES ARE
  * NOT SUPPORTED!!! Use helper structs to queue multiple packets.
- *
  * The differences between a pbuf chain and a packet queue are very
  * precise but subtle.
- *
  * The last pbuf of a packet has a ->tot_len field that equals the
  * ->len field. It can be found by traversing the list. If the last
  * pbuf of a packet has a ->next field other than NULL, more packets
  * are on the queue.
- *
  * Therefore, looping through a pbuf of a single packet, has an
  * loop end condition (tot_len == p->len), NOT (next == NULL).
- *
  * Example of custom pbuf usage: @ref zerocopyrx
  */
 
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -50,7 +40,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -61,11 +50,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 #include "lwip/opt.h"
@@ -117,7 +103,6 @@ volatile u8_t pbuf_free_ooseq_pending;
  * Attempt to reclaim some memory from queued out-of-sequence TCP segments
  * if we run out of pool pbufs. It's better to give priority to new packets
  * if we're running out.
- *
  * This must be done in the correct thread context therefore this function
  * can only be used with NO_SYS=0 and through tcpip_callback.
  */
@@ -193,16 +178,13 @@ pbuf_init_alloced_pbuf(struct pbuf *p, void *payload, u16_t tot_len, u16_t len, 
 /**
  * @ingroup pbuf
  * Allocates a pbuf of the given type (possibly a chain for PBUF_POOL type).
- *
  * The actual memory allocated for the pbuf is determined by the
  * layer at which the pbuf is allocated and the requested size
  * (from the size parameter).
- *
  * @param layer header size
  * @param length size of the pbuf's payload
  * @param type this parameter decides how and where the pbuf
  * should be allocated as follows:
- *
  * - PBUF_RAM: buffer memory for pbuf is allocated as one large
  *             chunk. This includes protocol headers as well.
  * - PBUF_ROM: no buffer memory is allocated for the pbuf, even for
@@ -218,7 +200,6 @@ pbuf_init_alloced_pbuf(struct pbuf *p, void *payload, u16_t tot_len, u16_t len, 
  *             then pbuf_take should be called to copy the buffer.
  * - PBUF_POOL: the pbuf is allocated as a pbuf chain, with pbufs from
  *              the pbuf pool that is allocated during pbuf_init().
- *
  * @return the allocated pbuf. If multiple pbufs where allocated, this
  * is the first pbuf of a pbuf chain.
  */
@@ -305,16 +286,13 @@ pbuf_alloc(pbuf_layer layer, u16_t length, pbuf_type type)
  * @ingroup pbuf
  * Allocates a pbuf for referenced data.
  * Referenced data can be volatile (PBUF_REF) or long-lived (PBUF_ROM).
- *
  * The actual memory allocated for the pbuf is determined by the
  * layer at which the pbuf is allocated and the requested size
  * (from the size parameter).
- *
  * @param payload referenced payload
  * @param length size of the pbuf's payload
  * @param type this parameter decides how and where the pbuf
  * should be allocated as follows:
- *
  * - PBUF_ROM: It is assumed that the memory used is really
  *             similar to ROM in that it is immutable and will not be
  *             changed. Memory which is dynamic should generally not
@@ -322,7 +300,6 @@ pbuf_alloc(pbuf_layer layer, u16_t length, pbuf_type type)
  * - PBUF_REF: It is assumed that the pbuf is only
  *             being used in a single thread. If the pbuf gets queued,
  *             then pbuf_take should be called to copy the buffer.
- *
  * @return the allocated pbuf.
  */
 struct pbuf *
@@ -348,7 +325,6 @@ pbuf_alloc_reference(void *payload, u16_t length, pbuf_type type)
  * @ingroup pbuf
  * Initialize a custom pbuf (already allocated).
  * Example of custom pbuf usage: @ref zerocopyrx
- *
  * @param l header size
  * @param length size of the pbuf's payload
  * @param type type of the pbuf (only used to treat the pbuf accordingly, as
@@ -387,17 +363,13 @@ pbuf_alloced_custom(pbuf_layer l, u16_t length, pbuf_type type, struct pbuf_cust
 /**
  * @ingroup pbuf
  * Shrink a pbuf chain to a desired length.
- *
  * @param p pbuf to shrink.
  * @param new_len desired new length of pbuf chain
- *
  * Depending on the desired length, the first few pbufs in a chain might
  * be skipped and left unchanged. The new last pbuf in the chain will be
  * resized, and any remaining pbufs will be freed.
- *
  * @note If the pbuf is ROM/REF, only the ->tot_len and ->len fields are adjusted.
  * @note May not be called on a packet queue.
- *
  * @note Despite its name, pbuf_realloc cannot grow the size of a pbuf (chain).
  */
 void
@@ -466,13 +438,10 @@ pbuf_realloc(struct pbuf *p, u16_t new_len)
 /**
  * Adjusts the payload pointer to reveal headers in the payload.
  * @see pbuf_add_header.
- *
  * @param p pbuf to change the header size.
  * @param header_size_increment Number of bytes to increment header size.
  * @param force Allow 'header_size_increment > 0' for PBUF_REF/PBUF_ROM types
- *
  * @return non-zero on failure, zero on success.
- *
  */
 static u8_t
 pbuf_add_header_impl(struct pbuf *p, size_t header_size_increment, u8_t force)
@@ -534,23 +503,17 @@ pbuf_add_header_impl(struct pbuf *p, size_t header_size_increment, u8_t force)
 
 /**
  * Adjusts the payload pointer to reveal headers in the payload.
- *
  * Adjusts the ->payload pointer so that space for a header
  * appears in the pbuf payload.
- *
  * The ->payload, ->tot_len and ->len fields are adjusted.
- *
  * @param p pbuf to change the header size.
  * @param header_size_increment Number of bytes to increment header size which
  *          increases the size of the pbuf. New space is on the front.
  *          If header_size_increment is 0, this function does nothing and returns successful.
- *
  * PBUF_ROM and PBUF_REF type buffers cannot have their sizes increased, so
  * the call will fail. A check is made that the increase in header size does
  * not move the payload pointer in front of the start of the buffer.
- *
  * @return non-zero on failure, zero on success.
- *
  */
 u8_t
 pbuf_add_header(struct pbuf *p, size_t header_size_increment)
@@ -570,18 +533,14 @@ pbuf_add_header_force(struct pbuf *p, size_t header_size_increment)
 
 /**
  * Adjusts the payload pointer to hide headers in the payload.
- *
  * Adjusts the ->payload pointer so that space for a header
  * disappears in the pbuf payload.
- *
  * The ->payload, ->tot_len and ->len fields are adjusted.
- *
  * @param p pbuf to change the header size.
  * @param header_size_decrement Number of bytes to decrement header size which
  *          decreases the size of the pbuf.
  *          If header_size_decrement is 0, this function does nothing and returns successful.
  * @return non-zero on failure, zero on success.
- *
  */
 u8_t
 pbuf_remove_header(struct pbuf *p, size_t header_size_decrement)
@@ -629,23 +588,18 @@ pbuf_header_impl(struct pbuf *p, s16_t header_size_increment, u8_t force)
 
 /**
  * Adjusts the payload pointer to hide or reveal headers in the payload.
- *
  * Adjusts the ->payload pointer so that space for a header
  * (dis)appears in the pbuf payload.
- *
  * The ->payload, ->tot_len and ->len fields are adjusted.
- *
  * @param p pbuf to change the header size.
  * @param header_size_increment Number of bytes to increment header size which
  * increases the size of the pbuf. New space is on the front.
  * (Using a negative value decreases the header size.)
  * If header_size_increment is 0, this function does nothing and returns successful.
- *
  * PBUF_ROM and PBUF_REF type buffers cannot have their sizes increased, so
  * the call will fail. A check is made that the increase in header size does
  * not move the payload pointer in front of the start of the buffer.
  * @return non-zero on failure, zero on success.
- *
  */
 u8_t
 pbuf_header(struct pbuf *p, s16_t header_size_increment)
@@ -664,7 +618,6 @@ pbuf_header_force(struct pbuf *p, s16_t header_size_increment)
 }
 
 /** Similar to pbuf_header(-size) but de-refs header pbufs for (size >= p->len)
- *
  * @param q pbufs to operate on
  * @param size The number of bytes to remove from the beginning of the pbuf list.
  *             While size >= p->len, pbufs are freed.
@@ -696,34 +649,25 @@ pbuf_free_header(struct pbuf *q, u16_t size)
  * @ingroup pbuf
  * Dereference a pbuf chain or queue and deallocate any no-longer-used
  * pbufs at the head of this chain or queue.
- *
  * Decrements the pbuf reference count. If it reaches zero, the pbuf is
  * deallocated.
- *
  * For a pbuf chain, this is repeated for each pbuf in the chain,
  * up to the first pbuf which has a non-zero reference count after
  * decrementing. So, when all reference counts are one, the whole
  * chain is free'd.
- *
  * @param p The pbuf (chain) to be dereferenced.
- *
  * @return the number of pbufs that were de-allocated
  * from the head of the chain.
- *
  * @note the reference counter of a pbuf equals the number of pointers
  * that refer to the pbuf (or into the pbuf).
- *
  * @internal examples:
- *
  * Assuming existing chains a->b->c with the following reference
  * counts, calling pbuf_free(a) results in:
- *
  * 1->2->3 becomes ...1->3
  * 3->3->3 becomes 2->3->3
  * 1->1->2 becomes ......1
  * 2->1->1 becomes 1->1->1
  * 1->1->1 becomes .......
- *
  */
 u8_t
 pbuf_free(struct pbuf *p)
@@ -805,7 +749,6 @@ pbuf_free(struct pbuf *p)
 
 /**
  * Count number of pbufs in a chain
- *
  * @param p first pbuf of chain
  * @return the number of pbufs in a chain
  */
@@ -825,9 +768,7 @@ pbuf_clen(const struct pbuf *p)
 /**
  * @ingroup pbuf
  * Increment the reference count of the pbuf.
- *
  * @param p pbuf to increase reference counter of
- *
  */
 void
 pbuf_ref(struct pbuf *p)
@@ -843,14 +784,11 @@ pbuf_ref(struct pbuf *p)
  * @ingroup pbuf
  * Concatenate two pbufs (each may be a pbuf chain) and take over
  * the caller's reference of the tail pbuf.
- *
  * @note The caller MAY NOT reference the tail pbuf afterwards.
  * Use pbuf_chain() for that purpose.
- *
  * This function explicitly does not check for tot_len overflow to prevent
  * failing to queue too long pbufs. This can produce invalid pbufs, so
  * handle with care!
- *
  * @see pbuf_chain()
  */
 void
@@ -882,19 +820,15 @@ pbuf_cat(struct pbuf *h, struct pbuf *t)
 /**
  * @ingroup pbuf
  * Chain two pbufs (or pbuf chains) together.
- *
  * The caller MUST call pbuf_free(t) once it has stopped
  * using it. Use pbuf_cat() instead if you no longer use t.
- *
  * @param h head pbuf (chain)
  * @param t tail pbuf (chain)
  * @note The pbufs MUST belong to the same packet.
  * @note MAY NOT be called on a packet queue.
- *
  * The ->tot_len fields of all pbufs of the head chain are adjusted.
  * The ->next field of the last pbuf of the head chain is adjusted.
  * The ->ref field of the first pbuf of the tail chain is adjusted.
- *
  */
 void
 pbuf_chain(struct pbuf *h, struct pbuf *t)
@@ -907,7 +841,6 @@ pbuf_chain(struct pbuf *h, struct pbuf *t)
 
 /**
  * Dechains the first pbuf from its succeeding pbufs in the chain.
- *
  * Makes p->tot_len field equal to p->len.
  * @param p pbuf to dechain
  * @return remainder of the pbuf chain, or NULL if it was de-allocated.
@@ -947,12 +880,9 @@ pbuf_dechain(struct pbuf *p)
 /**
  * @ingroup pbuf
  * Copy the contents of one packet buffer into another.
- *
  * @note Only one packet is copied, no packet queue!
- *
  * @param p_to pbuf destination of the copy
  * @param p_from pbuf source of the copy
- *
  * @return ERR_OK if pbuf was copied
  *         ERR_ARG if one of the pbufs is NULL or p_to is not big
  *                 enough to hold p_from
@@ -971,15 +901,12 @@ pbuf_copy(struct pbuf *p_to, const struct pbuf *p_from)
 /**
  * @ingroup pbuf
  * Copy part or all of one packet buffer into another, to a specified offset.
- *
  * @note Only data in one packet is copied, no packet queue!
  * @note Argument order is shared with pbuf_copy, but different than pbuf_copy_partial.
- *
  * @param p_to pbuf destination of the copy
  * @param p_from pbuf source of the copy
  * @param copy_len number of bytes to copy
  * @param offset offset in destination pbuf where to copy to
- *
  * @return ERR_OK if copy_len bytes were copied
  *         ERR_ARG if one of the pbufs is NULL or p_from is shorter than copy_len
  *                 or p_to is not big enough to hold copy_len at offset
@@ -1049,7 +976,6 @@ pbuf_copy_partial_pbuf(struct pbuf *p_to, const struct pbuf *p_from, u16_t copy_
  * @ingroup pbuf
  * Copy (part of) the contents of a packet buffer
  * to an application supplied buffer.
- *
  * @param buf the pbuf from which to copy data
  * @param dataptr the application supplied buffer
  * @param len length of data to copy (dataptr must be big enough). No more
@@ -1095,7 +1021,6 @@ pbuf_copy_partial(const struct pbuf *buf, void *dataptr, u16_t len, u16_t offset
  * Get part of a pbuf's payload as contiguous memory. The returned memory is
  * either a pointer into the pbuf's payload or, if split over multiple pbufs,
  * a copy into the user-supplied buffer.
- *
  * @param p the pbuf from which to copy data
  * @param buffer the application supplied buffer. May be NULL if the caller does not
  * want to copy. In this case, offset + len should be checked against p->tot_len,
@@ -1146,7 +1071,6 @@ pbuf_get_contiguous(const struct pbuf *p, void *buffer, size_t bufsize, u16_t le
  * in two parts. The tot_len of the modified packet queue will likely be
  * smaller than 64K.
  * 'packet queues' are not supported by this function.
- *
  * @param p the pbuf queue to be split
  * @param rest pointer to store the remainder (after the first 64K)
  */
@@ -1208,7 +1132,6 @@ pbuf_skip_const(const struct pbuf *in, u16_t in_offset, u16_t *out_offset)
 /**
  * @ingroup pbuf
  * Skip a number of bytes at the start of a pbuf
- *
  * @param in input pbuf
  * @param in_offset offset to skip
  * @param out_offset resulting offset in the returned pbuf
@@ -1225,11 +1148,9 @@ pbuf_skip(struct pbuf *in, u16_t in_offset, u16_t *out_offset)
  * @ingroup pbuf
  * Copy application supplied data into a pbuf.
  * This function can only be used to copy the equivalent of buf->tot_len data.
- *
  * @param buf pbuf to fill with data
  * @param dataptr application supplied data buffer
  * @param len length of the application supplied data buffer
- *
  * @return ERR_OK if successful, ERR_MEM if the pbuf is not big enough
  */
 err_t
@@ -1268,12 +1189,10 @@ pbuf_take(struct pbuf *buf, const void *dataptr, u16_t len)
 /**
  * @ingroup pbuf
  * Same as pbuf_take() but puts data at an offset
- *
  * @param buf pbuf to fill with data
  * @param dataptr application supplied data buffer
  * @param len length of the application supplied data buffer
  * @param offset offset in pbuf where to copy dataptr to
- *
  * @return ERR_OK if successful, ERR_MEM if the pbuf is not big enough
  */
 err_t
@@ -1304,13 +1223,10 @@ pbuf_take_at(struct pbuf *buf, const void *dataptr, u16_t len, u16_t offset)
 /**
  * @ingroup pbuf
  * Creates a single pbuf out of a queue of pbufs.
- *
  * @remark: Either the source pbuf 'p' is freed by this function or the original
  *          pbuf 'p' is returned, therefore the caller has to check the result!
- *
  * @param p the source pbuf
  * @param layer pbuf_layer of the new pbuf
- *
  * @return a new, single pbuf (p->next is NULL)
  *         or the old pbuf if allocation fails
  */
@@ -1334,12 +1250,10 @@ pbuf_coalesce(struct pbuf *p, pbuf_layer layer)
  * @ingroup pbuf
  * Allocates a new pbuf of same length (via pbuf_alloc()) and copies the source
  * pbuf into this new pbuf (using pbuf_copy()).
- *
  * @param layer pbuf_layer of the new pbuf
  * @param type this parameter decides how and where the pbuf should be allocated
  *             (@see pbuf_alloc())
  * @param p the source pbuf
- *
  * @return a new pbuf or NULL if allocation fails
  */
 struct pbuf *
@@ -1361,7 +1275,6 @@ pbuf_clone(pbuf_layer layer, pbuf_type type, struct pbuf *p)
 /**
  * Copies data into a single pbuf (*not* into a pbuf queue!) and updates
  * the checksum while copying
- *
  * @param p the pbuf to copy data into
  * @param start_offset offset of p->payload where to copy the data to
  * @param dataptr data to copy into the pbuf
@@ -1402,7 +1315,6 @@ pbuf_fill_chksum(struct pbuf *p, u16_t start_offset, const void *dataptr,
  * @ingroup pbuf
  * Get one byte from the specified position in a pbuf
  * WARNING: returns zero for offset >= p->tot_len
- *
  * @param p pbuf to parse
  * @param offset offset into p of the byte to return
  * @return byte at an offset into p OR ZERO IF 'offset' >= p->tot_len
@@ -1420,7 +1332,6 @@ pbuf_get_at(const struct pbuf *p, u16_t offset)
 /**
  * @ingroup pbuf
  * Get one byte from the specified position in a pbuf
- *
  * @param p pbuf to parse
  * @param offset offset into p of the byte to return
  * @return byte at an offset into p [0..0xFF] OR negative if 'offset' >= p->tot_len
@@ -1442,7 +1353,6 @@ pbuf_try_get_at(const struct pbuf *p, u16_t offset)
  * @ingroup pbuf
  * Put one byte to the specified position in a pbuf
  * WARNING: silently ignores offset >= p->tot_len
- *
  * @param p pbuf to fill
  * @param offset offset into p of the byte to write
  * @param data byte to write at an offset into p
@@ -1462,7 +1372,6 @@ pbuf_put_at(struct pbuf *p, u16_t offset, u8_t data)
 /**
  * @ingroup pbuf
  * Compare pbuf contents at specified offset with memory s2, both of length n
- *
  * @param p pbuf to compare
  * @param offset offset into p at which to start comparing
  * @param s2 buffer to compare
@@ -1504,7 +1413,6 @@ pbuf_memcmp(const struct pbuf *p, u16_t offset, const void *s2, u16_t n)
  * @ingroup pbuf
  * Find occurrence of mem (with length mem_len) in pbuf p, starting at offset
  * start_offset.
- *
  * @param p pbuf to search, maximum length is 0xFFFE since 0xFFFF is used as
  *        return value 'not found'
  * @param mem search for the contents of this buffer
@@ -1533,7 +1441,6 @@ pbuf_memfind(const struct pbuf *p, const void *mem, u16_t mem_len, u16_t start_o
  * start_offset
  * WARNING: in contrast to strstr(), this one does not stop at the first \0 in
  * the pbuf/source string!
- *
  * @param p pbuf to search, maximum length is 0xFFFE since 0xFFFF is used as
  *        return value 'not found'
  * @param substr string to search for in p, maximum length is 0xFFFE

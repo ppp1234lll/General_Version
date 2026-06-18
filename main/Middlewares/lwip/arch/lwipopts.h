@@ -5,14 +5,11 @@
   * @brief   lwIP Options Configuration.
   ******************************************************************************
   * @attention
-  *
   * Copyright (c) 2017 STMicroelectronics.
   * All rights reserved.
-  *
   * This software is licensed under terms that can be found in the LICENSE file
   * in the root directory of this software component.
   * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
   ******************************************************************************
   */
 #ifndef __LWIPOPTS_H__
@@ -104,7 +101,7 @@ SYS_LIGHTWEIGHT_PROT==1:如果您确实需要任务间保护
 #define LWIP_DNS                        1
 
 /* ---------- 组播 选项 ---------- */
-#define LWIP_IGMP 				        1	// 开启组播功能
+#define LWIP_IGMP                         1    // 开启组播功能
 #define LWIP_RAW                        1
 
 /* ---------- DHCP 选项 ---------- */

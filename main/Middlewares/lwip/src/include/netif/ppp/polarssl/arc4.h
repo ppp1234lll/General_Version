@@ -1,12 +1,8 @@
 /**
  * \file arc4.h
- *
  *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
  *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
  *  All rights reserved.
- *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -56,7 +52,6 @@ extern "C" {
 
 /**
  * \brief          ARC4 key schedule
- *
  * \param ctx      ARC4 context to be initialized
  * \param key      the secret key
  * \param keylen   length of the key
@@ -65,7 +60,6 @@ void arc4_setup( arc4_context *ctx, unsigned char *key, int keylen );
 
 /**
  * \brief          ARC4 cipher function
- *
  * \param ctx      ARC4 context
  * \param buf      buffer to be processed
  * \param buflen   amount of data in buf

@@ -1,10 +1,8 @@
 /*
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -12,7 +10,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -23,11 +20,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 /* This httpd supports for a
@@ -38,40 +32,30 @@
  * Additionally, a simple common
  * gateway interface (CGI) handling mechanism has been added to allow clients
  * to hook functions to particular request URIs.
- *
  * To enable SSI support, define label LWIP_HTTPD_SSI in lwipopts.h.
  * To enable CGI support, define label LWIP_HTTPD_CGI in lwipopts.h.
- *
  * By default, the server assumes that HTTP headers are already present in
  * each file stored in the file system.  By defining LWIP_HTTPD_DYNAMIC_HEADERS in
  * lwipopts.h, this behavior can be changed such that the server inserts the
  * headers automatically based on the extension of the file being served.  If
  * this mode is used, be careful to ensure that the file system image used
  * does not already contain the header information.
- *
  * File system images without headers can be created using the makefsfile
  * tool with the -h command line option.
- *
- *
  * Notes about valid SSI tags
  * --------------------------
- *
  * The following assumptions are made about tags used in SSI markers:
- *
  * 1. No tag may contain '-' or whitespace characters within the tag name.
  * 2. Whitespace is allowed between the tag leadin "<!--#" and the start of
  *    the tag name and between the tag name and the leadout string "-->".
  * 3. The maximum tag name length is LWIP_HTTPD_MAX_TAG_NAME_LEN, currently 8 characters.
- *
  * Notes on CGI usage
  * ------------------
- *
  * The simple CGI support offered here works with GET method requests only
  * and can handle up to 16 parameters encoded into the URI. The handler
  * function may not write directly to the HTTP output but must return a
  * filename that the HTTP server will send to the browser as a response to
  * the incoming CGI request.
- *
  * @todo:
  * - don't use mem_malloc() (for SSI/dynamic headers)
  * - split too long functions into multiple smaller functions?
@@ -97,7 +81,6 @@
 
 /** Set this to 1 and add the next line to lwippools.h to use a memp pool
  * for allocating struct http_state instead of the heap:
- *
  * LWIP_MEMPOOL(HTTPD_STATE, 20, 100, "HTTPD_STATE")
  */
 #ifndef HTTPD_USE_MEM_POOL
@@ -222,7 +205,7 @@
 #endif /* LWIP_HTTPD_SSI */
 #endif
 
-/*Default: headers are sent from ROM */													
+/*Default: headers are sent from ROM */                                                    
 //默认:从ROM中发送头文件
 #ifndef HTTP_IS_HDR_VOLATILE
 #define HTTP_IS_HDR_VOLATILE(hs, ptr) 0
@@ -454,7 +437,6 @@ static void http_state_free(struct http_state *hs)
 }
 
 /** Call tcp_write() in a loop trying smaller and smaller length
- *
  * @param pcb tcp_pcb to send
  * @param ptr Data to send
  * @param length Length of data to send (in/out: on return, contains the
@@ -490,7 +472,6 @@ static err_t http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_
 /**
  * The connection shall be actively closed.
  * Reset the sent- and recv-callbacks.
- *
  * @param pcb the tcp pcb to reset callbacks
  * @param hs connection state to free
  */
@@ -532,7 +513,6 @@ static void http_close_conn(struct tcp_pcb *pcb, struct http_state *hs)
  * Extract URI parameters from the parameter-part of an URI in the form
  * "test.cgi?x=y" @todo: better explanation!
  * Pointers to the parameters are stored in hs->param_vals.
- *
  * @param hs http connection state
  * @param params pointer to the NULL-terminated parameter string from the URI
  * @return number of parameters extracted
@@ -550,7 +530,7 @@ static int extract_uri_parameters(struct http_state *hs, char *params)
   }
 
   /* Get a pointer to our first parameter */
-	//获取第一个参数的指针
+    //获取第一个参数的指针
   pair = params;
 
   /* Parse up to LWIP_HTTPD_MAX_CGI_PARAMETERS from the passed string and ignore the
@@ -558,16 +538,16 @@ static int extract_uri_parameters(struct http_state *hs, char *params)
   for(loop = 0; (loop < LWIP_HTTPD_MAX_CGI_PARAMETERS) && pair; loop++) {
 
     /* Save the name of the parameter */
-		//保存参数的名字
+        //保存参数的名字
     hs->params[loop] = pair;
 
     /* Remember the start of this name=value pair */
-		//记住name=value对的开始位
+        //记住name=value对的开始位
     equals = pair;
 
     /* Find the start of the next name=value pair and replace the delimiter
      * with a 0 to terminate the previous pair string. */
-		//寻找下一个name=vlaue的开始位,用0替换定界符,终止以前的对字符串
+        //寻找下一个name=vlaue的开始位,用0替换定界符,终止以前的对字符串
     pair = strchr(pair, '&');
     if(pair) {
       *pair = '\0';
@@ -575,7 +555,7 @@ static int extract_uri_parameters(struct http_state *hs, char *params)
     } else {
        /* We didn't find a new parameter so find the end of the URI and
         * replace the space with a '\0' */
-			//我们没有找到新参数,所以查找URI结束位,用'\0'提到空格
+            //我们没有找到新参数,所以查找URI结束位,用'\0'提到空格
         pair = strchr(equals, ' ');
         if(pair) {
             *pair = '\0';
@@ -587,7 +567,7 @@ static int extract_uri_parameters(struct http_state *hs, char *params)
 
     /* Now find the '=' in the previous pair, replace it with '\0' and save
      * the parameter value string. */
-		//现在在以前的对中找到'=',用'\0'替换并且报告村参数的值
+        //现在在以前的对中找到'=',用'\0'替换并且报告村参数的值
     equals = strchr(equals, '=');
     if(equals) {
       *equals = '\0';
@@ -607,9 +587,7 @@ static int extract_uri_parameters(struct http_state *hs, char *params)
  * The tag's name is stored in hs->tag_name (NULL-terminated), the replacement
  * should be written to hs->tag_insert (up to a length of LWIP_HTTPD_MAX_TAG_INSERT_LEN).
  * The amount of data written is stored to hs->tag_insert_len.
- *
  * @todo: return tag_insert_len - maybe it can be removed from struct http_state?
- *
  * @param hs http connection state
  */
 //向文件中添加一个tag
@@ -625,7 +603,7 @@ static void get_tag_insert(struct http_state *hs)
   if(g_pfnSSIHandler && g_ppcTags && g_iNumTags) {
 
     /* Find this tag in the list we have been provided. */
-		//在我们提供的tag表中找出指定的tag
+        //在我们提供的tag表中找出指定的tag
     for(loop = 0; loop < g_iNumTags; loop++) {
       if(strcmp((hs->tag_name), g_ppcTags[loop]) == 0) {
         hs->tag_insert_len = g_pfnSSIHandler(loop, hs->tag_insert,
@@ -681,7 +659,7 @@ static void get_http_headers(struct http_state *pState, char *pszURI)
 
   /* In all cases, the second header we send is the server identification
      so set it here. */
-	//一般情况下,我们发送的第二个头文是服务器的标识
+    //一般情况下,我们发送的第二个头文是服务器的标识
   pState->hdrs[1] = g_psHTTPHeaderStrings[HTTP_HDR_SERVER];
 
   /* Is this a normal file or the special case we use to send back the
@@ -764,7 +742,6 @@ static void get_http_headers(struct http_state *pState, char *pszURI)
 
 /**
  * Try to send more data on this pcb.
- *
  * @param pcb the pcb to send data
  * @param hs connection state
  */
@@ -853,14 +830,14 @@ static u8_t http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
 
   /* Have we run out of file data to send? If so, we need to read the next
    * block from the file. */
-	//我们运行输出的文件数据有没有发送,如果发送的话,我们需要从文件中读下一块
+    //我们运行输出的文件数据有没有发送,如果发送的话,我们需要从文件中读下一块
   if (hs->left == 0) {
 #if LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS
     int count;
 #endif /* LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS */
 
     /* Do we have a valid file handle? */
-		//有没有有效的文件句柄
+        //有没有有效的文件句柄
     if (hs->handle == NULL) {  //没有的话就关闭HTTP连接
       /* No - close the connection. */
       http_close_conn(pcb, hs);
@@ -869,17 +846,17 @@ static u8_t http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
     if (fs_bytes_left(hs->handle) <= 0) {
       /* We reached the end of the file so this request is done.
        * @todo: don't close here for HTTP/1.1? */
-			//如果到了文件的尾端,说明请求完成
+            //如果到了文件的尾端,说明请求完成
       LWIP_DEBUGF(HTTPD_DEBUG, ("End of file.\n"));
       http_close_conn(pcb, hs);//关闭HTTP连接
       return 0;
     }
 #if LWIP_HTTPD_SSI || LWIP_HTTPD_DYNAMIC_HEADERS
     /* Do we already have a send buffer allocated? */
-		//发送缓冲区是否申请内存
+        //发送缓冲区是否申请内存
     if(hs->buf) {  //发送缓冲区申请内存
       /* Yes - get the length of the buffer */
-			//获取缓冲区的长度
+            //获取缓冲区的长度
       count = hs->buf_len;
     } else {  //没有发送缓冲区,因此申请2mss字节长
       /* We don't have a send buffer so allocate one up to 2mss bytes long. */
@@ -894,7 +871,7 @@ static u8_t http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
       } while (count > 100);
 
       /* Did we get a send buffer? If not, return immediately. */
-			//是否有发送缓冲区,没有的话就立即返回
+            //是否有发送缓冲区,没有的话就立即返回
       if (hs->buf == NULL) {
         LWIP_DEBUGF(HTTPD_DEBUG, ("No buff\n"));
         return 0;
@@ -902,21 +879,21 @@ static u8_t http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
     }
 
     /* Read a block of data from the file. */
-		//从文件中读取一个块的数据
+        //从文件中读取一个块的数据
     LWIP_DEBUGF(HTTPD_DEBUG, ("Trying to read %d bytes.\n", count));
 
     count = fs_read(hs->handle, hs->buf, count);  //读取数据
     if(count < 0) {
       /* We reached the end of the file so this request is done.
        * @todo: don't close here for HTTP/1.1? */
-			//如果到达了问价的末尾,说明请求完成
+            //如果到达了问价的末尾,说明请求完成
       LWIP_DEBUGF(HTTPD_DEBUG, ("End of file.\n"));
       http_close_conn(pcb, hs); //关闭连接
       return 1;
     }
 
     /* Set up to send the block of data we just read */
-		//发送我们我们刚刚读取到的数据
+        //发送我们我们刚刚读取到的数据
     LWIP_DEBUGF(HTTPD_DEBUG, ("Read %d bytes.\n", count));
     hs->left = count;
     hs->file = hs->buf;
@@ -937,7 +914,7 @@ static u8_t http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
 
     /* We cannot send more data than space available in the send
        buffer. */
-		//如果不处理shtml文件的话,tag检查就没有必要,直接发送我们从文件中接收到的数据
+        //如果不处理shtml文件的话,tag检查就没有必要,直接发送我们从文件中接收到的数据
     if (tcp_sndbuf(pcb) < hs->left) {
       len = tcp_sndbuf(pcb);
     } else {
@@ -1306,7 +1283,6 @@ static u8_t http_send_data(struct tcp_pcb *pcb, struct http_state *hs)
 
 #if LWIP_HTTPD_SUPPORT_EXTSTATUS
 /** Initialize a http connection with a file to send for an error message
- *
  * @param hs http connection state
  * @param error_nr HTTP error number
  * @return ERR_OK if file was found and hs has been initialized correctly
@@ -1349,7 +1325,6 @@ static err_t http_find_error_file(struct http_state *hs, u16_t error_nr)
 /**
  * Get the file struct for a 404 error page.
  * Tries some file names and returns NULL if none found.
- *
  * @param uri pointer that receives the actual file name URI
  * @return file struct for the error page or NULL no matching file was found
  */
@@ -1393,7 +1368,6 @@ static err_t http_handle_post_finished(struct http_state *hs)
 /** Pass received POST body data to the application and correctly handle
  * returning a response document or closing the connection.
  * ATTENTION: The application is responsible for the pbuf now, so don't free it!
- *
  * @param hs http connection state
  * @param p pbuf to pass to the application
  * @return ERR_OK if passed successfully, another err_t if the response file
@@ -1425,7 +1399,6 @@ static err_t http_post_rxpbuf(struct http_state *hs, struct pbuf *p)
 
 /** Handle a post request. Called from http_parse_request when method 'POST'
  * is found.
- *
  * @param pcb The tcp_pcb which received this packet.
  * @param p The input pbuf (containing the POST header and body).
  * @param hs The http connection state.
@@ -1530,7 +1503,6 @@ static err_t http_post_request(struct tcp_pcb *pcb, struct pbuf **inp, struct ht
 /** A POST implementation can call this function to update the TCP window.
  * This can be used to throttle data reception (e.g. when received data is
  * programmed to flash and data is received faster than programmed).
- *
  * @param connection A connection handle passed to httpd_post_begin for which
  *        httpd_post_finished has *NOT* been called yet!
  * @param recved_len Length of data received (for window update)
@@ -1568,7 +1540,6 @@ void httpd_post_data_recved(void *connection, u16_t recved_len)
 /**
  * When data has been received in the correct state, try to parse it
  * as a HTTP request.
- *
  * @param p the received pbuf
  * @param hs the connection state
  * @param pcb the tcp_pcb which received this packet
@@ -1739,7 +1710,6 @@ badrequest:
 
 /** Try to find the file specified by uri and, if found, initialize hs
  * accordingly.
- *
  * @param hs the connection state
  * @param uri the HTTP header URI
  * @param is_09 1 if the request is HTTP/0.9 (no HTTP headers in response)
@@ -1767,7 +1737,7 @@ static err_t http_find_file(struct http_state *hs, const char *uri, int is_09)
 #endif /* LWIP_HTTPD_SSI */
 
   /* Have we been asked for the default root file? */
-	//有没有请求默认的根文件
+    //有没有请求默认的根文件
   if((uri[0] == '/') &&  (uri[1] == 0)) {
     /* Try each of the configured default filenames until we find one
        that exists. */
@@ -1794,7 +1764,7 @@ static err_t http_find_file(struct http_state *hs, const char *uri, int is_09)
     /* No - we've been asked for a specific file. */
 #if LWIP_HTTPD_CGI   //如果使用CGI的话
     /* First, isolate the base URI (without any parameters) */
-		//首先隔离基础URI(没有任何参数)
+        //首先隔离基础URI(没有任何参数)
     params = (char *)strchr(uri, '?');  //找第一个?
     if (params != NULL) { //URI包含参数
       /* URI contains parameters. NULL-terminate the base URI */
@@ -1803,7 +1773,7 @@ static err_t http_find_file(struct http_state *hs, const char *uri, int is_09)
     }
 
     /* Does the base URI we have isolated correspond to a CGI handler? */
-		//我们找到的隔离URI是否和CGI句柄一致
+        //我们找到的隔离URI是否和CGI句柄一致
     if (g_iNumCGIs && g_pCGIs) {
       for (i = 0; i < g_iNumCGIs; i++) {
         if (strcmp(uri, g_pCGIs[i].pcCGIName) == 0) { //如果uri和浏览器请求的CGI一致
@@ -1811,7 +1781,7 @@ static err_t http_find_file(struct http_state *hs, const char *uri, int is_09)
            * We found a CGI that handles this URI so extract the
            * parameters and call the handler.
            */
-					//我们找到这个URI的句柄,提取参数并且调用handler
+                    //我们找到这个URI的句柄,提取参数并且调用handler
            count = extract_uri_parameters(hs, params);  //提取参数
            uri = g_pCGIs[i].pfnCGIHandler(i, count, hs->params,
                                           hs->param_vals);
@@ -1858,7 +1828,6 @@ static err_t http_find_file(struct http_state *hs, const char *uri, int is_09)
 
 /** Initialize a http connection with a file to send (if found).
  * Called by http_find_file and http_find_error_file.
- *
  * @param hs http connection state
  * @param file file structure to send (or NULL if not found)
  * @param is_09 1 if the request is HTTP/0.9 (no HTTP headers in response)
@@ -1969,7 +1938,6 @@ static err_t http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
  * The poll function is called every 2nd second.
  * If there has been no data sent (which resets the retries) in 8 seconds, close.
  * If the last portion of a file has not been sent in 2 seconds, close.
- *
  * This could be increased, but we don't want to waste resources for bad connections.
  */
 //轮询功能2s调用一次,在8秒钟之内如果没有数据要发送的话就关闭
@@ -2181,7 +2149,6 @@ void httpd_init(void)
 #if LWIP_HTTPD_SSI
 /**
  * Set the SSI handler function.
- *
  * @param ssi_handler the SSI handler function
  * @param tags an array of SSI tag strings to search for in SSI-enabled files
  * @param num_tags number of tags in the 'tags' array
@@ -2208,7 +2175,6 @@ void http_set_ssi_handler(tSSIHandler ssi_handler, const char **tags, int num_ta
 #if LWIP_HTTPD_CGI  //如果使用CGI的话
 /**
  * Set an array of CGI filenames/handler functions
- *
  * @param cgis an array of CGI filenames/handler functions
  * @param num_handlers number of elements in the 'cgis' array
  */

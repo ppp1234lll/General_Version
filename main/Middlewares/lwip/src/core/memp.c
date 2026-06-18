@@ -1,10 +1,8 @@
 /**
  * @file
  * Dynamic pool memory manager
- *
  * lwIP has dedicated pools for many structures (netconn, protocol control blocks,
  * packet buffers, ...). All these pools are managed here.
- *
  * @defgroup mempool Memory pools
  * @ingroup infrastructure
  * Custom memory pools
@@ -14,10 +12,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -25,7 +21,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -36,11 +31,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 #include "lwip/opt.h"
@@ -120,7 +112,6 @@ memp_sanity(const struct memp_desc *desc)
 /**
  * Check if a memp element was victim of an overflow or underflow
  * (e.g. the restricted area after/before it has been altered)
- *
  * @param p the memp element to check
  * @param desc the pool p comes from
  */
@@ -142,7 +133,6 @@ memp_overflow_init_element(struct memp *p, const struct memp_desc *desc)
 #if MEMP_OVERFLOW_CHECK >= 2
 /**
  * Do an overflow check for all elements in every pool.
- *
  * @see memp_overflow_check_element for a description of the check
  */
 static void
@@ -168,7 +158,6 @@ memp_overflow_check_all(void)
 /**
  * Initialize custom memory pool.
  * Related functions: memp_malloc_pool, memp_free_pool
- *
  * @param desc pool to initialize
  */
 void
@@ -217,7 +206,6 @@ memp_init_pool(const struct memp_desc *desc)
 /**
  * Initializes lwIP built-in pools.
  * Related functions: memp_malloc, memp_free
- *
  * Carves out memp_memory into linked lists for each pool-type.
  */
 void
@@ -301,9 +289,7 @@ do_memp_malloc_pool_fn(const struct memp_desc *desc, const char *file, const int
 
 /**
  * Get an element from a custom pool.
- *
  * @param desc the pool to get an element from
- *
  * @return a pointer to the allocated memory or a NULL pointer on error
  */
 void *
@@ -327,9 +313,7 @@ memp_malloc_pool_fn(const struct memp_desc *desc, const char *file, const int li
 
 /**
  * Get an element from a specific pool.
- *
  * @param type the pool to get an element from
- *
  * @return a pointer to the allocated memory or a NULL pointer on error
  */
 void *
@@ -395,7 +379,6 @@ do_memp_free_pool(const struct memp_desc *desc, void *mem)
 
 /**
  * Put a custom pool element back into its pool.
- *
  * @param desc the pool where to put mem
  * @param mem the memp element to free
  */
@@ -412,7 +395,6 @@ memp_free_pool(const struct memp_desc *desc, void *mem)
 
 /**
  * Put an element back into its pool.
- *
  * @param type the pool where to put mem
  * @param mem the memp element to free
  */

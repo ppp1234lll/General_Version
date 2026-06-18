@@ -1,43 +1,33 @@
 /**
  * @file
- *
  * ACD IPv4 Address Conflict Detection
- *
  * This is an IPv4 address conflict detection implementation for the lwIP TCP/IP
  * stack. It aims to be conform to RFC5227.
- *
  * @defgroup acd ACD
  * @ingroup ip4
  * ACD related functions
  * USAGE:
- *
  * define @ref LWIP_ACD 1 in your lwipopts.h
  * Options:
  * ACD_TMR_INTERVAL msecs,
  *   I recommend a value of 100. The value must divide 1000 with a remainder almost 0.
  *   Possible values are 1000, 500, 333, 250, 200, 166, 142, 125, 111, 100 ....
- *
  * For fixed IP:
  * - call acd_start after selecting an IP address. The caller will be informed
  *   on conflict status via the callback function.
- *
  * With AUTOIP:
  * - will be called from the autoip module. No extra's needed.
- *
  * With DHCP:
  * - enable LWIP_DHCP_DOES_ACD_CHECK. Then it will be called from the dhcp module.
  *   No extra's needed.
  */
 
 /*
- *
  * Copyright (c) 2007 Dominik Spies <kontakt@dspies.de>
  * Copyright (c) 2018 Jasper Verschueren <jasper.verschueren@apart-audio.com>
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -45,7 +35,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -56,7 +45,6 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * Author: Jasper Verschueren <jasper.verschueren@apart-audio.com>
  * Author: Dominik Spies <kontakt@dspies.de>
  */
@@ -107,7 +95,6 @@ static void acd_put_in_passive_mode(struct netif *netif, struct acd *acd);
 /**
  * @ingroup acd
  * Add ACD client to the client list and initialize callback function
- *
  * @param netif                 network interface on which to start the acd
  *                              client
  * @param acd                   acd module to be added to the list
@@ -144,7 +131,6 @@ acd_add(struct netif *netif, struct acd *acd,
 /**
  * @ingroup acd
  * Remove ACD client from the client list
- *
  * @param netif network interface from which to remove the acd client
  * @param acd   acd module to be removed from the list
  */
@@ -173,7 +159,6 @@ acd_remove(struct netif *netif, struct acd *acd)
 /**
  * @ingroup acd
  * Start ACD client
- *
  * @param netif   network interface on which to start the acd client
  * @param acd     acd module to start
  * @param ipaddr  ip address to perform acd on
@@ -203,7 +188,6 @@ acd_start(struct netif *netif, struct acd *acd, ip4_addr_t ipaddr)
 /**
  * @ingroup acd
  * Stop ACD client
- *
  * @param acd   acd module to stop
  */
 err_t
@@ -220,7 +204,6 @@ acd_stop(struct acd *acd)
 /**
  * @ingroup acd
  * Inform the ACD modules when the link goes down
- *
  * @param netif network interface on which to inform the ACD clients
  */
 void
@@ -337,7 +320,6 @@ acd_tmr(void)
 
 /**
  * Restarts the acd module
- *
  * The number of conflicts is increased and the upper layer is informed.
  */
 static void
@@ -368,7 +350,6 @@ acd_restart(struct netif *netif, struct acd *acd)
 
 /**
  * Handles every incoming ARP Packet, called by etharp_input().
- *
  * @param netif network interface to use for acd processing
  * @param hdr   Incoming ARP packet
  */
@@ -516,7 +497,6 @@ acd_put_in_passive_mode(struct netif *netif, struct acd *acd)
 /**
  * @ingroup acd
  * Inform the ACD modules of address changes
- *
  * @param netif     network interface on which the address is changing
  * @param old_addr  old ip address
  * @param new_addr  new ip address

@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+int printf(const char *format, ...);
+
 extern uint32_t SystemCoreClock;
 
 /* 基础配置选项 */
@@ -38,7 +40,7 @@ extern uint32_t SystemCoreClock;
 /* 内存分配相关定义 */
 #define configSUPPORT_STATIC_ALLOCATION                 0                       /* 1: 支持静态申请内存, 默认: 0 */
 #define configSUPPORT_DYNAMIC_ALLOCATION                1                       /* 1: 支持动态申请内存, 默认: 1 */
-#define configTOTAL_HEAP_SIZE                           ((size_t)(80 * 1024))   /* FreeRTOS堆中可用的RAM总量, 单位: Byte, 无默认需定义 */
+#define configTOTAL_HEAP_SIZE                           ((size_t)(100 * 1024))   /* FreeRTOS堆中可用的RAM总量, 单位: Byte, 无默认需定义 */
 #define configAPPLICATION_ALLOCATED_HEAP                0                       /* 1: 用户手动分配FreeRTOS内存堆(ucHeap), 默认: 0 */
 #define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP       0                       /* 1: 用户自行实现任务创建时使用的内存申请与释放函数, 默认: 0 */
 
@@ -97,7 +99,7 @@ extern uint32_t FreeRTOSRunTimeTicks;
 #endif
 
 #define configLIBRARY_LOWEST_INTERRUPT_PRIORITY         15                  /* 中断最低优先级 */
-#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY    5                   /* FreeRTOS可管理的最高中断优先级 */
+#define configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY    2                   /* FreeRTOS可管理的最高中断优先级 */
 #define configKERNEL_INTERRUPT_PRIORITY                 ( configLIBRARY_LOWEST_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY            ( configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS) )
 #define configMAX_API_CALL_INTERRUPT_PRIORITY           configMAX_SYSCALL_INTERRUPT_PRIORITY
@@ -120,5 +122,11 @@ extern uint32_t FreeRTOSRunTimeTicks;
 
 /* ARMv8-M 安全侧端口相关定义。 */
 //#define secureconfigMAX_SECURE_CONTEXTS         5
+
+//extern volatile uint32_t ulHighFrequencyTimerTicks;
+//#define configGENERATE_RUN_TIME_STATS               1
+//#define configUSE_STATS_FORMATTING_FUNCTIONS        1
+//#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()   (ulHighFrequencyTimerTicks = 0ul)
+//#define portGET_RUN_TIME_COUNTER_VALUE()           ulHighFrequencyTimerTicks
 
 #endif /* FREERTOS_CONFIG_H */

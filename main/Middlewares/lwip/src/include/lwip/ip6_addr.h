@@ -1,16 +1,13 @@
 /**
  * @file
- *
  * IPv6 addresses.
  */
 
 /*
  * Copyright (c) 2010 Inico Technologies Ltd.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -18,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -29,13 +25,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Ivan Delamer <delamer@inicotech.com>
- *
  * Structs and macros for handling IPv6 addresses.
- *
  * Please coordinate changes and requests with Ivan Delamer
  * <delamer@inicotech.com>
  */
@@ -159,7 +151,6 @@ typedef struct ip6_addr ip6_addr_t;
 #define ip6_addr_netcmp(addr1, addr2) ip6_addr_net_eq(addr1, addr2)
 /**
  * Determine if two IPv6 address are on the same network.
- *
  * @param addr1 IPv6 address 1
  * @param addr2 IPv6 address 2
  * @return 1 if the network identifiers of both address match, 0 if not
@@ -184,7 +175,6 @@ typedef struct ip6_addr ip6_addr_t;
 /**
  * Determine if two IPv6 addresses are the same. In particular, the address
  * part of both must be the same, and the zone must be compatible.
- *
  * @param addr1 IPv6 address 1
  * @param addr2 IPv6 address 2
  * @return 1 if the addresses are considered equal, 0 if not

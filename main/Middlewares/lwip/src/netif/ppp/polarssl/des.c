@@ -1,12 +1,8 @@
 /*
  *  FIPS-46-3 compliant Triple-DES implementation
- *
  *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
  *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
  *  All rights reserved.
- *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -35,7 +31,6 @@
 /*
  *  DES, on which TDES is based, was originally designed by Horst Feistel
  *  at IBM in 1974, and was adopted as a standard by NIST (formerly NBS).
- *
  *  http://csrc.nist.gov/publications/fips/fips46-3/fips46-3.pdf
  */
 

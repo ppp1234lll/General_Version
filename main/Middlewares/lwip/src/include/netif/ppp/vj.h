@@ -1,11 +1,8 @@
 /*
  * Definitions for tcp compression routines.
- *
  * $Id: vj.h,v 1.7 2010/02/22 17:52:09 goldsimon Exp $
- *
  * Copyright (c) 1989 Regents of the University of California.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms are permitted
  * provided that the above copyright notice and this paragraph are
  * duplicated in all such forms and that any documentation,
@@ -17,7 +14,6 @@
  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
- *
  * Van Jacobson (van@helios.ee.lbl.gov), Dec 31, 1989:
  * - Initial distribution.
  */
@@ -40,7 +36,6 @@ extern "C" {
 
 /*
  * Compressed packet format:
- *
  * The first octet contains the packet type (top 3 bits), TCP
  * 'push' bit, and flags that indicate which of the 4 TCP sequence
  * numbers have changed (bottom 5 bits).  The next octet is a
@@ -50,7 +45,6 @@ extern "C" {
  * sequence number changes, one change per bit set in the header
  * (there may be no changes and there are two special cases where
  * the receiver implicitly knows what changed -- see below).
- *
  * There are 5 numbers which can change (they are always inserted
  * in the following order): TCP urgent pointer, window,
  * acknowledgement, sequence number and IP ID.  (The urgent pointer
@@ -65,14 +59,12 @@ extern "C" {
 
 /*
  * Packet types (must not conflict with IP protocol version)
- *
  * The top nibble of the first octet is the packet type.  There are
  * three possible types: IP (not proto TCP or tcp with one of the
  * control flags set); uncompressed TCP (a normal IP/TCP packet but
  * with the 8-bit protocol field replaced by an 8-bit connection id --
  * this type of packet syncs the sender & receiver); and compressed
  * TCP (described above).
- *
  * LSB of 4-bit field is TCP "PUSH" bit (a worthless anachronism) and
  * is logically part of the 4-bit "changes" field that follows.  Top
  * three bits are actual packet type.  For backward compatibility

@@ -165,7 +165,6 @@ static snmp_err_t usmusertable_get_instance(const u32_t *column, const u32_t *ro
  * <oid>.<EngineID length>.<EngineID>.<UserName length>
  * <oid>.<EngineID length>.<EngineID>.<UserName length>.<partial UserName>
  * <oid>.<EngineID length>.<EngineID>.<UserName length>.<UserName>
- *
  */
 static snmp_err_t usmusertable_get_next_instance(const u32_t *column, struct snmp_obj_id *row_oid, struct snmp_node_instance *cell_instance)
 {

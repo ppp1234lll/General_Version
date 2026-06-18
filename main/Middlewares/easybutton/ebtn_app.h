@@ -29,6 +29,8 @@ extern "C"
     void ebtn_APP_Keys_Init(void);
     void ebtn_APP_Process(void);
 
+    void key_test(void);
+
 #ifdef __cplusplus
 }
 #endif

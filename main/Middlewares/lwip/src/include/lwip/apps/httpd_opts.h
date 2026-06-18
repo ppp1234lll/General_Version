@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,11 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  * This version of the file has been modified by Texas Instruments to offer
  * simple server-side-include (SSI) and Common Gateway Interface (CGI)
  * capability.
@@ -51,13 +45,11 @@
  */
 
 /** Set this to 1 to support CGI (old style).
- *
  * This old style CGI support works by registering an array of URLs and
  * associated CGI handler functions (@ref http_set_cgi_handlers).
  * This list is scanned just before fs_open is called from request handling.
  * The handler can return a new URL that is used internally by the httpd to
  * load the returned page (passed to fs_open).
- *
  * Use this CGI type e.g. to execute specific actions and return a page that
  * does not depend on the CGI parameters.
  */
@@ -66,14 +58,12 @@
 #endif
 
 /** Set this to 1 to support CGI (new style).
- *
  * This new style CGI support works by calling a global function
  * (@ref tCGIHandler) for all URLs that are found. fs_open is called first
  * and the URL can not be written by the CGI handler. Instead, this handler gets
  * passed the http file state, an object where it can store information derived
  * from the CGI URL or parameters. This file state is later passed to SSI, so
  * the SSI code can return data depending on CGI input.
- *
  * Use this CGI handler if you want CGI information passed on to SSI.
  */
 #if !defined LWIP_HTTPD_CGI_SSI || defined __DOXYGEN__
@@ -81,17 +71,14 @@
 #endif
 
 /** Set this to 1 to support SSI (Server-Side-Includes)
- *
  * In contrast to other http servers, this only calls a preregistered callback
  * function (@see http_set_ssi_handler) for each tag (in the format of
  * <!--#tag-->) encountered in SSI-enabled pages.
  * SSI-enabled pages must have one of the predefined SSI-enabled file extensions.
  * All files with one of these extensions are parsed when sent.
- *
  * A downside of the current SSI implementation is that persistent connections
  * don't work, as the file length is not known in advance (and httpd currently
  * relies on the Content-Length header for persistent connections).
- *
  * To save memory, the maximum tag length is limited (@see LWIP_HTTPD_MAX_TAG_NAME_LEN).
  * To save memory, the maximum insertion string length is limited (@see
  * LWIP_HTTPD_MAX_TAG_INSERT_LEN). If this is not enough, @ref LWIP_HTTPD_SSI_MULTIPART
@@ -115,7 +102,6 @@
  * Set to 2 to override this runtime test function. In this case, you have to
  * provide an external function that does the check:
  *   u8_t http_uri_is_ssi(struct fs_file *file, const char *uri)
- *
  * This is enabled by default, but if you only use a newer version of makefsdata
  * supporting the "-ssi" option, this info is already present in
  */

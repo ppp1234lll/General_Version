@@ -1,16 +1,13 @@
 /*
 *********************************************************************************************************
-*
-*    模块名称 : 按键模块
-*    文件名称 : bsp_key.h
-*    版    本 : V1.0
-*    说    明 : 头文件
+*    函 数 名: 按键模块
+*    功能说明: bsp_key.h
+*    形    参: V1.0
+*    返 回 值: 头文件
 *    修改记录 :
 *        版本号   日期         作者      说明
 *        v1.0    2026-06-10  zb/zh    初始版本。
-*
 *    Copyright (C), 2026-2026, 蜂鸟 www.flybee.com
-*
 *********************************************************************************************************
 */
 #ifndef _KEY_H_
@@ -23,9 +20,9 @@
 *                                     宏定义
 *********************************************************************************************************
 */
-#define PWR_GPIO_CLK         RCU_GPIOA
-#define PWR_GPIO_PORT        GPIOA
-#define PWR_GPIO_PIN         GPIO_PIN_5
+#define PWR_GPIO_CLK         RCU_GPIOD
+#define PWR_GPIO_PORT        GPIOD
+#define PWR_GPIO_PIN         GPIO_PIN_0
 
 #define PWR_TST_READ         gpio_input_bit_get(PWR_GPIO_PORT,PWR_GPIO_PIN)     // 12V检测
 

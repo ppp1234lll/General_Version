@@ -3,9 +3,7 @@
  * @brief    CMSIS Cortex-M4 SIMD Header File
  * @version  V3.30
  * @date     17. February 2014
- *
  * @note
- *
  ******************************************************************************/
 /* Copyright (c) 2009 - 2014 ARM LIMITED
 
@@ -20,7 +18,6 @@
    - Neither the name of ARM nor the names of its contributors may be used
      to endorse or promote products derived from this software without
      specific prior written permission.
-   *
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -47,11 +44,11 @@
 #endif
 
 
-/*******************************************************************************
- *                Hardware Abstraction Layer
- ******************************************************************************/
-
-
+/*
+*********************************************************************************************************
+*                Hardware Abstraction Layer
+*********************************************************************************************************
+*/
 /* ###################  Compiler specific Intrinsics  ########################### */
 /** \defgroup CMSIS_SIMD_intrinsics CMSIS SIMD Intrinsics
   Access to dedicated SIMD instructions

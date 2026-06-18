@@ -1,20 +1,14 @@
 /**
  * @file
  * MDNS responder implementation
- *
  * @defgroup mdns MDNS
  * @ingroup apps
- *
  * RFC 6762 - Multicast DNS<br>
  * RFC 6763 - DNS-Based Service Discovery
- *
  * You need to increase MEMP_NUM_SYS_TIMEOUT by one if you use MDNS!
- *
  * @verbinclude mdns.txt
- *
  * Things left to implement:
  * -------------------------
- *
  * - Sending goodbye messages (zero ttl) - shutdown, DHCP lease about to expire, DHCP turned off...
  * - Sending negative responses NSEC
  * - Fragmenting replies if required
@@ -25,10 +19,8 @@
 /*
  * Copyright (c) 2015 Verisure Innovation AB
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -36,7 +28,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -47,12 +38,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Erik Ekman <erik@kryo.se>
  * Author: Jasper Verschueren <jasper.verschueren@apart-audio.com>
- *
  */
 
 #include "lwip/apps/mdns.h"
@@ -214,7 +202,6 @@ static void mdns_conflict_save_time(struct netif *netif);
  *  TODO:
  *  can we add the mdns struct to the netif like we do for dhcp, autoip,...?
  *  Then this is not needed any more.
- *
  *  @param netif  The network interface
  *  @return       mdns struct
  */
@@ -225,7 +212,6 @@ netif_mdns_data(struct netif *netif) {
 
 /**
  *  Construction to access the mdns udp pcb.
- *
  *  @return   udp_pcb struct of mdns
  */
 struct udp_pcb*
@@ -562,7 +548,6 @@ mdns_announce(struct netif *netif, const ip_addr_t *destination)
 /**
  * Perform lexicographical comparison to define the lexicographical order of the
  * records.
- *
  * @param pkt_a   first packet (needed for rr data)
  * @param pkt_b   second packet (needed for rr data)
  * @param ans_a   first rr
@@ -709,7 +694,6 @@ mdns_lexicographical_comparison(struct mdns_packet *pkt_a, struct mdns_packet *p
 
 /**
  * Clear authoritative answer list
- *
  * @param a_list  answer list to clear
  */
 static void
@@ -726,7 +710,6 @@ mdns_init_answer_list(struct mdns_answer_list *a_list)
  * Pushes the offset of the answer on a lexicographically later sorted list.
  * We use a simple insertion sort because most of the time we are only sorting
  * two items. The answers are sorted from the smallest to the largest.
- *
  * @param a_list      Answer list to which to add the answer
  * @param pkt         Packet where answer originated
  * @param new_offset  Offset of the new answer in the packet
@@ -785,7 +768,6 @@ mdns_push_answer_to_sorted_list(struct mdns_answer_list *a_list,
 
 /**
  * Check if the given answer answers the give question
- *
  * @param q     query to find answer for
  * @param a     answer to given query
  * @return      1 it a answers q, 0 if not
@@ -804,7 +786,6 @@ mdns_is_answer_to_question(struct mdns_question *q, struct mdns_answer *a)
 
 /**
  * Converts the output packet to the input packet format for probe tiebreaking
- *
  * @param inpkt   destination packet for conversion
  * @param outpkt  source packet for conversion
  */
@@ -822,7 +803,6 @@ mdns_convert_out_to_in_pkt(struct mdns_packet *inpkt, struct mdns_outpacket *out
 
 /**
  * Debug print to print the answer part that is lexicographically compared
- *
  * @param pkt Packet where answer originated
  * @param a   The answer to print
  */
@@ -849,7 +829,6 @@ mdns_debug_print_answer(struct mdns_packet *pkt, struct mdns_answer *a)
 
 /**
  * Perform probe tiebreaking according to RFC6762 section 8.2
- *
  * @param netif network interface of incoming packet
  * @param pkt   incoming packet
  */
@@ -1065,7 +1044,6 @@ cleanup:
 
 /**
  * Check the incoming packet and parse all questions
- *
  * @param netif network interface of incoming packet
  * @param pkt   incoming packet
  * @param reply outgoing message
@@ -1114,7 +1092,6 @@ mdns_parse_pkt_questions(struct netif *netif, struct mdns_packet *pkt,
 
 /**
  * Check the incoming packet and parse all (known) answers
- *
  * @param netif network interface of incoming packet
  * @param pkt   incoming packet
  * @param reply outgoing message
@@ -1287,7 +1264,6 @@ mdns_parse_pkt_known_answers(struct netif *netif, struct mdns_packet *pkt,
 /**
  * Check the incoming packet and parse all authoritative answers to see if the
  * query is a probe query.
- *
  * @param netif network interface of incoming packet
  * @param pkt   incoming packet
  * @param reply outgoing message
@@ -1349,7 +1325,6 @@ mdns_parse_pkt_authoritative_answers(struct netif *netif, struct mdns_packet *pk
 
 /**
  * Add / copy message to delaying message buffer.
- *
  * @param dest destination msg struct
  * @param src  source msg struct
  */
@@ -1379,7 +1354,6 @@ mdns_add_msg_to_delayed(struct mdns_outmsg *dest, struct mdns_outmsg *src)
  * - Clear pending answers if known answers are supplied
  * - Define which type of answer is requested
  * - Send out packet or put it on hold until after random time
- *
  * @param pkt   incoming packet (in stack)
  * @param netif network interface of incoming packet
  */
@@ -1489,7 +1463,6 @@ mdns_handle_question(struct mdns_packet *pkt, struct netif *netif)
    *  - Answering to a single question with a unique answer (not a probe).
    *  - Answering to a probe query via unicast.
    *  - Answering to a probe query via multicast if not multicasted within 250ms.
-   *
    * unique answer? -> not if it includes service type or name ptr's
    */
   for (i = 0; i < MDNS_MAX_SERVICES; i++) {
@@ -1696,7 +1669,6 @@ mdns_handle_question(struct mdns_packet *pkt, struct netif *netif)
  * - Called by timer
  * - Call mdns_handle_question
  * - Do cleanup
- *
  * @param arg   incoming packet (in pool)
  */
 static void
@@ -1732,7 +1704,6 @@ mdns_handle_tc_question(void *arg)
 /**
  * Save time when a probe conflict occurs:
  *  - Check if we exceeded the maximum of 15 conflicts in 10seconds.
- *
  * @param netif network interface on which the conflict occurred.
  */
 static void
@@ -1771,7 +1742,6 @@ mdns_conflict_save_time(struct netif *netif)
  * Handle a probe conflict:
  *  - Check if we exceeded the maximum of 15 conflicts in 10seconds.
  *  - Let the user know there is a conflict.
- *
  * @param netif network interface on which the conflict occurred.
  * @param slot service index +1 on which the conflict occurred (0 indicate hostname conflict).
  */
@@ -1814,7 +1784,6 @@ mdns_lookup_request(struct mdns_rr_info *rr)
  * Handle response MDNS packet:
  *  - Handle responses on probe query
  *  - Perform conflict resolution on every packet (RFC6762 section 9)
- *
  * @param pkt   incoming packet
  * @param netif network interface on which packet was received
  */
@@ -2498,7 +2467,7 @@ mdns_resp_rename_netif(struct netif *netif, const char *hostname)
 int
 mdns_resp_netif_active(struct netif *netif)
 {
-	return NETIF_TO_HOST(netif) != NULL;
+    return NETIF_TO_HOST(netif) != NULL;
 }
 
 /**

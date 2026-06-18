@@ -1,29 +1,23 @@
 /*
  * FreeRTOS Kernel V10.4.6
  * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
  * SPDX-License-Identifier: MIT
- *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  * the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  * https://www.FreeRTOS.org
  * https://github.com/FreeRTOS
- *
  */
 
 /*-----------------------------------------------------------
@@ -221,7 +215,6 @@ static void prvTaskExitError( void )
     /* A function that implements a task must not exit or attempt to return to
      * its caller as there is nothing to return to.  If a task wants to exit it
      * should instead call vTaskDelete( NULL ).
-     *
      * Artificially force an assert() to be triggered if configASSERT() is
      * defined, then stop here so application writers can catch the error. */
     configASSERT( uxCriticalNesting == ~0UL );
@@ -317,7 +310,6 @@ BaseType_t xPortStartScheduler( void )
              * functions can be called.  ISR safe functions are those that end in
              * "FromISR".  FreeRTOS maintains separate thread and ISR API functions to
              * ensure interrupt entry is as fast and simple as possible.
-             *
              * Save the interrupt priority value that is about to be clobbered. */
             ulOriginalPriority = *pucFirstUserPriorityRegister;
 
@@ -757,20 +749,16 @@ __asm uint32_t vPortGetIPSR( void )
              * function.  ISR safe FreeRTOS API functions must *only* be called
              * from interrupts that have been assigned a priority at or below
              * configMAX_SYSCALL_INTERRUPT_PRIORITY.
-             *
              * Numerically low interrupt priority numbers represent logically high
              * interrupt priorities, therefore the priority of the interrupt must
              * be set to a value equal to or numerically *higher* than
              * configMAX_SYSCALL_INTERRUPT_PRIORITY.
-             *
              * Interrupts that use the FreeRTOS API must not be left at their
              * default priority of zero as that is the highest possible priority,
              * which is guaranteed to be above configMAX_SYSCALL_INTERRUPT_PRIORITY,
              * and therefore also guaranteed to be invalid.
-             *
              * FreeRTOS maintains separate thread and ISR API functions to ensure
              * interrupt entry is as fast and simple as possible.
-             *
              * The following links provide detailed information:
              * https://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html
              * https://www.FreeRTOS.org/FAQHelp.html */
@@ -783,7 +771,6 @@ __asm uint32_t vPortGetIPSR( void )
          * the interrupt's sub-priority.  For simplicity all bits must be defined
          * to be pre-emption priority bits.  The following assertion will fail if
          * this is not the case (if some bits represent a sub-priority).
-         *
          * If the application only uses CMSIS libraries for interrupt
          * configuration then the correct setting can be achieved on all Cortex-M
          * devices by calling NVIC_SetPriorityGrouping( 0 ); before starting the

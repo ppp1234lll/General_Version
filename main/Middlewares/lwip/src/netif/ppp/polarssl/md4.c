@@ -1,12 +1,8 @@
 /*
  *  RFC 1186/1320 compliant MD4 implementation
- *
  *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
  *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
  *  All rights reserved.
- *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -34,7 +30,6 @@
  */
 /*
  *  The MD4 algorithm was designed by Ron Rivest in 1990.
- *
  *  http://www.ietf.org/rfc/rfc1186.txt
  *  http://www.ietf.org/rfc/rfc1320.txt
  */

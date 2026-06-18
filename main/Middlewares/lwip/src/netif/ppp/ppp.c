@@ -1,16 +1,14 @@
-/*****************************************************************************
+/*
+*********************************************************************************************************
 * ppp.c - Network Point to Point Protocol program file.
-*
 * Copyright (c) 2003 by Marc Boucher, Services Informatiques (MBSI) inc.
 * portions Copyright (c) 1997 by Global Election Systems Inc.
-*
 * The authors hereby grant permission to use, copy, modify, distribute,
 * and license this software and its documentation for any purpose, provided
 * that existing copyright notices are retained in all copies and that this
 * notice and the following disclaimer are included verbatim in any
 * distributions. No written agreement, license, or royalty fee is required
 * for any of the authorized uses.
-*
 * THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
 * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -21,37 +19,30 @@
 * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
 ******************************************************************************
 * REVISION HISTORY
-*
 * 03-01-01 Marc Boucher <marc@mbsi.ca>
 *   Ported to lwIP.
 * 97-11-05 Guy Lancaster <lancasterg@acm.org>, Global Election Systems Inc.
 *   Original.
-*****************************************************************************/
-
+*********************************************************************************************************
+*/
 /*
  * ppp_defs.h - PPP definitions.
- *
  * if_pppvar.h - private structures and declarations for PPP.
- *
  * Copyright (c) 1994 The Australian National University.
  * All rights reserved.
- *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation is hereby granted, provided that the above copyright
  * notice appears in all copies.  This software is provided without any
  * warranty, express or implied. The Australian National University
  * makes no representations about the suitability of this software for
  * any purpose.
- *
  * IN NO EVENT SHALL THE AUSTRALIAN NATIONAL UNIVERSITY BE LIABLE TO ANY
  * PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
  * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF
  * THE AUSTRALIAN NATIONAL UNIVERSITY HAVE BEEN ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * THE AUSTRALIAN NATIONAL UNIVERSITY SPECIFICALLY DISCLAIMS ANY WARRANTIES,
  * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS FOR A PARTICULAR PURPOSE.  THE SOFTWARE PROVIDED HEREUNDER IS
@@ -62,10 +53,8 @@
 
 /*
  * if_ppp.h - Point-to-Point Protocol definitions.
- *
  * Copyright (c) 1989 Carnegie Mellon University.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms are permitted
  * provided that the above copyright notice and this paragraph are
  * duplicated in all such forms and that any documentation,
@@ -263,12 +252,9 @@ void ppp_set_notify_phase_callback(ppp_pcb *pcb, ppp_notify_phase_cb_fn notify_p
 
 /*
  * Initiate a PPP connection.
- *
  * This can only be called if PPP is in the dead phase.
- *
  * Holdoff is the time to wait (in seconds) before initiating
  * the connection.
- *
  * If this port connects to a modem, the modem connection must be
  * established before calling this.
  */
@@ -295,9 +281,7 @@ err_t ppp_connect(ppp_pcb *pcb, u16_t holdoff) {
 #if PPP_SERVER
 /*
  * Listen for an incoming PPP connection.
- *
  * This can only be called if PPP is in the dead phase.
- *
  * If this port connects to a modem, the modem connection must be
  * established before calling this.
  */
@@ -323,12 +307,10 @@ err_t ppp_listen(ppp_pcb *pcb) {
 /*
  * Initiate the end of a PPP connection.
  * Any outstanding packets in the queues are dropped.
- *
  * Setting nocarrier to 1 close the PPP connection without initiating the
  * shutdown procedure. Always using nocarrier = 0 is still recommended,
  * this is going to take a little longer time if your link is down, but
  * is a safer choice for the PPP state machine.
- *
  * Return 0 on success, an error code on failure.
  */
 err_t
@@ -365,7 +347,6 @@ ppp_close(ppp_pcb *pcb, u8_t nocarrier)
   /*
    * Only accept carrier lost signal on the stable running phase in order
    * to prevent changing the PPP phase FSM in transition phases.
-   *
    * Always using nocarrier = 0 is still recommended, this is going to
    * take a little longer time, but is a safer choice from FSM point of view.
    */
@@ -386,12 +367,9 @@ ppp_close(ppp_pcb *pcb, u8_t nocarrier)
 
 /*
  * Release the control block.
- *
  * This can only be called if PPP is in the dead phase.
- *
  * You must use ppp_close() before if you wish to terminate
  * an established PPP session.
- *
  * Return 0 on success, an error code on failure.
  */
 err_t ppp_free(ppp_pcb *pcb) {
@@ -639,10 +617,8 @@ int ppp_init(void)
  
 /*
  * Create a new PPP control block.
- *
  * This initializes the PPP control block but does not
  * attempt to negotiate the LCP session.
- *
  * Return a new PPP connection control block pointer
  * on success or a null pointer on failure.
  */
@@ -944,11 +920,9 @@ void ppp_input(ppp_pcb *pcb, struct pbuf *pb) {
           goto out;
         }
 #if 0   /* UNUSED
-         *
          * This is actually a (hacked?) way for the Linux kernel to pass a data
          * packet to pppd. pppd in normal condition only do signaling
          * (LCP, PAP, CHAP, IPCP, ...) and does not handle any data packet at all.
-         *
          * We don't even need this interface, which is only there because of PPP
          * interface limitation between Linux kernel and pppd. For MPPE, which uses
          * CCP to negotiate although it is not really a (de)compressor, we added
@@ -994,7 +968,6 @@ out:
 /*
  * Write a pbuf to a ppp link, only used from PPP functions
  * to send PPP packets.
- *
  * IPv4 and IPv6 packets from lwIP are sent, respectively,
  * with ppp_netif_output_ip4() and ppp_netif_output_ip6()
  * functions (which are callbacks of the netif PPP interface).
@@ -1013,11 +986,12 @@ void ppp_link_terminated(ppp_pcb *pcb) {
 }
 
 
-/************************************************************************
- * Functions called by various PPP subsystems to configure
- * the PPP interface or change the PPP phase.
- */
-
+/*
+*********************************************************************************************************
+* Functions called by various PPP subsystems to configure
+* the PPP interface or change the PPP phase.
+*********************************************************************************************************
+*/
 /*
  * new_phase - signal the start of a new phase of pppd's operation.
  */
@@ -1077,11 +1051,12 @@ int sifaddr(ppp_pcb *pcb, u32_t our_adr, u32_t his_adr, u32_t netmask) {
   return 1;
 }
 
-/********************************************************************
- *
- * cifaddr - Clear the interface IP addresses, and delete routes
- * through the interface if possible.
- */
+/*
+*********************************************************************************************************
+* cifaddr - Clear the interface IP addresses, and delete routes
+* through the interface if possible.
+*********************************************************************************************************
+*/
 int cifaddr(ppp_pcb *pcb, u32_t our_adr, u32_t his_adr) {
   LWIP_UNUSED_ARG(our_adr);
   LWIP_UNUSED_ARG(his_adr);
@@ -1091,22 +1066,22 @@ int cifaddr(ppp_pcb *pcb, u32_t our_adr, u32_t his_adr) {
 }
 
 #if 0 /* UNUSED - PROXY ARP */
-/********************************************************************
- *
- * sifproxyarp - Make a proxy ARP entry for the peer.
- */
-
+/*
+*********************************************************************************************************
+* sifproxyarp - Make a proxy ARP entry for the peer.
+*********************************************************************************************************
+*/
 int sifproxyarp(ppp_pcb *pcb, u32_t his_adr) {
   LWIP_UNUSED_ARG(pcb);
   LWIP_UNUSED_ARG(his_adr);
   return 0;
 }
 
-/********************************************************************
- *
- * cifproxyarp - Delete the proxy ARP entry for the peer.
- */
-
+/*
+*********************************************************************************************************
+* cifproxyarp - Delete the proxy ARP entry for the peer.
+*********************************************************************************************************
+*/
 int cifproxyarp(ppp_pcb *pcb, u32_t his_adr) {
   LWIP_UNUSED_ARG(pcb);
   LWIP_UNUSED_ARG(his_adr);
@@ -1129,10 +1104,11 @@ int sdns(ppp_pcb *pcb, u32_t ns1, u32_t ns2) {
   return 1;
 }
 
-/********************************************************************
- *
- * cdns - Clear the DNS servers
- */
+/*
+*********************************************************************************************************
+* cdns - Clear the DNS servers
+*********************************************************************************************************
+*/
 int cdns(ppp_pcb *pcb, u32_t ns1, u32_t ns2) {
   const ip_addr_t *nsa;
   ip_addr_t nsb;
@@ -1153,10 +1129,11 @@ int cdns(ppp_pcb *pcb, u32_t ns1, u32_t ns2) {
 #endif /* LWIP_DNS */
 
 #if VJ_SUPPORT
-/********************************************************************
- *
- * sifvjcomp - config tcp header compression
- */
+/*
+*********************************************************************************************************
+* sifvjcomp - config tcp header compression
+*********************************************************************************************************
+*/
 int sifvjcomp(ppp_pcb *pcb, int vjcomp, int cidcomp, int maxcid) {
   pcb->vj_enabled = vjcomp;
   pcb->vj_comp.compressSlot = cidcomp;
@@ -1180,11 +1157,12 @@ int sifup(ppp_pcb *pcb) {
   return 1;
 }
 
-/********************************************************************
- *
- * sifdown - Disable the indicated protocol and config the interface
- *           down if there are no remaining protocols.
- */
+/*
+*********************************************************************************************************
+* sifdown - Disable the indicated protocol and config the interface
+*           down if there are no remaining protocols.
+*********************************************************************************************************
+*/
 int sifdown(ppp_pcb *pcb) {
 
   pcb->if4_up = 0;
@@ -1202,15 +1180,16 @@ int sifdown(ppp_pcb *pcb) {
   return 1;
 }
 
-/********************************************************************
- *
- * Return user specified netmask, modified by any mask we might determine
- * for address `addr' (in network byte order).
- * Here we scan through the system's list of interfaces, looking for
- * any non-point-to-point interfaces which might appear to be on the same
- * network as `addr'.  If we find any, we OR in their netmask to the
- * user-specified netmask.
- */
+/*
+*********************************************************************************************************
+* Return user specified netmask, modified by any mask we might determine
+* for address `addr' (in network byte order).
+* Here we scan through the system's list of interfaces, looking for
+* any non-point-to-point interfaces which might appear to be on the same
+* network as `addr'.  If we find any, we OR in their netmask to the
+* user-specified netmask.
+*********************************************************************************************************
+*/
 u32_t get_mask(u32_t addr) {
 #if 0
   u32_t mask, nmask;
@@ -1246,10 +1225,11 @@ u32_t get_mask(u32_t addr) {
   eui64_copy(eui64, ip6.addr[2]);                 \
   } while (0)
 
-/********************************************************************
- *
- * sif6addr - Config the interface with an IPv6 link-local address
- */
+/*
+*********************************************************************************************************
+* sif6addr - Config the interface with an IPv6 link-local address
+*********************************************************************************************************
+*/
 int sif6addr(ppp_pcb *pcb, eui64_t our_eui64, eui64_t his_eui64) {
   ip6_addr_t ip6;
   LWIP_UNUSED_ARG(his_eui64);
@@ -1261,10 +1241,11 @@ int sif6addr(ppp_pcb *pcb, eui64_t our_eui64, eui64_t his_eui64) {
   return 1;
 }
 
-/********************************************************************
- *
- * cif6addr - Remove IPv6 address from interface
- */
+/*
+*********************************************************************************************************
+* cif6addr - Remove IPv6 address from interface
+*********************************************************************************************************
+*/
 int cif6addr(ppp_pcb *pcb, eui64_t our_eui64, eui64_t his_eui64) {
   LWIP_UNUSED_ARG(our_eui64);
   LWIP_UNUSED_ARG(his_eui64);
@@ -1288,11 +1269,12 @@ int sif6up(ppp_pcb *pcb) {
   return 1;
 }
 
-/********************************************************************
- *
- * sif6down - Disable the indicated protocol and config the interface
- *            down if there are no remaining protocols.
- */
+/*
+*********************************************************************************************************
+* sif6down - Disable the indicated protocol and config the interface
+*            down if there are no remaining protocols.
+*********************************************************************************************************
+*/
 int sif6down(ppp_pcb *pcb) {
 
   pcb->if6_up = 0;
@@ -1417,10 +1399,11 @@ ccp_fatal_error(ppp_pcb *pcb)
 #endif /* CCP_SUPPORT */
 
 #if PPP_IDLETIMELIMIT
-/********************************************************************
- *
- * get_idle_time - return how long the link has been idle.
- */
+/*
+*********************************************************************************************************
+* get_idle_time - return how long the link has been idle.
+*********************************************************************************************************
+*/
 int get_idle_time(ppp_pcb *pcb, struct ppp_idle *ip) {
   /* FIXME: add idle time support and make it optional */
   LWIP_UNUSED_ARG(pcb);
@@ -1430,12 +1413,13 @@ int get_idle_time(ppp_pcb *pcb, struct ppp_idle *ip) {
 #endif /* PPP_IDLETIMELIMIT */
 
 #if DEMAND_SUPPORT
-/********************************************************************
- *
- * get_loop_output - get outgoing packets from the ppp device,
- * and detect when we want to bring the real link up.
- * Return value is 1 if we need to bring up the link, 0 otherwise.
- */
+/*
+*********************************************************************************************************
+* get_loop_output - get outgoing packets from the ppp device,
+* and detect when we want to bring the real link up.
+* Return value is 1 if we need to bring up the link, 0 otherwise.
+*********************************************************************************************************
+*/
 int get_loop_output(void) {
   return 0;
 }
@@ -1595,7 +1579,6 @@ const char * protocol_name(int proto) {
 #if PPP_STATS_SUPPORT
 
 /* ---- Note on PPP Stats support ----
- *
  * The one willing link stats support should add the get_ppp_stats()
  * to fetch statistics from lwIP.
  */

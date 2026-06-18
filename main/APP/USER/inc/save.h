@@ -2,8 +2,6 @@
 #define _SAVE_H_
 
 #include "./SYSTEM/sys/sys.h"
-#include "app.h"
-#include "det.h"
 
 /* 默认参数 */
 #define DEFALUT_LOCAL_IP0 (192)
@@ -27,26 +25,26 @@
 
 #define DEFALUT_MULTICAST_PORT (65000)
 
-#define DEFALUT_DNS0	 (114)
-#define DEFALUT_DNS1	 (114)
-#define DEFALUT_DNS2	 (114)
-#define DEFALUT_DNS3	 (114)
+#define DEFALUT_DNS0     (114)
+#define DEFALUT_DNS1     (114)
+#define DEFALUT_DNS2     (114)
+#define DEFALUT_DNS3     (114)
 
-#define DEFALUT_SERVERMODE	 (4)
+#define DEFALUT_SERVERMODE     (4)
 
-#define DEFALUT_VOLT_MAX   		(0)
-#define DEFALUT_VOLT_MIN 			(0)
-#define DEFALUT_CURRENT_MAX	  (0)
-#define DEFAULT_ANGLE		 			(40)
+#define DEFALUT_VOLT_MAX           (0)
+#define DEFALUT_VOLT_MIN             (0)
+#define DEFALUT_CURRENT_MAX      (0)
+#define DEFAULT_ANGLE                     (40)
 
-#define DEFAULT_MIU		 			(25)
+#define DEFAULT_MIU                     (25)
 
-#define DEFALUT_TEMP_HIGH  	(60)
-#define DEFALUT_TEMP_LOW 		(1)
-#define DEFALUT_HUMI_HIGH		(80)
-#define DEFAULT_HUMI_LOW 		(10)
+#define DEFALUT_TEMP_HIGH      (60)
+#define DEFALUT_TEMP_LOW         (1)
+#define DEFALUT_HUMI_HIGH        (80)
+#define DEFAULT_HUMI_LOW         (10)
 
-#define DEFALUT_HEAT_UP	  (-20)	
+#define DEFALUT_HEAT_UP      (-20)    
 #define DEFALUT_HEAT_DOWN (-5)
 
 #define DEFALUT_TIME_START0 (12) 
@@ -60,10 +58,10 @@
 #define DEFALUT_HEART           (90*1000)
 #define DEFALUT_REPORT          (180*1000)
 #define DEFALUT_PING            (20*1000)   // 每轮ping的间隔时间
-#define DEFALUT_DEV_PING	    (10*1000)   // 下一次ping的时间
-#define DEFALUT_NETWORK_DELAY	(200)       // 网络延时时间  20220308
-#define DEFALUT_ONVIF_TIME  	(120)       // ONVIF搜索时间  20230811
-#define DEFALUT_RELOAD_TIME  	(48*60*60)  // 重启时间       20240904
+#define DEFALUT_DEV_PING        (10*1000)   // 下一次ping的时间
+#define DEFALUT_NETWORK_DELAY    (200)       // 网络延时时间  20220308
+#define DEFALUT_ONVIF_TIME      (120)       // ONVIF搜索时间  20230811
+#define DEFALUT_RELOAD_TIME      (48*60*60)  // 重启时间       20240904
 
 #define DEFALUT_LIGHT_OPEN_TIME  (720) // 12:00 = 12*60
 #define DEFALUT_LIGHT_CLOSE_TIME (720) // 12:00 = 12*60
@@ -78,8 +76,8 @@
 #define SAVE_COMPARISION   (3) // 外设相关数据
 #define SAVE_DEVICE_PARAM  (4) // 系统数据
 #define SAVE_COM_PARAMETER (5) // 通信数据
-#define SAVE_UPDATE	       (6) // 更新参数
-#define SAVE_REPORT_SW	   (7) // 上报开关参数
+#define SAVE_UPDATE           (6) // 更新参数
+#define SAVE_REPORT_SW       (7) // 上报开关参数
 #define SAVE_ONLY_SEND_IP  (8) // 只发送服务器
 #define SAVE_CAREMA        (9) // 摄像机参数
 #define SAVE_THRESHOLD     (10) // 阈值
@@ -118,7 +116,7 @@ int8_t save_stroage_carema_parameter(carema_t *param);
 // 20230723 阈值
 int8_t save_stroage_threshold_parameter(struct threshold_params *param);
 void save_read_default_threshold_parameter(struct threshold_params *param);
-int8_t save_read_threshold_parameter(struct threshold_params *param);	
+int8_t save_read_threshold_parameter(struct threshold_params *param);    
 
 // 20231022 备份信息
 int8_t save_stroage_backups_function(sys_backups_t *param);

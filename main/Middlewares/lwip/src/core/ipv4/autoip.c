@@ -1,37 +1,28 @@
 /**
  * @file
  * AutoIP Automatic LinkLocal IP Configuration
- *
  * This is a AutoIP implementation for the lwIP TCP/IP stack. It aims to conform
  * with RFC 3927. It uses IPv4 address conflict detection to evaluate the chosen
  * address. The ACD module aims to be conform to RFC 5227.
  * RFC 5227 is extracted out of RFC 3927 so the acd module fits nicely in autoip.
- *
  * @defgroup autoip AUTOIP
  * @ingroup ip4
  * AUTOIP related functions
  * USAGE:
- *
  * define @ref LWIP_AUTOIP 1 in your lwipopts.h
- *
  * Without DHCP:
  * - Call autoip_start() after netif_add().
- *
  * With DHCP:
  * - define @ref LWIP_DHCP_AUTOIP_COOP 1 in your lwipopts.h.
  * - Configure your DHCP Client.
- *
  * @see netifapi_autoip
  */
 
 /*
- *
  * Copyright (c) 2007 Dominik Spies <kontakt@dspies.de>
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -39,7 +30,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -50,7 +40,6 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * Author: Dominik Spies <kontakt@dspies.de>
  */
 
@@ -90,7 +79,6 @@ static void autoip_conflict_callback(struct netif *netif,
  * @ingroup autoip
  * Set a statically allocated struct autoip to work with.
  * Using this prevents autoip_start to allocate it using mem_malloc.
- *
  * @param netif the netif for which to set the struct autoip
  * @param autoip (uninitialised) autoip struct allocated by the application
  */
@@ -112,7 +100,6 @@ autoip_set_struct(struct netif *netif, struct autoip *autoip)
 /**
  * @ingroup autoip
  * Remove a struct autoip previously set to the netif using autoip_set_struct()
- *
  * @param netif the netif for which to set the struct autoip
  */
 void
@@ -127,7 +114,6 @@ autoip_remove_struct(struct netif *netif)
 }
 
 /** Restart AutoIP client and check the next address (conflict detected)
- *
  * @param netif The netif under AutoIP control
  */
 static void
@@ -141,7 +127,6 @@ autoip_restart(struct netif *netif)
 
 /**
  * Create an IP-Address out of range 169.254.1.0 to 169.254.254.255
- *
  * @param netif network interface on which create the IP-Address
  * @param ipaddr ip address to initialize
  */
@@ -178,7 +163,6 @@ autoip_create_addr(struct netif *netif, ip4_addr_t *ipaddr)
 
 /**
  * Configure interface for use with current LL IP-Address
- *
  * @param netif network interface to configure with current LL IP-Address
  */
 static err_t
@@ -206,7 +190,6 @@ autoip_bind(struct netif *netif)
 
 /**
 * Handle conflict information from ACD module
-*
 * @param netif   network interface to handle conflict information on
 * @param state   acd_callback_enum_t
  */
@@ -236,7 +219,6 @@ autoip_conflict_callback(struct netif *netif, acd_callback_enum_t state)
 /**
  * @ingroup autoip
  * Start AutoIP client
- *
  * @param netif network interface on which start the AutoIP client
  */
 err_t
@@ -293,7 +275,6 @@ autoip_start(struct netif *netif)
 
 /**
  * Handle a possible change in the network configuration: link up
- *
  * If there is an AutoIP address configured and AutoIP is not in cooperation
  * with DHCP, start probing for previous address.
  */
@@ -313,7 +294,6 @@ autoip_network_changed_link_up(struct netif *netif)
 
 /**
  * Handle a possible change in the network configuration: link down
- *
  * If there is an AutoIP address configured and AutoIP is in cooperation
  * with DHCP, then stop the autoip module. When the link goes up, we do not want
  * the autoip module to start again. DHCP will initiate autoip when needed.
@@ -333,7 +313,6 @@ autoip_network_changed_link_down(struct netif *netif)
 /**
  * @ingroup autoip
  * Stop AutoIP client
- *
  * @param netif network interface on which stop the AutoIP client
  */
 err_t
@@ -353,7 +332,6 @@ autoip_stop(struct netif *netif)
 }
 
 /** check if AutoIP supplied netif->ip_addr
- *
  * @param netif the netif to check
  * @return 1 if AutoIP supplied netif->ip_addr (state BOUND),
  *         0 otherwise

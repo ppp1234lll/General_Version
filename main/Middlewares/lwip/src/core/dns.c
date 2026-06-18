@@ -1,17 +1,13 @@
 /**
  * @file
  * DNS - host name to IP address resolver.
- *
  * @defgroup dns DNS
  * @ingroup callbackstyle_api
- *
  * Implements a DNS host name to IP address resolver.
- *
  * The lwIP DNS resolver functions are used to lookup a host name and
  * map it to a numerical IP address. It maintains a list of resolved
  * hostnames that can be queried with the dns_lookup() function.
  * New hostnames can be resolved using the dns_query() function.
- *
  * The lwIP version of the resolver also adds a non-blocking version of
  * gethostbyname() that will work with a raw API application. This function
  * checks for an IP address string first and converts it if it is valid.
@@ -19,18 +15,14 @@
  * already in the table. If so, the IP is returned. If not, a query is
  * issued and the function returns with a ERR_INPROGRESS status. The app
  * using the dns client must then go into a waiting state.
- *
  * Once a hostname has been resolved (or found to be non-existent),
  * the resolver code calls a specified callback function (which
  * must be implemented by the module that uses the resolver).
- *
  * Multicast DNS queries are supported for names ending on ".local".
  * However, only "One-Shot Multicast DNS Queries" are supported (RFC 6762
  * chapter 5.1), this is not a fully compliant implementation of continuous
  * mDNS querying!
- *
  * All functions must be called from TCPIP thread.
- *
  * @see DNS_MAX_SERVERS
  * @see LWIP_DHCP_MAX_DNS_SERVERS
  * @see @ref netconn_common for thread-safe access.
@@ -39,12 +31,9 @@
 /*
  * Port to lwIP from uIP
  * by Jim Pettinato April 2007
- *
  * security fixes and more by Simon Goldschmidt
- *
  * uIP version Copyright (c) 2002-2003, Adam Dunkels.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -56,7 +45,6 @@
  * 3. The name of the author may not be used to endorse or promote
  *    products derived from this software without specific prior
  *    written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
  * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -353,7 +341,6 @@ dns_init(void)
 /**
  * @ingroup dns
  * Initialize one of the DNS servers.
- *
  * @param numdns the index of the DNS server to set must be < DNS_MAX_SERVERS
  * @param dnsserver IP address of the DNS server to set
  */
@@ -372,7 +359,6 @@ dns_setserver(u8_t numdns, const ip_addr_t *dnsserver)
 /**
  * @ingroup dns
  * Obtain one of the currently configured DNS server.
- *
  * @param numdns the index of the DNS server
  * @return IP address of the indexed DNS server or "ip_addr_any" if the DNS
  *         server has not been configured.
@@ -431,7 +417,6 @@ dns_init_local(void)
 /**
  * @ingroup dns
  * Iterate the local host-list for a hostname.
- *
  * @param iterator_fn a function that is called for every entry in the local host-list
  * @param iterator_arg 3rd argument passed to iterator_fn
  * @return the number of entries in the local host-list
@@ -463,7 +448,6 @@ dns_local_iterate(dns_found_callback iterator_fn, void *iterator_arg)
 /**
  * @ingroup dns
  * Scans the local host-list for a hostname.
- *
  * @param hostname Hostname to look for in the local host-list
  * @param addr the first IP address for the hostname in the local host-list or
  *         IPADDR_NONE if not found.
@@ -531,7 +515,6 @@ dns_lookup_local(const char *hostname, size_t hostnamelen, ip_addr_t *addr LWIP_
  * @ingroup dns
  * Remove all entries from the local host-list for a specific hostname
  * and/or IP address
- *
  * @param hostname hostname for which entries shall be removed from the local
  *                 host-list
  * @param addr address for which entries shall be removed from the local host-list
@@ -568,7 +551,6 @@ dns_local_removehost(const char *hostname, const ip_addr_t *addr)
  * @ingroup dns
  * Add a hostname/IP address pair to the local host-list.
  * Duplicates are not checked.
- *
  * @param hostname hostname of the new entry
  * @param addr IP address of the new entry
  * @return ERR_OK if succeeded or ERR_MEM on memory error
@@ -601,12 +583,10 @@ dns_local_addhost(const char *hostname, const ip_addr_t *addr)
 /**
  * @ingroup dns
  * Look up a hostname in the array of known hostnames.
- *
  * @note This function only looks in the internal array of known
  * hostnames, it does not send out a query for the hostname if none
  * was found. The function dns_enqueue() can be used to send a query
  * for a hostname.
- *
  * @param name the hostname to look up
  * @param hostnamelen length of the hostname
  * @param addr the hostname's IP address, as u32_t (instead of ip_addr_t to
@@ -655,12 +635,10 @@ dns_lookup(const char *name, size_t hostnamelen, ip_addr_t *addr LWIP_DNS_ADDRTY
  * to make sure an answer from the DNS server matches the current dns_table
  * entry (otherwise, answers might arrive late for hostname not on the list
  * any more).
- *
  * For now, this function compares case-insensitive to cope with all kinds of
  * servers. This also means that "dns 0x20 bit encoding" must be checked
  * externally, if we want to implement it.
  * Currently, the request is sent exactly as passed in by he user request.
- *
  * @param query hostname (not encoded) from the dns_table
  * @param p pbuf containing the encoded hostname in the DNS response
  * @param start_offset offset into p where the name starts
@@ -718,7 +696,6 @@ dns_compare_name(const char *query, struct pbuf *p, u16_t start_offset)
 
 /**
  * Walk through a compact encoded DNS name and return the end of the name.
- *
  * @param p pbuf containing the name
  * @param query_idx start index into p pointing to encoded DNS name in the DNS server response
  * @return index to end of the name
@@ -759,7 +736,6 @@ dns_skip_name(struct pbuf *p, u16_t query_idx)
 
 /**
  * Send a DNS query packet.
- *
  * @param idx the DNS table entry index for which to send a request
  * @return ERR_OK if packet is sent; an err_t indicating the problem otherwise
  */
@@ -912,7 +888,6 @@ dns_alloc_random_port(void)
 /**
  * dns_alloc_pcb() - allocates a new pcb (or reuses an existing one) to be used
  * for sending a request
- *
  * @return an index into dns_pcbs
  */
 static u8_t
@@ -953,7 +928,6 @@ dns_alloc_pcb(void)
  * dns_call_found() - call the found callback and check if there are duplicate
  * entries for the given hostname. If there are any, their found callback will
  * be called and they will be removed.
- *
  * @param idx dns table index of the entry that is resolved or removed
  * @param addr IP address for the hostname (or NULL on error or memory shortage)
  */
@@ -1059,7 +1033,6 @@ dns_backupserver_available(struct dns_table_entry *pentry)
  * - send out query for new entries
  * - retry old pending entries on timeout (also with different servers)
  * - remove completed entries from the table if their TTL has expired
- *
  * @param i index of the dns_table entry to check
  */
 static void
@@ -1383,7 +1356,6 @@ ignore_packet:
 
 /**
  * Queues a new hostname to resolve and sends out a DNS query for that hostname
- *
  * @param name the hostname that is to be queried
  * @param hostnamelen length of the hostname
  * @param found a callback function to be called on success, failure or timeout
@@ -1529,14 +1501,12 @@ dns_enqueue(const char *name, size_t hostnamelen, dns_found_callback found,
  * @ingroup dns
  * Resolve a hostname (string) into an IP address.
  * NON-BLOCKING callback version for use with raw API!!!
- *
  * Returns immediately with one of err_t return codes:
  * - ERR_OK if hostname is a valid IP address string or the host
  *   name is already in the local names table.
  * - ERR_INPROGRESS enqueue a request to be sent to the DNS server
  *   for resolution if no errors are present.
  * - ERR_ARG: dns client not initialized or invalid hostname
- *
  * @param hostname the hostname that is to be queried
  * @param addr pointer to a ip_addr_t where to store the address if it is already
  *             cached in the dns_table (only valid if ERR_OK is returned!)

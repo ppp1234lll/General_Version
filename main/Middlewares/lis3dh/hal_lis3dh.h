@@ -47,6 +47,9 @@ bool hal_lis3dh_get_int1_status(void);
 bool hal_lis3dh_get_int2_status(void);
 
 u8_t LIS3DH_ReadReg(u8_t Reg, u8_t* Data);
+
+uint16_t LIS3DH_GetAngle(void);
+
 void lis3dh_test(void);
 
 #endif /* HAL_LIS3DH_H_ */

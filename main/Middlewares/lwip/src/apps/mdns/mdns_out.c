@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2015 Verisure Innovation AB
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,12 +25,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Erik Ekman <erik@kryo.se>
  * Author: Jasper Verschueren <jasper.verschueren@apart-audio.com>
- *
  */
 
 #include "lwip/apps/mdns_out.h"
@@ -570,7 +564,6 @@ mdns_add_query_question_to_outpacket(struct mdns_outpacket *outpkt, struct mdns_
 
 /**
  * Create packet with chosen answers as a reply
- *
  * Add all selected answers / questions
  * Add additional answers based on the selected answers
  */
@@ -755,7 +748,6 @@ mdns_create_outpacket(struct netif *netif, struct mdns_outmsg *msg,
 
 /**
  * Send chosen answers as a reply
- *
  * Create the packet
  * Send the packet
  */
@@ -806,7 +798,6 @@ cleanup:
 #if LWIP_IPV4
 /**
  *  Called by timeouts when timer is passed, allows multicast IPv4 traffic again.
- *
  *  @param arg  pointer to netif of timeout.
  */
 void
@@ -823,7 +814,6 @@ mdns_multicast_timeout_reset_ipv4(void *arg)
 /**
  *  Called by timeouts when timer is passed, allows direct multicast IPv4 probe
  *  response traffic again and sends out probe response if one was pending
- *
  *  @param arg  pointer to netif of timeout.
  */
 void
@@ -854,7 +844,6 @@ mdns_multicast_probe_timeout_reset_ipv4(void *arg)
 /**
  *  Called by timeouts when timer is passed, allows to send an answer on a QU
  *  question via multicast.
- *
  *  @param arg  pointer to netif of timeout.
  */
 void
@@ -870,7 +859,6 @@ mdns_multicast_timeout_25ttl_reset_ipv4(void *arg)
 
 /**
  *  Called by timeouts when timer is passed, sends out delayed multicast IPv4 response.
- *
  *  @param arg  pointer to netif of timeout.
  */
 void
@@ -894,7 +882,6 @@ mdns_send_multicast_msg_delayed_ipv4(void *arg)
 
 /**
  *  Called by timeouts when timer is passed, sends out delayed unicast IPv4 response.
- *
  *  @param arg  pointer to netif of timeout.
  */
 void
@@ -920,7 +907,6 @@ mdns_send_unicast_msg_delayed_ipv4(void *arg)
  *    - do not multicast within one second
  *    - do not multicast a probe response within 250ms
  *    - send a multicast answer on a QU question if not send recently.
- *
  *  @param netif network interface to start timeouts on
  */
 void
@@ -943,7 +929,6 @@ mdns_start_multicast_timeouts_ipv4(struct netif *netif)
 #if LWIP_IPV6
 /**
  *  Called by timeouts when timer is passed, allows multicast IPv6 traffic again.
- *
  *  @param arg  pointer to netif of timeout.
  */
 void
@@ -960,7 +945,6 @@ mdns_multicast_timeout_reset_ipv6(void *arg)
 /**
  *  Called by timeouts when timer is passed, allows direct multicast IPv6 probe
  *  response traffic again and sends out probe response if one was pending
- *
  *  @param arg  pointer to netif of timeout.
  */
 void
@@ -991,7 +975,6 @@ mdns_multicast_probe_timeout_reset_ipv6(void *arg)
 /**
  *  Called by timeouts when timer is passed, allows to send an answer on a QU
  *  question via multicast.
- *
  *  @param arg  pointer to netif of timeout.
  */
 void
@@ -1007,7 +990,6 @@ mdns_multicast_timeout_25ttl_reset_ipv6(void *arg)
 
 /**
  *  Called by timeouts when timer is passed, sends out delayed multicast IPv6 response.
- *
  *  @param arg  pointer to netif of timeout.
  */
 void
@@ -1031,7 +1013,6 @@ mdns_send_multicast_msg_delayed_ipv6(void *arg)
 
 /**
  *  Called by timeouts when timer is passed, sends out delayed unicast IPv6 response.
- *
  *  @param arg  pointer to netif of timeout.
  */
 void
@@ -1057,7 +1038,6 @@ mdns_send_unicast_msg_delayed_ipv6(void *arg)
  *    - do not multicast within one second
  *    - do not multicast a probe response within 250ms
  *    - send a multicast answer on a QU question if not send recently.
- *
  *  @param netif network interface to start timeouts on
  */
 void
@@ -1081,7 +1061,6 @@ mdns_start_multicast_timeouts_ipv6(struct netif *netif)
  *  This function clears the output message without changing the destination
  *  address or port. This is useful for clearing the delayed msg structs without
  *  losing the set IP.
- *
  *  @param outmsg pointer to output message to clear.
  */
 static void
@@ -1109,7 +1088,6 @@ mdns_clear_outmsg(struct mdns_outmsg *outmsg)
  *  Sets a timer that calls the handler when finished.
  *  Depending on the busy_flag the timer is restarted or started. The flag is
  *  set before return. Sys_timeout does not give us this functionality.
- *
  *  @param netif      Network interface info
  *  @param msecs      Time value to set
  *  @param handler    Callback function to call

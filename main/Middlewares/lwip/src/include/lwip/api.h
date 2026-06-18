@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,11 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 #ifndef LWIP_HDR_API_H
 #define LWIP_HDR_API_H
@@ -153,27 +147,20 @@ enum netconn_state {
 };
 
 /** Used to inform the callback function about changes
- *
  * Event explanation:
- *
  * In the netconn implementation, there are three ways to block a client:
- *
  * - accept mbox (sys_arch_mbox_fetch(&conn->acceptmbox, &accept_ptr, 0); in netconn_accept())
  * - receive mbox (sys_arch_mbox_fetch(&conn->recvmbox, &buf, 0); in netconn_recv_data())
  * - send queue is full (sys_arch_sem_wait(LWIP_API_MSG_SEM(msg), 0); in lwip_netconn_do_write())
- *
  * The events have to be seen as events signaling the state of these mboxes/semaphores. For non-blocking
  * connections, you need to know in advance whether a call to a netconn function call would block or not,
  * and these events tell you about that.
- *
  * RCVPLUS events say: Safe to perform a potentially blocking call call once more.
  * They are counted in sockets - three RCVPLUS events for accept mbox means you are safe
  * to call netconn_accept 3 times without being blocked.
  * Same thing for receive mbox.
- *
  * RCVMINUS events say: Your call to to a possibly blocking function is "acknowledged".
  * Socket implementation decrements the counter.
- *
  * For TX, there is no need to count, its merely a flag. SENDPLUS means you may send something.
  * SENDPLUS occurs when enough data was delivered to peer so netconn_send() can be called again.
  * A SENDMINUS event occurs when the next call to a netconn_send() would be blocking.

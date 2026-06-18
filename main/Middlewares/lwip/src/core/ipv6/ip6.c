@@ -1,16 +1,13 @@
 /**
  * @file
- *
  * IPv6 layer.
  */
 
 /*
  * Copyright (c) 2010 Inico Technologies Ltd.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -18,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -29,12 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Ivan Delamer <delamer@inicotech.com>
- *
- *
  * Please coordinate changes and requests with Ivan Delamer
  * <delamer@inicotech.com>
  */
@@ -75,9 +67,7 @@
  * 5) tries to find a router-announced route
  * 6) tries to match the (unscoped) source address to the netif
  * 7) returns the default netif, if configured
- *
  * Note that each of the two given addresses may or may not be properly zoned.
- *
  * @param src the source IPv6 address, if known
  * @param dest the destination IPv6 address for which to find the route
  * @return the netif on which to send to reach dest
@@ -257,22 +247,18 @@ ip6_route(const ip6_addr_t *src, const ip6_addr_t *dest)
 /**
  * @ingroup ip6
  * Select the best IPv6 source address for a given destination IPv6 address.
- *
  * This implementation follows RFC 6724 Sec. 5 to the following extent:
  * - Rules 1, 2, 3: fully implemented
  * - Rules 4, 5, 5.5: not applicable
  * - Rule 6: not implemented
  * - Rule 7: not applicable
  * - Rule 8: limited to "prefer /64 subnet match over non-match"
- *
  * For Rule 2, we deliberately deviate from RFC 6724 Sec. 3.1 by considering
  * ULAs to be of smaller scope than global addresses, to avoid that a preferred
  * ULA is picked over a deprecated global address when given a global address
  * as destination, as that would likely result in broken two-way communication.
- *
  * As long as temporary addresses are not supported (as used in Rule 7), a
  * proper implementation of Rule 8 would obviate the need to implement Rule 6.
- *
  * @param netif the netif on which to send a packet
  * @param dest the destination we are trying to reach (possibly not properly
  *             zoned)
@@ -357,7 +343,6 @@ ip6_select_source_address(struct netif *netif, const ip6_addr_t *dest)
  * Forwards an IPv6 packet. It finds an appropriate route for the
  * packet, decrements the HL value of the packet, and outputs
  * the packet on the appropriate interface.
- *
  * @param p the packet to forward (p->payload points to IP header)
  * @param iphdr the IPv6 header of the input packet
  * @param inp the netif on which this packet was received
@@ -497,9 +482,7 @@ ip6_input_accept(struct netif *netif)
  * IP header such as packet size being at least larger than the header
  * size etc. If the packet was not destined for us, the packet is
  * forwarded (using ip6_forward).
- *
  * Finally, the packet is sent to the upper layer protocol input function.
- *
  * @param p the received IPv6 packet (p->payload points to IPv6 header)
  * @param inp the netif on which this packet was received
  * @return ERR_OK if the packet was processed (could return ERR_* if it wasn't
@@ -1128,7 +1111,6 @@ ip6_input_cleanup:
  * interface is filled in as source address. If the destination IPv6 address is
  * LWIP_IP_HDRINCL, p is assumed to already include an IPv6 header and
  * p->payload points to it instead of the data.
- *
  * @param p the packet to send (p->payload points to the data, e.g. next
             protocol header; if dest == LWIP_IP_HDRINCL, p already includes an
             IPv6 header and p->payload points to that IPv6 header)
@@ -1273,7 +1255,6 @@ ip6_output_if_src(struct pbuf *p, const ip6_addr_t *src, const ip6_addr_t *dest,
 /**
  * Simple interface to ip6_output_if. It finds the outgoing network
  * interface and calls upon ip6_output_if to do the actual work.
- *
  * @param p the packet to send (p->payload points to the data, e.g. next
             protocol header; if dest == LWIP_IP_HDRINCL, p already includes an
             IPv6 header and p->payload points to that IPv6 header)
@@ -1284,7 +1265,6 @@ ip6_output_if_src(struct pbuf *p, const ip6_addr_t *src, const ip6_addr_t *dest,
  * @param hl the Hop Limit value to be set in the IPv6 header
  * @param tc the Traffic Class value to be set in the IPv6 header
  * @param nexth the Next Header to be set in the IPv6 header
- *
  * @return ERR_RTE if no route is found
  *         see ip_output_if() for more return values
  */
@@ -1330,7 +1310,6 @@ ip6_output(struct pbuf *p, const ip6_addr_t *src, const ip6_addr_t *dest,
 #if LWIP_NETIF_USE_HINTS
 /** Like ip6_output, but takes and addr_hint pointer that is passed on to netif->addr_hint
  *  before calling ip6_output_if.
- *
  * @param p the packet to send (p->payload points to the data, e.g. next
             protocol header; if dest == LWIP_IP_HDRINCL, p already includes an
             IPv6 header and p->payload points to that IPv6 header)
@@ -1343,7 +1322,6 @@ ip6_output(struct pbuf *p, const ip6_addr_t *src, const ip6_addr_t *dest,
  * @param nexth the Next Header to be set in the IPv6 header
  * @param netif_hint netif output hint pointer set to netif->hint before
  *        calling ip_output_if()
- *
  * @return ERR_RTE if no route is found
  *         see ip_output_if() for more return values
  */
@@ -1394,9 +1372,7 @@ ip6_output_hinted(struct pbuf *p, const ip6_addr_t *src, const ip6_addr_t *dest,
 #if LWIP_IPV6_MLD
 /**
  * Add a hop-by-hop options header with a router alert option and padding.
- *
  * Used by MLD when sending a Multicast listener report/done message.
- *
  * @param p the packet to which we will prepend the options header
  * @param nexth the next header protocol number (e.g. IP6_NEXTH_ICMP6)
  * @param value the value of the router alert option data (e.g. IP6_ROUTER_ALERT_VALUE_MLD)

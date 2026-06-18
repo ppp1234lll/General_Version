@@ -1,46 +1,46 @@
 #ifndef __SNMP_UDP_H_
 #define __SNMP_UDP_H_
 
-#include "sys.h"
+#include "./SYSTEM/sys/sys.h"
 
 #define SNMP_NONE       0
 #define SNMP_START      1
 #define SNMP_LINK       2
 #define SNMP_SEND       3
 #define SNMP_RECV       4
-#define SNMP_END      	((uint8_t)0x80)  // 搜索结束
+#define SNMP_END          ((uint8_t)0x80)  // 搜索结束
 
 typedef enum
 {
-	SNMP_IPC = 0,
-	SNMP_ONV  ,
-	SNMP_SWITCH ,
+    SNMP_IPC = 0,
+    SNMP_ONV  ,
+    SNMP_SWITCH ,
 } snmp_dev_type_t;
 
 // 摄像机【品牌】
 typedef enum
 {
-	IPC_HIKVISION = 0,
-	IPC_DAHUA,
-	IPC_UNV,
-	IPC_MAX,
+    IPC_HIKVISION = 0,
+    IPC_DAHUA,
+    IPC_UNV,
+    IPC_MAX,
 } snmp_ipc_brand_t;
 
 typedef struct 
 {
-	char 		brand[32];  					// 品牌
-	char 		device_model[32];  				// 型号
-	uint8_t 	port_status[10];  // 端口状态（1=up/2=down）
-	uint8_t 	port_poe[10];     // PoE状态（1=开/2=关）	
-	uint8_t 	port_poe_power[10]; // PoE功率（1=100W/2=200W）
+    char         brand[32];                      // 品牌
+    char         device_model[32];                  // 型号
+    uint8_t     port_status[10];  // 端口状态（1=up/2=down）
+    uint8_t     port_poe[10];     // PoE状态（1=开/2=关）    
+    uint8_t     port_poe_power[10]; // PoE功率（1=100W/2=200W）
 }switch_t;
 
 
 typedef struct
 {
-	uint8_t ipc_param[3][10][32]; 
-	uint8_t onv_param[1][10][32]; 
-	switch_t switch_param[1]; 
+    uint8_t ipc_param[3][10][32]; 
+    uint8_t onv_param[1][10][32]; 
+    switch_t switch_param[1]; 
 } snmp_param_t;
 
 

@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2007-2009 Frédéric Bernon, Simon Goldschmidt
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,11 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Frédéric Bernon, Simon Goldschmidt
- *
  */
 #ifndef LWIP_HDR_APPS_SNTP_OPTS_H
 #define LWIP_HDR_APPS_SNTP_OPTS_H
@@ -114,13 +108,11 @@
 /** Enable round-trip delay compensation.
  * Compensate for the round-trip delay by calculating the clock offset from
  * the originate, receive, transmit and destination timestamps, as per RFC.
- *
  * The calculation requires compiler support for 64-bit integers. Also, either
  * SNTP_SET_SYSTEM_TIME_US or SNTP_SET_SYSTEM_TIME_NTP has to be implemented
  * for setting the system clock with sub-second precision. Likewise, either
  * SNTP_GET_SYSTEM_TIME or SNTP_GET_SYSTEM_TIME_NTP needs to be implemented
  * with sub-second precision.
- *
  * Although not strictly required, it makes sense to combine this option with
  * SNTP_CHECK_RESPONSE >= 2 for sanity-checking of the received timestamps.
  * Also, in order for the round-trip calculation to work, the difference

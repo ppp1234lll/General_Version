@@ -1,55 +1,44 @@
 /*
  * FreeRTOS Kernel V10.4.6
  * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
  * SPDX-License-Identifier: MIT
- *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  * the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  * https://www.FreeRTOS.org
  * https://github.com/FreeRTOS
- *
  */
 
 /*
  * This is the list implementation used by the scheduler.  While it is tailored
  * heavily for the schedulers needs, it is also available for use by
  * application code.
- *
  * list_ts can only store pointers to list_item_ts.  Each ListItem_t contains a
  * numeric value (xItemValue).  Most of the time the lists are sorted in
  * ascending item value order.
- *
  * Lists are created already containing one list item.  The value of this
  * item is the maximum possible that can be stored, it is therefore always at
  * the end of the list and acts as a marker.  The list member pxHead always
  * points to this marker - even though it is at the tail of the list.  This
  * is because the tail contains a wrap back pointer to the true head of
  * the list.
- *
  * In addition to it's value, each list item contains a pointer to the next
  * item in the list (pxNext), a pointer to the list it is in (pxContainer)
  * and a pointer to back to the object that contains it.  These later two
  * pointers are included for efficiency of list manipulation.  There is
  * effectively a two way link between the object containing the list item and
  * the list item itself.
- *
- *
  * \page ListIntroduction List Implementation
  * \ingroup FreeRTOSIntro
  */
@@ -85,7 +74,6 @@
  * FreeRTOSConfig.h (as per the example at the bottom of this comment block).
  * If configLIST_VOLATILE is not defined then the preprocessor directives below
  * will simply #define configLIST_VOLATILE away completely.
- *
  * To use volatile list structure members then add the following line to
  * FreeRTOSConfig.h (without the quotes):
  * "#define configLIST_VOLATILE volatile"
@@ -177,7 +165,6 @@ typedef struct xLIST
 /*
  * Access macro to set the owner of a list item.  The owner of a list item
  * is the object (usually a TCB) that contains the list item.
- *
  * \page listSET_LIST_ITEM_OWNER listSET_LIST_ITEM_OWNER
  * \ingroup LinkedList
  */
@@ -186,7 +173,6 @@ typedef struct xLIST
 /*
  * Access macro to get the owner of a list item.  The owner of a list item
  * is the object (usually a TCB) that contains the list item.
- *
  * \page listGET_LIST_ITEM_OWNER listSET_LIST_ITEM_OWNER
  * \ingroup LinkedList
  */
@@ -195,7 +181,6 @@ typedef struct xLIST
 /*
  * Access macro to set the value of the list item.  In most cases the value is
  * used to sort the list in ascending order.
- *
  * \page listSET_LIST_ITEM_VALUE listSET_LIST_ITEM_VALUE
  * \ingroup LinkedList
  */
@@ -205,7 +190,6 @@ typedef struct xLIST
  * Access macro to retrieve the value of the list item.  The value can
  * represent anything - for example the priority of a task, or the time at
  * which a task should be unblocked.
- *
  * \page listGET_LIST_ITEM_VALUE listGET_LIST_ITEM_VALUE
  * \ingroup LinkedList
  */
@@ -214,7 +198,6 @@ typedef struct xLIST
 /*
  * Access macro to retrieve the value of the list item at the head of a given
  * list.
- *
  * \page listGET_LIST_ITEM_VALUE listGET_LIST_ITEM_VALUE
  * \ingroup LinkedList
  */
@@ -222,7 +205,6 @@ typedef struct xLIST
 
 /*
  * Return the list item at the head of the list.
- *
  * \page listGET_HEAD_ENTRY listGET_HEAD_ENTRY
  * \ingroup LinkedList
  */
@@ -230,7 +212,6 @@ typedef struct xLIST
 
 /*
  * Return the next list item.
- *
  * \page listGET_NEXT listGET_NEXT
  * \ingroup LinkedList
  */
@@ -238,7 +219,6 @@ typedef struct xLIST
 
 /*
  * Return the list item that marks the end of the list
- *
  * \page listGET_END_MARKER listGET_END_MARKER
  * \ingroup LinkedList
  */
@@ -247,7 +227,6 @@ typedef struct xLIST
 /*
  * Access macro to determine if a list contains any items.  The macro will
  * only have the value true if the list is empty.
- *
  * \page listLIST_IS_EMPTY listLIST_IS_EMPTY
  * \ingroup LinkedList
  */
@@ -260,21 +239,17 @@ typedef struct xLIST
 
 /*
  * Access function to obtain the owner of the next entry in a list.
- *
  * The list member pxIndex is used to walk through a list.  Calling
  * listGET_OWNER_OF_NEXT_ENTRY increments pxIndex to the next item in the list
  * and returns that entry's pxOwner parameter.  Using multiple calls to this
  * function it is therefore possible to move through every item contained in
  * a list.
- *
  * The pxOwner parameter of a list item is a pointer to the object that owns
  * the list item.  In the scheduler this is normally a task control block.
  * The pxOwner parameter effectively creates a two way link between the list
  * item and its owner.
- *
  * @param pxTCB pxTCB is set to the address of the owner of the next list item.
  * @param pxList The list from which the next item owner is to be returned.
- *
  * \page listGET_OWNER_OF_NEXT_ENTRY listGET_OWNER_OF_NEXT_ENTRY
  * \ingroup LinkedList
  */
@@ -294,16 +269,12 @@ typedef struct xLIST
 /*
  * Version of uxListRemove() that does not return a value.  Provided as a slight
  * optimisation for xTaskIncrementTick() by being inline.
- *
  * Remove an item from a list.  The list item has a pointer to the list that
  * it is in, so only the list item need be passed into the function.
- *
  * @param uxListRemove The item to be removed.  The item will remove itself from
  * the list pointed to by it's pxContainer parameter.
- *
  * @return The number of items that remain in the list after the list item has
  * been removed.
- *
  * \page listREMOVE_ITEM listREMOVE_ITEM
  * \ingroup LinkedList
  */
@@ -328,22 +299,17 @@ typedef struct xLIST
 /*
  * Inline version of vListInsertEnd() to provide slight optimisation for
  * xTaskIncrementTick().
- *
  * Insert a list item into a list.  The item will be inserted in a position
  * such that it will be the last item within the list returned by multiple
  * calls to listGET_OWNER_OF_NEXT_ENTRY.
- *
  * The list member pxIndex is used to walk through a list.  Calling
  * listGET_OWNER_OF_NEXT_ENTRY increments pxIndex to the next item in the list.
  * Placing an item in a list using vListInsertEnd effectively places the item
  * in the list position pointed to by pxIndex.  This means that every other
  * item within the list will be returned by listGET_OWNER_OF_NEXT_ENTRY before
  * the pxIndex parameter again points to the item being inserted.
- *
  * @param pxList The list into which the item is to be inserted.
- *
  * @param pxNewListItem The list item to be inserted into the list.
- *
  * \page listINSERT_END listINSERT_END
  * \ingroup LinkedList
  */
@@ -375,16 +341,13 @@ typedef struct xLIST
 /*
  * Access function to obtain the owner of the first entry in a list.  Lists
  * are normally sorted in ascending item value order.
- *
  * This function returns the pxOwner member of the first item in the list.
  * The pxOwner parameter of a list item is a pointer to the object that owns
  * the list item.  In the scheduler this is normally a task control block.
  * The pxOwner parameter effectively creates a two way link between the list
  * item and its owner.
- *
  * @param pxList The list from which the owner of the head item is to be
  * returned.
- *
  * \page listGET_OWNER_OF_HEAD_ENTRY listGET_OWNER_OF_HEAD_ENTRY
  * \ingroup LinkedList
  */
@@ -394,7 +357,6 @@ typedef struct xLIST
  * Check to see if a list item is within a list.  The list item maintains a
  * "container" pointer that points to the list it is in.  All this macro does
  * is check to see if the container and the list match.
- *
  * @param pxList The list we want to know if the list item is within.
  * @param pxListItem The list item we want to know if is in the list.
  * @return pdTRUE if the list item is in the list, otherwise pdFALSE.
@@ -403,7 +365,6 @@ typedef struct xLIST
 
 /*
  * Return the list a list item is contained within (referenced from).
- *
  * @param pxListItem The list item being queried.
  * @return A pointer to the List_t object that references the pxListItem
  */
@@ -420,9 +381,7 @@ typedef struct xLIST
  * Must be called before a list is used!  This initialises all the members
  * of the list structure and inserts the xListEnd item into the list as a
  * marker to the back of the list.
- *
  * @param pxList Pointer to the list being initialised.
- *
  * \page vListInitialise vListInitialise
  * \ingroup LinkedList
  */
@@ -431,9 +390,7 @@ void vListInitialise( List_t * const pxList ) PRIVILEGED_FUNCTION;
 /*
  * Must be called before a list item is used.  This sets the list container to
  * null so the item does not think that it is already contained in a list.
- *
  * @param pxItem Pointer to the list item being initialised.
- *
  * \page vListInitialiseItem vListInitialiseItem
  * \ingroup LinkedList
  */
@@ -442,11 +399,8 @@ void vListInitialiseItem( ListItem_t * const pxItem ) PRIVILEGED_FUNCTION;
 /*
  * Insert a list item into a list.  The item will be inserted into the list in
  * a position determined by its item value (ascending item value order).
- *
  * @param pxList The list into which the item is to be inserted.
- *
  * @param pxNewListItem The item that is to be placed in the list.
- *
  * \page vListInsert vListInsert
  * \ingroup LinkedList
  */
@@ -457,18 +411,14 @@ void vListInsert( List_t * const pxList,
  * Insert a list item into a list.  The item will be inserted in a position
  * such that it will be the last item within the list returned by multiple
  * calls to listGET_OWNER_OF_NEXT_ENTRY.
- *
  * The list member pxIndex is used to walk through a list.  Calling
  * listGET_OWNER_OF_NEXT_ENTRY increments pxIndex to the next item in the list.
  * Placing an item in a list using vListInsertEnd effectively places the item
  * in the list position pointed to by pxIndex.  This means that every other
  * item within the list will be returned by listGET_OWNER_OF_NEXT_ENTRY before
  * the pxIndex parameter again points to the item being inserted.
- *
  * @param pxList The list into which the item is to be inserted.
- *
  * @param pxNewListItem The list item to be inserted into the list.
- *
  * \page vListInsertEnd vListInsertEnd
  * \ingroup LinkedList
  */
@@ -478,13 +428,10 @@ void vListInsertEnd( List_t * const pxList,
 /*
  * Remove an item from a list.  The list item has a pointer to the list that
  * it is in, so only the list item need be passed into the function.
- *
  * @param uxListRemove The item to be removed.  The item will remove itself from
  * the list pointed to by it's pxContainer parameter.
- *
  * @return The number of items that remain in the list after the list item has
  * been removed.
- *
  * \page uxListRemove uxListRemove
  * \ingroup LinkedList
  */

@@ -1,17 +1,13 @@
 /*
 *********************************************************************************************************
-*
-*	模块名称 : 头文件汇总
-*	文件名称 : BSP.h
-*	版    本 : V1.0
-*	说    明 : 当前使用头文件汇总
-*
-*	修改记录 :
-*		版本号    日期        作者     说明
-*		V1.0    2015-08-02  Eric2013   首次发布
-*
-*	Copyright (C), 2015-2020,
-*
+*    函 数 名: 头文件汇总
+*    功能说明: BSP.h
+*    形    参: V1.0
+*    返 回 值: 当前使用头文件汇总
+*    修改记录 :
+*        版本号    日期        作者     说明
+*        V1.0    2015-08-02  Eric2013   首次发布
+*    Copyright (C), 2015-2020,
 *********************************************************************************************************
 */
 #ifndef _BSP_H_
@@ -56,30 +52,40 @@
 #include "bsp_key.h"
 #include "bsp_fan.h"
 
+// 串口
+#include "bsp_debug.h"
 #include "bsp_usart0.h"
+#include "bsp_usart1.h"
+#include "bsp_usart2.h"
+#include "bsp_uart3.h"
+#include "bsp_uart4.h"
 #include "bsp_usart5.h"
+#include "bsp_uart6.h"
+#include "bsp_uart7.h"
 
 
+// SPI
 #include "bsp_spi_bus.h"
 #include "bsp_spi_flash.h"
 
+#include "bsp_hspi1.h"
+#include "bsp_hspi2.h"
+#include "bsp_hspi3.h"
+
+#include "bsp_sspi1.h"
+#include "bsp_sspi2.h"
+#include "bsp_sspi3.h"
+
+
 #include "bsp_enet.h"
 
-#include "bsp_rs485.h"
-#include "ATGM336H.h"
-#include "aht20_drv.h"
-#include "aht20.h"
+#include "bsp_siic.h"
+
 #include "hal_lis3dh.h"
 #include "lis3dh_driver.h" 
 #include "lis3dh_iic.h"
 #include "bsp_adc.h"
-#include "BL0939.h"
 #include "bsp_hspi3.h"
-
-#include "GPRS.h"
-#include "GPS.h" 
-
-
 
 #endif
 

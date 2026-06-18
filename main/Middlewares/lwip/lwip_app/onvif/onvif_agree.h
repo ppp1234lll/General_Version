@@ -1,8 +1,8 @@
 #ifndef __ONVIF_AGREE_H
 #define __ONVIF_AGREE_H
 
-#include "sys.h"
-#include "bsp.h"
+#include "./SYSTEM/sys/sys.h"
+#include "bsp_rtc.h"
 
 #define IPC_USER_NAME  "admin"
 #define IPC_PASSWORD   "TESTfnwlw"

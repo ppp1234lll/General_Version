@@ -1,8 +1,6 @@
 /**
  * @file
- *
  * 6LowPAN output for IPv6. Uses ND tables for link-layer addressing. Fragments packets to 6LowPAN units.
- *
  * This implementation aims to conform to IEEE 802.15.4(-2015), RFC 4944 and RFC 6282.
  * @todo: RFC 6775.
  */
@@ -10,10 +8,8 @@
 /*
  * Copyright (c) 2015 Inico Technologies Ltd.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -21,7 +17,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -32,12 +27,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Ivan Delamer <delamer@inicotech.com>
- *
- *
  * Please coordinate changes and requests with Ivan Delamer
  * <delamer@inicotech.com>
  */
@@ -122,7 +113,6 @@ static struct lowpan6_link_addr short_mac_addr = {2, {0, 0}};
 
 /** Write the IEEE 802.15.4 header that encapsulates the 6LoWPAN frame.
  * Src and dst PAN IDs are filled with the ID set by @ref lowpan6_set_pan_id.
- *
  * Since the length is variable:
  * @returns the header length
  */
@@ -174,9 +164,7 @@ lowpan6_write_iee802154_header(struct ieee_802154_hdr *hdr, const struct lowpan6
 
 /** Parse the IEEE 802.15.4 header from a pbuf.
  * If successful, the header is hidden from the pbuf.
- *
  * PAN IDs and seuqence number are not checked
- *
  * @param p input pbuf, p->payload pointing at the IEEE 802.15.4 header
  * @param src pointer to source address filled from the header
  * @param dest pointer to destination address filled from the header
@@ -313,7 +301,6 @@ dequeue_datagram(struct lowpan6_reass_helper *lrh, struct lowpan6_reass_helper *
 
 /**
  * Periodic timer for 6LowPAN functions:
- *
  * - Remove incomplete/old packets
  */
 void
@@ -554,13 +541,10 @@ lowpan6_hwaddr_to_addr(struct netif *netif, struct lowpan6_link_addr *addr)
 /**
  * @ingroup sixlowpan
  * Resolve and fill-in IEEE 802.15.4 address header for outgoing IPv6 packet.
- *
  * Perform Header Compression and fragment if necessary.
- *
  * @param netif The lwIP network interface which the IP packet will be sent on.
  * @param q The pbuf(s) containing the IP packet to be sent.
  * @param ip6addr The IP address of the packet destination.
- *
  * @return err_t
  */
 err_t
@@ -906,7 +890,6 @@ lowpan6_set_pan_id(u16_t pan_id)
 /**
  * @ingroup sixlowpan
  * Pass a received packet to tcpip_thread for input processing
- *
  * @param p the received packet, p->payload pointing to the
  *          IEEE 802.15.4 header.
  * @param inp the network interface on which the packet was received

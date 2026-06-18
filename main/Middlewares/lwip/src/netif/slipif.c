@@ -1,13 +1,11 @@
 /**
  * @file
  * SLIP Interface
- *
  */
 
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -19,7 +17,6 @@
  * 3. Neither the name of the Institute nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE INSTITUTE AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -31,9 +28,7 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
  * This file is built upon the file: src/arch/rtxc/netif/sioslip.c
- *
  * Author: Magnus Ivarsson <magnus.ivarsson(at)volvo.com>
  *         Simon Goldschmidt
  */
@@ -42,10 +37,8 @@
 /**
  * @defgroup slipif SLIP
  * @ingroup netifs
- *
  * This is an arch independent SLIP netif. The specific serial hooks must be
  * provided by another file. They are sio_open, sio_read/sio_tryread and sio_send
- *
  * Usage: This netif can be used in three ways:
  *        1. For NO_SYS==0, an RX thread can be used which blocks on sio_read()
  *           until data is received.
@@ -56,7 +49,6 @@
  *           packets and puts completed packets on a queue which is fed into
  *           the stack from the main loop (needs SYS_LIGHTWEIGHT_PROT for
  *           pbuf_alloc to work on ISR level!).
- *
  */
 
 #include "netif/slipif.h"
@@ -105,9 +97,7 @@ struct slipif_priv {
 
 /**
  * Send a pbuf doing the necessary SLIP encapsulation
- *
  * Uses the serial layer's sio_send()
- *
  * @param netif the lwip network interface structure for this slipif
  * @param p the pbuf chain packet to send
  * @return always returns ERR_OK since the serial layer does not provide return values
@@ -160,9 +150,7 @@ slipif_output(struct netif *netif, struct pbuf *p)
 #if LWIP_IPV4
 /**
  * Send a pbuf doing the necessary SLIP encapsulation
- *
  * Uses the serial layer's sio_send()
- *
  * @param netif the lwip network interface structure for this slipif
  * @param p the pbuf chain packet to send
  * @param ipaddr the ip address to send the packet to (not used for slipif)
@@ -179,9 +167,7 @@ slipif_output_v4(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
 #if LWIP_IPV6
 /**
  * Send a pbuf doing the necessary SLIP encapsulation
- *
  * Uses the serial layer's sio_send()
- *
  * @param netif the lwip network interface structure for this slipif
  * @param p the pbuf chain packet to send
  * @param ipaddr the ip address to send the packet to (not used for slipif)
@@ -197,7 +183,6 @@ slipif_output_v6(struct netif *netif, struct pbuf *p, const ip6_addr_t *ipaddr)
 
 /**
  * Handle the incoming SLIP stream character by character
- *
  * @param netif the lwip network interface structure for this slipif
  * @param c received character (multiple calls to this function will
  *        return a complete packet, NULL is returned before - used for polling)
@@ -302,7 +287,6 @@ slipif_rxbyte(struct netif *netif, u8_t c)
 }
 
 /** Like slipif_rxbyte, but passes completed packets to netif->input
- *
  * @param netif The lwip network interface structure for this slipif
  * @param c received character
  */
@@ -321,9 +305,7 @@ slipif_rxbyte_input(struct netif *netif, u8_t c)
 #if SLIP_USE_RX_THREAD
 /**
  * The SLIP input thread.
- *
  * Feed the IP layer with incoming packets
- *
  * @param nf the lwip network interface structure for this slipif
  */
 static void
@@ -344,17 +326,13 @@ slipif_loop_thread(void *nf)
 /**
  * @ingroup slipif
  * SLIP netif initialization
- *
  * Call the arch specific sio_open and remember
  * the opened device in the state field of the netif.
- *
  * @param netif the lwip network interface structure for this slipif
  * @return ERR_OK if serial line could be opened,
  *         ERR_MEM if no memory could be allocated,
  *         ERR_IF is serial line couldn't be opened
- *
  * @note If netif->state is interpreted as an u8_t serial port number.
- *
  */
 err_t
 slipif_init(struct netif *netif)
@@ -419,7 +397,6 @@ slipif_init(struct netif *netif)
 /**
  * @ingroup slipif
  * Polls the serial device and feeds the IP layer with incoming packets.
- *
  * @param netif The lwip network interface structure for this slipif
  */
 void
@@ -442,7 +419,6 @@ slipif_poll(struct netif *netif)
 /**
  * @ingroup slipif
  * Feeds the IP layer with incoming packets that were receive
- *
  * @param netif The lwip network interface structure for this slipif
  */
 void
@@ -480,7 +456,6 @@ slipif_process_rxqueue(struct netif *netif)
 }
 
 /** Like slipif_rxbyte, but queues completed packets.
- *
  * @param netif The lwip network interface structure for this slipif
  * @param data Received serial byte
  */
@@ -518,9 +493,7 @@ slipif_rxbyte_enqueue(struct netif *netif, u8_t data)
  * @ingroup slipif
  * Process a received byte, completed packets are put on a queue that is
  * fed into IP through slipif_process_rxqueue().
- *
  * This function can be called from ISR if SYS_LIGHTWEIGHT_PROT is enabled.
- *
  * @param netif The lwip network interface structure for this slipif
  * @param data received character
  */
@@ -536,9 +509,7 @@ slipif_received_byte(struct netif *netif, u8_t data)
  * @ingroup slipif
  * Process multiple received byte, completed packets are put on a queue that is
  * fed into IP through slipif_process_rxqueue().
- *
  * This function can be called from ISR if SYS_LIGHTWEIGHT_PROT is enabled.
- *
  * @param netif The lwip network interface structure for this slipif
  * @param data received character
  * @param len Number of received characters

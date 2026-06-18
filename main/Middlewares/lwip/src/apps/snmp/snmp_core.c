@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2006 Axon Digital Design B.V., The Netherlands.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,7 +25,6 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * Author: Christiaan Simons <christiaan.simons@axon.tv>
  *         Martin Hentschel <info@cl-soft.de>
 */
@@ -44,10 +40,8 @@
  * without IPv6 statistics (TODO).<br>
  * Rewritten by Martin Hentschel <info@cl-soft.de> and
  * Dirk Ziegelmeier <dziegel@gmx.de>
- *
  * 0 Agent Capabilities
  * ====================
- *
  * Features:
  * ---------
  * - SNMPv2c support.
@@ -66,7 +60,6 @@
  * - Simplified thread sync support for MIBs - useful when MIBs
  *   need to access variables shared with other threads where no locking is
  *   possible. Used in MIB2 to access lwIP stats from lwIP thread.
- *
  * MIB compiler (code generator):
  * ------------------------------
  * - Provided in contrib dir.
@@ -81,19 +74,16 @@
  * - MIB parser, C file generation framework and LWIP code generation are cleanly
  *   separated, which means the code may be useful as a base for code generation
  *   of other SNMP agents.
- *
  * Notes:
  * ------
  * - Stack and MIB compiler were used to implement a Profinet device.
  *   Compiled/implemented MIBs: LLDP-MIB, LLDP-EXT-DOT3-MIB, LLDP-EXT-PNO-MIB.
- *
  * SNMPv1 per RFC1157 and SNMPv2c per RFC 3416
  * -------------------------------------------
  *   Note the S in SNMP stands for "Simple". Note that "Simple" is
  *   relative. SNMP is simple compared to the complex ISO network
  *   management protocols CMIP (Common Management Information Protocol)
  *   and CMOT (CMip Over Tcp).
- *
  * SNMPv3
  * ------
  * When SNMPv3 is used, several functions from snmpv3.h must be implemented
@@ -101,80 +91,59 @@
  * The sample provided in lwip-contrib is insecure, don't use it in production
  * systems, especially the missing persistence for engine boots variable
  * simplifies replay attacks.
- *
  * MIB II
  * ------
  *   The standard lwIP stack management information base.
  *   This is a required MIB, so this is always enabled.
  *   The groups EGP, CMOT and transmission are disabled by default.
- *
  *   Most mib-2 objects are not writable except:
  *   sysName, sysLocation, sysContact, snmpEnableAuthenTraps.
  *   Writing to or changing the ARP and IP address and route
  *   tables is not possible.
- *
  *   Note lwIP has a very limited notion of IP routing. It currently
  *   doesn't have a route table and doesn't have a notion of the U,G,H flags.
  *   Instead lwIP uses the interface list with only one default interface
  *   acting as a single gateway interface (G) for the default route.
- *
  *   The agent returns a "virtual table" with the default route 0.0.0.0
  *   for the default interface and network routes (no H) for each
  *   network interface in the netif_list.
  *   All routes are considered to be up (U).
- *
  * Loading additional MIBs
  * -----------------------
  *   MIBs can only be added in compile-time, not in run-time.
- *
- *
  * 1 Building the Agent
  * ====================
  * First of all you'll need to add the following define
  * to your local lwipopts.h:
  * \#define LWIP_SNMP               1
- *
  * and add the source files your makefile.
- *
  * Note you'll might need to adapt you network driver to update
  * the mib2 variables for your interface.
- *
  * 2 Running the Agent
  * ===================
  * The following function calls must be made in your program to
  * actually get the SNMP agent running.
- *
  * Before starting the agent you should supply pointers
  * for sysContact, sysLocation, and snmpEnableAuthenTraps.
  * You can do this by calling
- *
  * - snmp_mib2_set_syscontact()
  * - snmp_mib2_set_syslocation()
  * - snmp_set_auth_traps_enabled()
- *
  * You can register a callback which is called on successful write access:
  * snmp_set_write_callback().
- *
  * Additionally you may want to set
- *
  * - snmp_mib2_set_sysdescr()
  * - snmp_set_device_enterprise_oid()
  * - snmp_mib2_set_sysname()
- *
  * Also before starting the agent you need to setup
  * one or more trap destinations using these calls:
- *
  * - snmp_trap_dst_enable()
  * - snmp_trap_dst_ip_set()
- *
  * If you need more than MIB2, set the MIBs you want to use
  * by snmp_set_mibs().
- *
  * Finally, enable the agent by calling snmp_init()
- *
  * @defgroup snmp_core Core
  * @ingroup snmp
- *
  * @defgroup snmp_traps Traps
  * @ingroup snmp
  */
@@ -980,7 +949,6 @@ snmp_get_next_node_instance_from_oid(const u32_t *oid, u8_t oid_len, snmp_valida
 
 /**
  * Searches tree for the supplied object identifier.
- *
  */
 const struct snmp_node *
 snmp_mib_tree_resolve_exact(const struct snmp_mib *mib, const u32_t *oid, u8_t oid_len, u8_t *oid_instance_len)
@@ -1204,11 +1172,9 @@ snmp_set_test_ok(struct snmp_node_instance *instance, u16_t value_len, void *val
 
 /**
  * Decodes BITS pseudotype value from ASN.1 OctetString.
- *
  * @note Because BITS pseudo type is encoded as OCTET STRING, it cannot directly
  * be encoded/decoded by the agent. Instead call this function as required from
  * get/test/set methods.
- *
  * @param buf points to a buffer holding the ASN1 octet string
  * @param buf_len length of octet string
  * @param bit_value decoded Bit value with Bit0 == LSB
@@ -1276,11 +1242,9 @@ snmp_decode_truthvalue(const s32_t *asn1_value, u8_t *bool_value)
 
 /**
  * Encodes BITS pseudotype value into ASN.1 OctetString.
- *
  * @note Because BITS pseudo type is encoded as OCTET STRING, it cannot directly
  * be encoded/decoded by the agent. Instead call this function as required from
  * get/test/set methods.
- *
  * @param buf points to a buffer where the resulting ASN1 octet string is stored to
  * @param buf_len max length of the buffer
  * @param bit_value Bit value to encode with Bit0 == LSB

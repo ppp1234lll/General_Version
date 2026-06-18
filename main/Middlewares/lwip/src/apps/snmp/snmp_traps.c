@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,12 +25,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Martin Hentschel
  *         Christiaan Simons <christiaan.simons@axon.tv>
- *
  */
 
 #include "lwip/apps/snmp_opts.h"
@@ -136,7 +130,6 @@ static s32_t req_id = 1;
  * Sets enable switch for this trap destination.
  * @param dst_idx index in 0 .. SNMP_TRAP_DESTINATIONS-1
  * @param enable switch if 0 destination is disabled >0 enabled.
- *
  */
 void
 snmp_trap_dst_enable(u8_t dst_idx, u8_t enable)
@@ -152,7 +145,6 @@ snmp_trap_dst_enable(u8_t dst_idx, u8_t enable)
  * Sets IPv4 address for this trap destination.
  * @param dst_idx index in 0 .. SNMP_TRAP_DESTINATIONS-1
  * @param dst IPv4 address in host order.
- *
  */
 void
 snmp_trap_dst_ip_set(u8_t dst_idx, const ip_addr_t *dst)
@@ -166,9 +158,7 @@ snmp_trap_dst_ip_set(u8_t dst_idx, const ip_addr_t *dst)
 /**
  * @ingroup snmp_traps
  * Enable/disable authentication traps
- *
  * @param enable enable SNMP traps
- *
  */
 void
 snmp_set_auth_traps_enabled(u8_t enable)
@@ -179,7 +169,6 @@ snmp_set_auth_traps_enabled(u8_t enable)
 /**
  * @ingroup snmp_traps
  * Get authentication traps enabled state
- *
  * @return TRUE if traps are enabled, FALSE if they aren't
  */
 u8_t
@@ -194,9 +183,7 @@ snmp_get_auth_traps_enabled(void)
  * SNMP_VERSION_1  0
  * SNMP_VERSION_2c 1
  * SNMP_VERSION_3  3
- *
  * @param snmp_version version that will be used for sending traps
- *
  */
 void
 snmp_set_default_trap_version(u8_t snmp_version)
@@ -207,7 +194,6 @@ snmp_set_default_trap_version(u8_t snmp_version)
 /**
  * @ingroup snmp_traps
  * Get default SNMP version for sending traps
- *
  * @return selected default version:
  * 0 - SNMP_VERSION_1
  * 1 - SNMP_VERSION_2c
@@ -324,14 +310,12 @@ snmp_send_msg(struct snmp_msg_trap *trap_msg, struct snmp_varbind *varbinds, u16
 /**
  * @ingroup snmp_traps
  * Prepare and sends a generic or enterprise specific trap message, notification or inform.
- *
  * @param trap_msg defines msg type
  * @param eoid points to enterprise object identifier
  * @param generic_trap is the trap code
  * @param specific_trap used for enterprise traps when generic_trap == 6
  * @param varbinds linked list of varbinds to be sent
  * @return ERR_OK when success, ERR_MEM if we're out of memory
- *
  * @note the use of the enterprise identifier field
  * is per RFC1215.
  * Use .iso.org.dod.internet.mgmt.mib-2.snmp for generic traps
@@ -415,13 +399,11 @@ snmp_send_trap_or_notification_or_inform_generic(struct snmp_msg_trap *trap_msg,
 /**
  * @ingroup snmp_traps
  * This function is a wrapper function for preparing and sending generic or specific traps.
- *
  * @param oid points to enterprise object identifier
  * @param generic_trap is the trap code
  * @param specific_trap used for enterprise traps when generic_trap == 6
  * @param varbinds linked list of varbinds to be sent
  * @return ERR_OK when success, ERR_MEM if we're out of memory
- *
  * @note the use of the enterprise identifier field
  * is per RFC1215.
  * Use .iso.org.dod.internet.mgmt.mib-2.snmp for generic traps
@@ -503,7 +485,6 @@ snmp_authfail_trap(void)
 /**
  * @ingroup snmp_traps
  * Sums trap varbinds
- *
  * @param trap Trap message
  * @param varbinds linked list of varbinds
  * @return the required length for encoding of this part of the trap header
@@ -537,7 +518,6 @@ snmp_trap_varbind_sum(struct snmp_msg_trap *trap, struct snmp_varbind *varbinds)
 /**
  * @ingroup snmp_traps
  * Sums trap header fields that are specific for SNMP v1
- *
  * @param trap Trap message
  * @return the required length for encoding of this part of the trap header
  */
@@ -582,7 +562,6 @@ snmp_trap_header_sum_v1_specific(struct snmp_msg_trap *trap)
 /**
  * @ingroup snmp_traps
  * Sums trap header fields that are specific for SNMP v2c
- *
  * @param trap Trap message
  * @return the required length for encoding of this part of the trap header
  */
@@ -610,7 +589,6 @@ snmp_trap_header_sum_v2c_specific(struct snmp_msg_trap *trap)
  * @ingroup snmp_traps
  * Sums trap header field lengths from tail to head and
  * returns trap_header_lengths for second encoding pass.
- *
  * @param trap Trap message
  * @param vb_len varbind-list length
  * @return the required length for encoding the trap header
@@ -758,7 +736,6 @@ snmp_trap_header_enc_v1_specific(struct snmp_msg_trap *trap, struct snmp_pbuf_st
 /**
  * @ingroup snmp_traps
  * Encodes trap header part that is SNMP v2c header specific.
- *
  * @param trap Trap message
  * @param pbuf_stream stream used for storing data inside pbuf
  */
@@ -790,7 +767,6 @@ snmp_trap_header_enc_v2c_specific(struct snmp_msg_trap *trap, struct snmp_pbuf_s
 /**
  * @ingroup snmp_traps
  * Encodes trap header from head to tail.
- *
  * @param trap Trap message
  * @param pbuf_stream stream used for storing data inside pbuf
  */

@@ -8,12 +8,10 @@
 
 /*
  * SETUP: Make sure we define everything we will need.
- *
  * We have create three types of pools:
  *   1) MEMPOOL - standard pools
  *   2) MALLOC_MEMPOOL - to be used by mem_malloc in mem.c
  *   3) PBUF_MEMPOOL - a mempool of pbuf's, so include space for the pbuf struct
- *
  * If the include'r doesn't require any special treatment of each of the types
  * above, then will declare #2 & #3 to be just standard mempools.
  */
@@ -34,7 +32,6 @@
 
 /*
  * A list of internal pools used by LWIP.
- *
  * LWIP_MEMPOOL(pool_name, number_elements, element_size, pool_description)
  *     creates a pool name MEMP_pool_name. description is used in stats.c
  */
@@ -124,7 +121,6 @@ LWIP_MEMPOOL(MLD6_GROUP,     MEMP_NUM_MLD6_GROUP,      sizeof(struct mld_group),
 
 /*
  * A list of pools of pbuf's used by LWIP.
- *
  * LWIP_PBUF_MEMPOOL(pool_name, number_elements, pbuf_payload_size, pool_description)
  *     creates a pool name MEMP_pool_name. description is used in stats.c
  *     This allocates enough space for the pbuf struct and a payload.

@@ -3,8 +3,8 @@
 
 typedef enum
 {
-	ETH_ONVIF_INIT = 0,
-	ETH_ONVIF_START,
+    ETH_ONVIF_INIT = 0,
+    ETH_ONVIF_START,
     ETH_ONVIF_OSD,
     ETH_ONVIF_END,
 }eth_onvif_flag_t;
@@ -17,8 +17,8 @@ typedef enum
 #include "lwip/tcpip.h" 
 
 /* º¯ÊýÉùÃ÷ */
-void eth_network_line_status_detection_function(void);
-int8_t eth_network_line_status_check(void);
+void eth_task_function(void);
+void eth_network_reset_function(void);
 void eth_ping_timer_function(void);
 void eth_ping_detection_function(void);
 

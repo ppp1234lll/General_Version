@@ -1,16 +1,14 @@
-/*****************************************************************************
+/*
+*********************************************************************************************************
 * ppp.h - Network Point to Point Protocol header file.
-*
 * Copyright (c) 2003 by Marc Boucher, Services Informatiques (MBSI) inc.
 * portions Copyright (c) 1997 Global Election Systems Inc.
-*
 * The authors hereby grant permission to use, copy, modify, distribute,
 * and license this software and its documentation for any purpose, provided
 * that existing copyright notices are retained in all copies and that this
 * notice and the following disclaimer are included verbatim in any 
 * distributions. No written agreement, license, or royalty fee is required
 * for any of the authorized uses.
-*
 * THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
 * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
@@ -21,16 +19,14 @@
 * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
 ******************************************************************************
 * REVISION HISTORY
-*
 * 03-01-01 Marc Boucher <marc@mbsi.ca>
 *   Ported to lwIP.
 * 97-11-05 Guy Lancaster <glanca@gesn.com>, Global Election Systems Inc.
 *   Original derived from BSD codes.
-*****************************************************************************/
-
+*********************************************************************************************************
+*/
 #include "netif/ppp/ppp_opts.h"
 #if PPP_SUPPORT /* don't build if not configured for use in lwipopts.h */
 
@@ -100,15 +96,16 @@ extern "C" {
 #define PREDICTOR_SUPPORT   0
 #endif
 
-/*************************
+/*
+*********************************************************************************************************
 *** PUBLIC DEFINITIONS ***
-*************************/
-
+*********************************************************************************************************
+*/
 /*
  * The basic PPP frame.
  */
-#define PPP_HDRLEN	4	/* octets for standard ppp header */
-#define PPP_FCSLEN	2	/* octets for FCS */
+#define PPP_HDRLEN    4    /* octets for standard ppp header */
+#define PPP_FCSLEN    2    /* octets for FCS */
 
 /*
  * Values for phase.
@@ -145,10 +142,11 @@ extern "C" {
 /* Whether auth support is enabled at all */
 #define PPP_AUTH_SUPPORT (PAP_SUPPORT || CHAP_SUPPORT || EAP_SUPPORT)
 
-/************************
+/*
+*********************************************************************************************************
 *** PUBLIC DATA TYPES ***
-************************/
-
+*********************************************************************************************************
+*/
 /*
  * Other headers require ppp_pcb definition for prototypes, but ppp_pcb
  * require some structure definition from other headers as well, we are
@@ -423,10 +421,11 @@ struct ppp_pcb_s {
 #endif /* PPP_IPV6_SUPPORT */
 };
 
-/************************
- *** PUBLIC FUNCTIONS ***
- ************************/
-
+/*
+*********************************************************************************************************
+*** PUBLIC FUNCTIONS ***
+*********************************************************************************************************
+*/
 /*
  * WARNING: For multi-threads environment, all ppp_set_* functions most
  * only be called while the PPP is in the dead phase (i.e. disconnected).
@@ -435,10 +434,8 @@ struct ppp_pcb_s {
 #if PPP_AUTH_SUPPORT
 /*
  * Set PPP authentication.
- *
  * Warning: Using PPPAUTHTYPE_ANY might have security consequences.
  * RFC 1994 says:
- *
  * In practice, within or associated with each PPP server, there is a
  * database which associates "user" names with authentication
  * information ("secrets").  It is not anticipated that a particular
@@ -447,13 +444,11 @@ struct ppp_pcb_s {
  * method from among a set (such as PAP rather than CHAP).  If the same
  * secret was used, PAP would reveal the secret to be used later with
  * CHAP.
- *
  * Instead, for each user name there should be an indication of exactly
  * one method used to authenticate that user name.  If a user needs to
  * make use of different authentication methods under different
  * circumstances, then distinct user names SHOULD be employed, each of
  * which identifies exactly one authentication method.
- *
  * Default is none auth type, unset (NULL) user and passwd.
  */
 #define PPPAUTHTYPE_NONE      0x00
@@ -467,7 +462,6 @@ void ppp_set_auth(ppp_pcb *pcb, u8_t authtype, const char *user, const char *pas
 
 /*
  * If set, peer is required to authenticate. This is mostly necessary for PPP server support.
- *
  * Default is false.
  */
 #define ppp_set_auth_required(ppp, boolval) (ppp->settings.auth_required = boolval)
@@ -477,7 +471,6 @@ void ppp_set_auth(ppp_pcb *pcb, u8_t authtype, const char *user, const char *pas
 /*
  * Set PPP interface "our" and "his" IPv4 addresses. This is mostly necessary for PPP server
  * support but it can also be used on a PPP link where each side choose its own IP address.
- *
  * Default is unset (0.0.0.0).
  */
 #define ppp_set_ipcp_ouraddr(ppp, addr) do { ppp->ipcp_wantoptions.ouraddr = ip4_addr_get_u32(addr); \
@@ -487,7 +480,6 @@ void ppp_set_auth(ppp_pcb *pcb, u8_t authtype, const char *user, const char *pas
 /*
  * Set DNS server addresses that are sent if the peer asks for them. This is mostly necessary
  * for PPP server support.
- *
  * Default is unset (0.0.0.0).
  */
 #define ppp_set_ipcp_dnsaddr(ppp, index, addr) (ppp->ipcp_allowoptions.dnsaddr[index] = ip4_addr_get_u32(addr))
@@ -495,7 +487,6 @@ void ppp_set_auth(ppp_pcb *pcb, u8_t authtype, const char *user, const char *pas
 /*
  * If set, we ask the peer for up to 2 DNS server addresses. Received DNS server addresses are
  * registered using the dns_setserver() function.
- *
  * Default is false.
  */
 #define ppp_set_usepeerdns(ppp, boolval) (ppp->settings.usepeerdns = boolval)
@@ -515,7 +506,6 @@ void ppp_set_auth(ppp_pcb *pcb, u8_t authtype, const char *user, const char *pas
 #define PPP_MPPE_REFUSE_128        0x08
 /*
  * Set MPPE configuration
- *
  * Default is disabled.
  */
 void ppp_set_mppe(ppp_pcb *pcb, u8_t flags);
@@ -525,7 +515,6 @@ void ppp_set_mppe(ppp_pcb *pcb, u8_t flags);
  * Wait for up to intval milliseconds for a valid PPP packet from the peer.
  * At the end of this  time, or when a valid PPP packet is received from the
  * peer, we commence negotiation by sending our first LCP packet.
- *
  * Default is 0.
  */
 #define ppp_set_listen_time(ppp, intval) (ppp->settings.listen_time = intval)
@@ -533,7 +522,6 @@ void ppp_set_mppe(ppp_pcb *pcb, u8_t flags);
 /*
  * If set, we will attempt to initiate a connection but if no reply is received from
  * the peer, we will then just wait passively for a valid LCP packet from the peer.
- *
  * Default is false.
  */
 #define ppp_set_passive(ppp, boolval) (ppp->lcp_wantoptions.passive = boolval)
@@ -541,7 +529,6 @@ void ppp_set_mppe(ppp_pcb *pcb, u8_t flags);
 /*
  * If set, we will not transmit LCP packets to initiate a connection until a valid
  * LCP packet is received from the peer. This is what we usually call the server mode.
- *
  * Default is false.
  */
 #define ppp_set_silent(ppp, boolval) (ppp->lcp_wantoptions.silent = boolval)
@@ -549,7 +536,6 @@ void ppp_set_mppe(ppp_pcb *pcb, u8_t flags);
 /*
  * If set, enable protocol field compression negotiation in both the receive and
  * the transmit direction.
- *
  * Default is true.
  */
 #define ppp_set_neg_pcomp(ppp, boolval) (ppp->lcp_wantoptions.neg_pcompression = \
@@ -558,7 +544,6 @@ void ppp_set_mppe(ppp_pcb *pcb, u8_t flags);
 /*
  * If set, enable Address/Control compression in both the receive and the transmit
  * direction.
- *
  * Default is true.
  */
 #define ppp_set_neg_accomp(ppp, boolval) (ppp->lcp_wantoptions.neg_accompression = \
@@ -567,7 +552,6 @@ void ppp_set_mppe(ppp_pcb *pcb, u8_t flags);
 /*
  * If set, enable asyncmap negotiation. Otherwise forcing all control characters to
  * be escaped for both the transmit and the receive direction.
- *
  * Default is true.
  */
 #define ppp_set_neg_asyncmap(ppp, boolval) (ppp->lcp_wantoptions.neg_asyncmap = \
@@ -581,7 +565,6 @@ void ppp_set_mppe(ppp_pcb *pcb, u8_t flags);
  * an unsigned 32 bits integer where the least significant bit (00000001) represents
  * character 0 and the most significant bit (80000000) represents character 31.
  * We will then ask the peer to send these characters as a 2-byte escape sequence.
- *
  * Default is 0.
  */
 #define ppp_set_asyncmap(ppp, intval) (ppp->lcp_wantoptions.asyncmap = intval)
@@ -595,7 +578,6 @@ void ppp_set_mppe(ppp_pcb *pcb, u8_t flags);
 #if PPP_NOTIFY_PHASE
 /*
  * Set a PPP notify phase callback.
- *
  * This can be used for example to set a LED pattern depending on the
  * current phase of the PPP session.
  */
@@ -605,12 +587,9 @@ void ppp_set_notify_phase_callback(ppp_pcb *pcb, ppp_notify_phase_cb_fn notify_p
 
 /*
  * Initiate a PPP connection.
- *
  * This can only be called if PPP is in the dead phase.
- *
  * Holdoff is the time to wait (in seconds) before initiating
  * the connection.
- *
  * If this port connects to a modem, the modem connection must be
  * established before calling this.
  */
@@ -619,9 +598,7 @@ err_t ppp_connect(ppp_pcb *pcb, u16_t holdoff);
 #if PPP_SERVER
 /*
  * Listen for an incoming PPP connection.
- *
  * This can only be called if PPP is in the dead phase.
- *
  * If this port connects to a modem, the modem connection must be
  * established before calling this.
  */
@@ -631,31 +608,25 @@ err_t ppp_listen(ppp_pcb *pcb);
 /*
  * Initiate the end of a PPP connection.
  * Any outstanding packets in the queues are dropped.
- *
  * Setting nocarrier to 1 close the PPP connection without initiating the
  * shutdown procedure. Always using nocarrier = 0 is still recommended,
  * this is going to take a little longer time if your link is down, but
  * is a safer choice for the PPP state machine.
- *
  * Return 0 on success, an error code on failure.
  */
 err_t ppp_close(ppp_pcb *pcb, u8_t nocarrier);
 
 /*
  * Release the control block.
- *
  * This can only be called if PPP is in the dead phase.
- *
  * You must use ppp_close() before if you wish to terminate
  * an established PPP session.
- *
  * Return 0 on success, an error code on failure.
  */
 err_t ppp_free(ppp_pcb *pcb);
 
 /*
  * PPP IOCTL commands.
- *
  * Get the up status - 0 for down, non-zero for up.  The argument must
  * point to an int.
  */

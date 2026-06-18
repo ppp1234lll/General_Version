@@ -1,21 +1,17 @@
 /**
  * @file
  * Sequential API External module
- *
  * @defgroup netconn Netconn API
  * @ingroup sequential_api
  * Thread-safe, to be called from non-TCPIP threads only.
  * TX/RX handling based on @ref netbuf (containing @ref pbuf)
  * to avoid copying data around.
- *
  * @defgroup netconn_common Common functions
  * @ingroup netconn
  * For use with TCP and UDP
- *
  * @defgroup netconn_tcp TCP only
  * @ingroup netconn
  * TCP only functions
- *
  * @defgroup netconn_udp UDP only
  * @ingroup netconn
  * UDP only functions
@@ -24,10 +20,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -35,7 +29,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -46,9 +39,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
  */
 
@@ -109,7 +100,6 @@ static err_t netconn_close_shutdown(struct netconn *conn, u8_t how);
  * Call the lower part of a netconn_* function
  * This function is then running in the thread context
  * of tcpip_thread and has exclusive access to lwIP core code.
- *
  * @param fn function to call
  * @param apimsg a struct containing the function to call and its parameters
  * @return ERR_OK if the function was called, another err_t if not
@@ -138,7 +128,6 @@ netconn_apimsg(tcpip_callback_fn fn, struct api_msg *apimsg)
 /**
  * Create a new netconn (of a specific type) that has a callback function.
  * The corresponding pcb is also created.
- *
  * @param t the type of 'connection' to create (@see enum netconn_type)
  * @param proto the IP protocol for RAW IP pcbs
  * @param callback a function to call on status changes (RX available, TX'ed)
@@ -184,7 +173,6 @@ netconn_new_with_proto_and_callback(enum netconn_type t, u8_t proto, netconn_cal
  * Close a netconn 'connection' and free all its resources but not the netconn itself.
  * UDP and RAW connection are completely closed, TCP pcbs might still be in a waitstate
  * after this returns.
- *
  * @param conn the netconn to delete
  * @return ERR_OK if the connection was deleted
  */
@@ -225,7 +213,6 @@ netconn_prepare_delete(struct netconn *conn)
  * Close a netconn 'connection' and free its resources.
  * UDP and RAW connection are completely closed, TCP pcbs might still be in a waitstate
  * after this returns.
- *
  * @param conn the netconn to delete
  * @return ERR_OK if the connection was deleted
  */
@@ -257,7 +244,6 @@ netconn_delete(struct netconn *conn)
 /**
  * Get the local or remote IP address and port of a netconn.
  * For RAW netconns, this returns the protocol instead of a port!
- *
  * @param conn the netconn to query
  * @param addr a pointer to which to save the IP address
  * @param port a pointer to which to save the port (or protocol for RAW)
@@ -296,7 +282,6 @@ netconn_getaddr(struct netconn *conn, ip_addr_t *addr, u16_t *port, u8_t local)
  * @ingroup netconn_common
  * Bind a netconn to a specific local IP address and port.
  * Binding one netconn twice might not always be checked correctly!
- *
  * @param conn the netconn to bind
  * @param addr the local IP address to bind the netconn to
  *             (use IP4_ADDR_ANY/IP6_ADDR_ANY to bind to all addresses)
@@ -342,7 +327,6 @@ netconn_bind(struct netconn *conn, const ip_addr_t *addr, u16_t port)
  * @ingroup netconn_common
  * Bind a netconn to a specific interface and port.
  * Binding one netconn twice might not always be checked correctly!
- *
  * @param conn the netconn to bind
  * @param if_idx the local interface index to bind the netconn to
  * @return ERR_OK if bound, any other err_t on failure
@@ -367,7 +351,6 @@ netconn_bind_if(struct netconn *conn, u8_t if_idx)
 /**
  * @ingroup netconn_common
  * Connect a netconn to a specific remote IP address and port.
- *
  * @param conn the netconn to connect
  * @param addr the remote IP address to connect to
  * @param port the remote port to connect to (no used for RAW)
@@ -401,7 +384,6 @@ netconn_connect(struct netconn *conn, const ip_addr_t *addr, u16_t port)
 /**
  * @ingroup netconn_udp
  * Disconnect a netconn from its current peer (only valid for UDP netconns).
- *
  * @param conn the netconn to disconnect
  * @return See @ref err_t
  */
@@ -424,7 +406,6 @@ netconn_disconnect(struct netconn *conn)
 /**
  * @ingroup netconn_tcp
  * Set a TCP netconn into listen mode
- *
  * @param conn the tcp netconn to set to listen mode
  * @param backlog the listen backlog, only used if TCP_LISTEN_BACKLOG==1
  * @return ERR_OK if the netconn was set to listen (UDP and RAW netconns
@@ -461,7 +442,6 @@ netconn_listen_with_backlog(struct netconn *conn, u8_t backlog)
 /**
  * @ingroup netconn_tcp
  * Accept a new connection on a TCP listening netconn.
- *
  * @param conn the TCP listen netconn
  * @param new_conn pointer where the new connection is stored
  * @return ERR_OK if a new connection has been received or an error
@@ -563,7 +543,6 @@ netconn_accept(struct netconn *conn, struct netconn **new_conn)
  * @ingroup netconn_common
  * Receive data: actual implementation that doesn't care whether pbuf or netbuf
  * is received (this is internal, it's just here for describing common errors)
- *
  * @param conn the netconn from which to receive data
  * @param new_buf pointer where a new pbuf/netbuf is stored when received data
  * @param apiflags flags that control function behaviour. For now only:
@@ -771,7 +750,6 @@ handle_fin:
 /**
  * @ingroup netconn_tcp
  * Receive data (in form of a pbuf) from a TCP netconn
- *
  * @param conn the netconn from which to receive data
  * @param new_buf pointer where a new pbuf is stored when received data
  * @return ERR_OK if data has been received, an error code otherwise (timeout,
@@ -790,7 +768,6 @@ netconn_recv_tcp_pbuf(struct netconn *conn, struct pbuf **new_buf)
 /**
  * @ingroup netconn_tcp
  * Receive data (in form of a pbuf) from a TCP netconn
- *
  * @param conn the netconn from which to receive data
  * @param new_buf pointer where a new pbuf is stored when received data
  * @param apiflags flags that control function behaviour. For now only:
@@ -811,7 +788,6 @@ netconn_recv_tcp_pbuf_flags(struct netconn *conn, struct pbuf **new_buf, u8_t ap
 
 /**
  * Receive data (in form of a netbuf) from a UDP or RAW netconn
- *
  * @param conn the netconn from which to receive data
  * @param new_buf pointer where a new netbuf is stored when received data
  * @return ERR_OK if data has been received, an error code otherwise (timeout,
@@ -829,7 +805,6 @@ netconn_recv_udp_raw_netbuf(struct netconn *conn, struct netbuf **new_buf)
 
 /**
  * Receive data (in form of a netbuf) from a UDP or RAW netconn
- *
  * @param conn the netconn from which to receive data
  * @param new_buf pointer where a new netbuf is stored when received data
  * @param apiflags flags that control function behaviour. For now only:
@@ -850,7 +825,6 @@ netconn_recv_udp_raw_netbuf_flags(struct netconn *conn, struct netbuf **new_buf,
 /**
  * @ingroup netconn_common
  * Receive data (in form of a netbuf containing a packet buffer) from a netconn
- *
  * @param conn the netconn from which to receive data
  * @param new_buf pointer where a new netbuf is stored when received data
  * @return ERR_OK if data has been received, an error code otherwise (timeout,
@@ -911,7 +885,6 @@ netconn_recv(struct netconn *conn, struct netbuf **new_buf)
  * @ingroup netconn_udp
  * Send data (in form of a netbuf) to a specific remote IP address and port.
  * Only to be used for UDP and RAW netconns (not TCP).
- *
  * @param conn the netconn over which to send data
  * @param buf a netbuf containing the data to send
  * @param addr the remote IP address to which to send the data
@@ -932,7 +905,6 @@ netconn_sendto(struct netconn *conn, struct netbuf *buf, const ip_addr_t *addr, 
 /**
  * @ingroup netconn_udp
  * Send data over a UDP or RAW netconn (that is already connected).
- *
  * @param conn the UDP or RAW netconn over which to send data
  * @param buf a netbuf containing the data to send
  * @return ERR_OK if data was sent, any other err_t on error
@@ -959,7 +931,6 @@ netconn_send(struct netconn *conn, struct netbuf *buf)
 /**
  * @ingroup netconn_tcp
  * Send data over a TCP netconn.
- *
  * @param conn the TCP netconn over which to send data
  * @param dataptr pointer to the application buffer that contains the data to send
  * @param size size of the application data to send
@@ -982,7 +953,6 @@ netconn_write_partly(struct netconn *conn, const void *dataptr, size_t size,
 
 /**
  * Send vectorized data atomically over a TCP netconn.
- *
  * @param conn the TCP netconn over which to send data
  * @param vectors array of vectors containing data to send
  * @param vectorcnt number of vectors in the array
@@ -1080,7 +1050,6 @@ netconn_write_vectors_partly(struct netconn *conn, struct netvector *vectors, u1
 /**
  * @ingroup netconn_tcp
  * Close or shutdown a TCP netconn (doesn't delete it).
- *
  * @param conn the TCP netconn to close or shutdown
  * @param how fully close or only shutdown one side?
  * @return ERR_OK if the netconn was closed, any other err_t on error
@@ -1117,7 +1086,6 @@ netconn_close_shutdown(struct netconn *conn, u8_t how)
 /**
  * @ingroup netconn_tcp
  * Close a TCP netconn (doesn't delete it).
- *
  * @param conn the TCP netconn to close
  * @return ERR_OK if the netconn was closed, any other err_t on error
  */
@@ -1131,7 +1099,6 @@ netconn_close(struct netconn *conn)
 /**
  * @ingroup netconn_common
  * Get and reset pending error on a netconn
- *
  * @param conn the netconn to get the error from
  * @return and pending error or ERR_OK if no error was pending
  */
@@ -1153,7 +1120,6 @@ netconn_err(struct netconn *conn)
 /**
  * @ingroup netconn_tcp
  * Shut down one or both sides of a TCP netconn (doesn't delete it).
- *
  * @param conn the TCP netconn to shut down
  * @param shut_rx shut down the RX side (no more read possible after this)
  * @param shut_tx shut down the TX side (no more write possible after this)
@@ -1169,7 +1135,6 @@ netconn_shutdown(struct netconn *conn, u8_t shut_rx, u8_t shut_tx)
 /**
  * @ingroup netconn_udp
  * Join multicast groups for UDP netconns.
- *
  * @param conn the UDP netconn for which to change multicast addresses
  * @param multiaddr IP address of the multicast group to join or leave
  * @param netif_addr the IP address of the network interface on which to send
@@ -1212,7 +1177,6 @@ netconn_join_leave_group(struct netconn *conn,
 /**
  * @ingroup netconn_udp
  * Join multicast groups for UDP netconns.
- *
  * @param conn the UDP netconn for which to change multicast addresses
  * @param multiaddr IP address of the multicast group to join or leave
  * @param if_idx the index of the netif
@@ -1257,7 +1221,6 @@ netconn_join_leave_group_netif(struct netconn *conn,
 /**
  * @ingroup netconn_common
  * Execute a DNS query, only one IP address is returned
- *
  * @param name a string representation of the DNS host name to query
  * @param addr a preallocated ip_addr_t where to store the resolved IP address
  * @return ERR_OK: resolving succeeded

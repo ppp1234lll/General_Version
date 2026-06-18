@@ -1,9 +1,7 @@
 /**
  * @file
  * Transmission Control Protocol, outgoing traffic
- *
  * The output functions of TCP.
- *
  * There are two distinct ways for TCP segments to get sent:
  * - queued data: these are segments transferring data or segments containing
  *   SYN or FIN (which both count as one sequence number). They are created as
@@ -31,10 +29,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -42,7 +38,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -53,11 +48,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 #include "lwip/opt.h"
@@ -145,9 +137,7 @@ tcp_route(const struct tcp_pcb *pcb, const ip_addr_t *src, const ip_addr_t *dst)
 
 /**
  * Create a TCP segment with prefilled header.
- *
  * Called by @ref tcp_write, @ref tcp_enqueue_flags and @ref tcp_split_unsent_seg
- *
  * @param pcb Protocol control block for the TCP connection.
  * @param p pbuf that is used to hold the TCP header.
  * @param hdrflags TCP flags for header.
@@ -209,12 +199,9 @@ tcp_create_segment(const struct tcp_pcb *pcb, struct pbuf *p, u8_t hdrflags, u32
 
 /**
  * Allocate a PBUF_RAM pbuf, perhaps with extra space at the end.
- *
  * This function is like pbuf_alloc(layer, length, PBUF_RAM) except
  * there may be extra bytes available at the end.
- *
  * Called by @ref tcp_write
- *
  * @param layer flag to define header size.
  * @param length size of the pbuf's payload.
  * @param max_length maximum usable size of payload+oversize.
@@ -249,9 +236,7 @@ tcp_pbuf_prealloc(pbuf_layer layer, u16_t length, u16_t max_length,
      * buffer. If the segment will be transmitted immediately, we can
      * save memory by allocating only length. We use a simple
      * heuristic based on the following information:
-     *
      * Did the user set TCP_WRITE_FLAG_MORE?
-     *
      * Will the Nagle algorithm defer transmission of this segment?
      */
     if ((apiflags & TCP_WRITE_FLAG_MORE) ||
@@ -279,7 +264,6 @@ tcp_pbuf_prealloc(pbuf_layer layer, u16_t length, u16_t max_length,
 
 #if TCP_CHECKSUM_ON_COPY
 /** Add a checksum of newly added data to the segment.
- *
  * Called by tcp_write and tcp_split_unsent_seg.
  */
 static void
@@ -299,7 +283,6 @@ tcp_seg_add_chksum(u16_t chksum, u16_t len, u16_t *seg_chksum,
 #endif /* TCP_CHECKSUM_ON_COPY */
 
 /** Checks if tcp_write is allowed or not (checks state, snd_buf and snd_queuelen).
- *
  * @param pcb the tcp pcb to check for
  * @param len length of data to send (checked against snd_buf)
  * @return ERR_OK if tcp_write is allowed to proceed, another err_t otherwise
@@ -353,12 +336,10 @@ tcp_write_checks(struct tcp_pcb *pcb, u16_t len)
 /**
  * @ingroup tcp_raw
  * Write data for sending (but does not send it immediately).
- *
  * It waits in the expectation of more data being sent soon (as
  * it can send them more efficiently by combining them together).
  * To prompt the system to send data now, call tcp_output() after
  * calling tcp_write().
- *
  * This function enqueues the data pointed to by the argument dataptr. The length of
  * the data is passed as the len parameter. The apiflags can be one or more of:
  * - TCP_WRITE_FLAG_COPY: indicates whether the new memory should be allocated
@@ -369,18 +350,15 @@ tcp_write_checks(struct tcp_pcb *pcb, u16_t len)
  * - TCP_WRITE_FLAG_MORE: indicates that more data follows. If this is omitted,
  *   the PSH flag is set in the last segment created by this call to tcp_write.
  *   If this flag is given, the PSH flag is not set.
- *
  * The tcp_write() function will fail and return ERR_MEM if the length
  * of the data exceeds the current send buffer size or if the length of
  * the queue of outgoing segment is larger than the upper limit defined
  * in lwipopts.h. The number of bytes available in the output queue can
  * be retrieved with the tcp_sndbuf() function.
- *
  * The proper way to use this function is to call the function with at
  * most tcp_sndbuf() bytes of data. If the function returns ERR_MEM,
  * the application should wait until some of the currently enqueued
  * data has been successfully received by the other host and try again.
- *
  * @param pcb Protocol control block for the TCP connection to enqueue data for.
  * @param arg Pointer to the data to be enqueued for sending.
  * @param len Data length in bytes
@@ -455,23 +433,17 @@ tcp_write(struct tcp_pcb *pcb, const void *arg, u16_t len, u8_t apiflags)
 
   /*
    * TCP segmentation is done in three phases with increasing complexity:
-   *
    * 1. Copy data directly into an oversized pbuf.
    * 2. Chain a new pbuf to the end of pcb->unsent.
    * 3. Create new segments.
-   *
    * We may run out of memory at any point. In that case we must
    * return ERR_MEM and not change anything in pcb. Therefore, all
    * changes are recorded in local variables and committed at the end
    * of the function. Some pcb fields are maintained in local copies:
-   *
    * queuelen = pcb->snd_queuelen
    * oversize = pcb->unsent_oversize
-   *
    * These variables are set consistently by the phases:
-   *
    * seg points to the last segment tampered with.
-   *
    * pos records progress as data is segmented.
    */
 
@@ -491,7 +463,6 @@ tcp_write(struct tcp_pcb *pcb, const void *arg, u16_t len, u8_t apiflags)
 
     /*
      * Phase 1: Copy data directly into an oversized pbuf.
-     *
      * The number of bytes copied is recorded in the oversize_used
      * variable. The actual copying is done at the bottom of the
      * function.
@@ -518,15 +489,12 @@ tcp_write(struct tcp_pcb *pcb, const void *arg, u16_t len, u8_t apiflags)
 #if !LWIP_NETIF_TX_SINGLE_PBUF
     /*
      * Phase 2: Chain a new pbuf to the end of pcb->unsent.
-     *
      * As an exception when NOT copying the data, if the given data buffer
      * directly follows the last unsent data buffer in memory, extend the last
      * ROM pbuf reference to the buffer, thus saving a ROM pbuf allocation.
-     *
      * We don't extend segments containing SYN/FIN flags or options
      * (len==0). The new pbuf is kept in concat_p and pbuf_cat'ed at
      * the end.
-     *
      * This phase is skipped for LWIP_NETIF_TX_SINGLE_PBUF as we could only execute
      * it after rexmit puts a segment from unacked to unsent and at this point,
      * oversize info is lost.
@@ -593,7 +561,6 @@ tcp_write(struct tcp_pcb *pcb, const void *arg, u16_t len, u8_t apiflags)
 
   /*
    * Phase 3: Create new segments.
-   *
    * The new segments are chained together in the local 'queue'
    * variable, ready to be appended to pcb->unsent.
    */
@@ -817,12 +784,10 @@ memerr:
 /**
  * Split segment on the head of the unsent queue.  If return is not
  * ERR_OK, existing head remains intact
- *
  * The split is accomplished by creating a new TCP segment and pbuf
  * which holds the remainder payload after the split.  The original
  * pbuf is trimmed to new length.  This allows splitting of read-only
  * pbufs
- *
  * @param pcb the tcp_pcb for which to split the unsent head
  * @param split the amount of payload to remain in the head
  */
@@ -997,7 +962,6 @@ memerr:
  * Called by tcp_close() to send a segment including FIN flag but not data.
  * This FIN may be added to an existing segment or a new, otherwise empty
  * segment is enqueued.
- *
  * @param pcb the tcp_pcb over which to send a segment
  * @return ERR_OK if sent, another err_t otherwise
  */
@@ -1025,10 +989,8 @@ tcp_send_fin(struct tcp_pcb *pcb)
 
 /**
  * Enqueue SYN or FIN for transmission.
- *
  * Called by @ref tcp_connect, tcp_listen_input, and @ref tcp_close
  * (via @ref tcp_send_fin)
- *
  * @param pcb Protocol control block for the TCP connection.
  * @param flags TCP header flags to set in the outgoing segment.
  */
@@ -1135,7 +1097,6 @@ tcp_enqueue_flags(struct tcp_pcb *pcb, u8_t flags)
 
 #if LWIP_TCP_TIMESTAMPS
 /* Build a timestamp option (12 bytes long) at the specified options pointer)
- *
  * @param pcb tcp_pcb
  * @param opts option pointer where to store the timestamp option
  */
@@ -1157,7 +1118,6 @@ tcp_build_timestamp_option(const struct tcp_pcb *pcb, u32_t *opts)
  * It takes into account whether TF_SACK flag is set,
  * the number of SACK entries in tcp_pcb that are valid,
  * as well as the available options size.
- *
  * @param pcb tcp_pcb
  * @param optlen the length of other TCP options (in bytes)
  * @return the number of SACK ranges that can be used
@@ -1188,7 +1148,6 @@ tcp_get_num_sacks(const struct tcp_pcb *pcb, u8_t optlen)
 }
 
 /** Build a SACK option (12 or more bytes long) at the specified options pointer)
- *
  * @param pcb tcp_pcb
  * @param opts option pointer where to store the SACK option
  * @param num_sacks the number of SACKs to store
@@ -1216,7 +1175,6 @@ tcp_build_sack_option(const struct tcp_pcb *pcb, u32_t *opts, u8_t num_sacks)
 
 #if LWIP_WND_SCALE
 /** Build a window scale option (3 bytes long) at the specified options pointer)
- *
  * @param opts option pointer where to store the window scale option
  */
 static void
@@ -1232,7 +1190,6 @@ tcp_build_wnd_scale_option(u32_t *opts)
 /**
  * @ingroup tcp_raw
  * Find out what we can send and send it
- *
  * @param pcb Protocol control block for the TCP connection to send data
  * @return ERR_OK if data has been sent or nothing to send
  *         another err_t on error
@@ -1428,7 +1385,6 @@ output_done:
  * referenced by the netif driver due to deferred transmission.
  * This is the case (only!) if someone down the TX call path called
  * pbuf_ref() on one of the pbufs!
- *
  * @arg seg the tcp segment to check
  * @return 1 if ref != 1, 0 if ref == 1
  */
@@ -1450,7 +1406,6 @@ tcp_output_segment_busy(const struct tcp_seg *seg)
 
 /**
  * Called by tcp_output() to actually send a TCP segment over IP.
- *
  * @param seg the tcp_seg to send
  * @param pcb the tcp_pcb for the TCP connection used to send the segment
  * @param netif the netif used to send the segment
@@ -1626,9 +1581,7 @@ tcp_output_segment(struct tcp_seg *seg, struct tcp_pcb *pcb, struct netif *netif
 
 /**
  * Requeue all unacked segments for retransmission
- *
  * Called by tcp_slowtmr() for slow retransmission.
- *
  * @param pcb the tcp_pcb for which to re-enqueue all unacked segments
  */
 err_t
@@ -1681,9 +1634,7 @@ tcp_rexmit_rto_prepare(struct tcp_pcb *pcb)
 
 /**
  * Requeue all unacked segments for retransmission
- *
  * Called by tcp_slowtmr() for slow retransmission.
- *
  * @param pcb the tcp_pcb for which to re-enqueue all unacked segments
  */
 void
@@ -1701,10 +1652,8 @@ tcp_rexmit_rto_commit(struct tcp_pcb *pcb)
 
 /**
  * Requeue all unacked segments for retransmission
- *
  * Called by tcp_process() only, tcp_slowtmr() needs to do some things between
  * "prepare" and "commit".
- *
  * @param pcb the tcp_pcb for which to re-enqueue all unacked segments
  */
 void
@@ -1719,9 +1668,7 @@ tcp_rexmit_rto(struct tcp_pcb *pcb)
 
 /**
  * Requeue the first unacked segment for retransmission
- *
  * Called by tcp_receive() for fast retransmit.
- *
  * @param pcb the tcp_pcb for which to retransmit the first unacked segment
  */
 err_t
@@ -1780,7 +1727,6 @@ tcp_rexmit(struct tcp_pcb *pcb)
 
 /**
  * Handle retransmission after three dupacks received
- *
  * @param pcb the tcp_pcb for which to retransmit the first unacked segment
  */
 void
@@ -1846,7 +1792,6 @@ tcp_output_alloc_header_common(u32_t ackno, u16_t optlen, u16_t datalen,
 /** Allocate a pbuf and create a tcphdr at p->payload, used for output
  * functions other than the default tcp_output -> tcp_output_segment
  * (e.g. tcp_send_empty_ack, etc.)
- *
  * @param pcb tcp pcb for which to send a packet (used to initialize tcp_hdr)
  * @param optlen length of header-options
  * @param datalen length of tcp data to reserve in pbuf
@@ -1916,7 +1861,6 @@ tcp_output_fill_options(const struct tcp_pcb *pcb, struct pbuf *p, u8_t optflags
 }
 
 /** Output a control segment pbuf to IP.
- *
  * Called from tcp_rst, tcp_send_empty_ack, tcp_keepalive and tcp_zero_window_probe,
  * this function combines selecting a netif for transmission, generating the tcp
  * header checksum and calling ip_output_if while handling netif hints and stats.
@@ -1938,7 +1882,6 @@ tcp_output_control_segment(const struct tcp_pcb *pcb, struct pbuf *p,
 }
 
 /** Output a control segment pbuf to IP.
- *
  * Called instead of tcp_output_control_segment when we don't have a pcb but we
  * do know the interface to send to.
  */
@@ -2016,15 +1959,12 @@ tcp_rst_common(const struct tcp_pcb *pcb, u32_t seqno, u32_t ackno,
 /**
  * Send a TCP RESET packet (empty segment with RST flag set) to abort a
  * connection.
- *
  * Called by tcp_abort() (to abort a local connection), tcp_closen() (if not
  * all data has been received by the application), tcp_timewait_input() (if a
  * SYN is received) and tcp_process() (received segment in the wrong state).
- *
  * Since a RST segment is in most cases not sent for an active connection,
  * tcp_rst() has a number of arguments that are taken from a tcp_pcb for
  * most other segment output functions.
- *
  * @param pcb TCP pcb (may be NULL if no pcb is available)
  * @param seqno the sequence number to use for the outgoing segment
  * @param ackno the acknowledge number to use for the outgoing segment
@@ -2049,14 +1989,11 @@ tcp_rst(const struct tcp_pcb *pcb, u32_t seqno, u32_t ackno,
 /**
  * Send a TCP RESET packet (empty segment with RST flag set) to show that there
  * is no matching local connection for a received segment.
- *
  * Called by tcp_input() (if no matching local pcb was found) and
  * tcp_listen_input() (if incoming segment has ACK flag set).
- *
  * Since a RST segment is in most cases not sent for an active connection,
  * tcp_rst() has a number of arguments that are taken from a tcp_pcb for
  * most other segment output functions.
- *
  * @param netif the netif on which to send the RST (since we have no pcb)
  * @param seqno the sequence number to use for the outgoing segment
  * @param ackno the acknowledge number to use for the outgoing segment
@@ -2082,7 +2019,6 @@ tcp_rst_netif(struct netif *netif, u32_t seqno, u32_t ackno,
 
 /**
  * Send an ACK without data.
- *
  * @param pcb Protocol control block for the TCP connection to send the ACK
  */
 err_t
@@ -2139,9 +2075,7 @@ tcp_send_empty_ack(struct tcp_pcb *pcb)
 /**
  * Send keepalive packets to keep a connection active although
  * no data is sent over it.
- *
  * Called by tcp_slowtmr()
- *
  * @param pcb the tcp_pcb for which to send a keepalive packet
  */
 err_t
@@ -2177,9 +2111,7 @@ tcp_keepalive(struct tcp_pcb *pcb)
 /**
  * Send persist timer zero-window probes to keep a connection active
  * when a window update is lost.
- *
  * Called by tcp_slowtmr()
- *
  * @param pcb the tcp_pcb for which to send a zero-window probe packet
  */
 err_t

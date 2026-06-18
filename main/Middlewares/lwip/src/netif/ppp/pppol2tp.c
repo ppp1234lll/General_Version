@@ -1,13 +1,11 @@
 /**
  * @file
  * Network Point to Point Protocol over Layer 2 Tunneling Protocol program file.
- *
  */
 
 /*
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -15,7 +13,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -26,18 +23,14 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  */
 
 /*
  * L2TP Support status:
- *
  * Supported:
  * - L2TPv2 (PPP over L2TP, a.k.a. UDP tunnels)
  * - LAC
- *
  * Not supported:
  * - LNS (require PPP server support)
  * - L2TPv3 ethernet pseudowires
@@ -465,16 +458,13 @@ static void pppol2tp_input(void *arg, struct udp_pcb *pcb, struct pbuf *p, const
   }
   /*
    * skip address & flags if necessary
-   *
    * RFC 2661 (L2TPv2) does not specify whether the PPP frame in the L2TP payload
    * should have a HDLC header or not, both behaviors are seen in the wild.
-   *
    * On the other hand, L2TPv3 draft-ietf-l2tpext-l2tp-ppp versions 00 and 01 say
    * it must be included, versions 02 to 05 say it must be omitted, and versions
    * 06 and onwards say it should be omitted so it changed along the path when
    * L2TPv3 was designed.  Latest versions state that receivers must handle both
    * cases.
-   *
    * We handle both cases for compatibility.
    */
   if (p->len >= 2) {
@@ -513,7 +503,6 @@ static void pppol2tp_dispatch_control_packet(pppol2tp_pcb *l2tp, u16_t port, str
      * In order to ensure that all messages are acknowledged properly
      * (particularly in the case of a lost ZLB ACK message), receipt
      * of duplicate messages MUST be acknowledged.
-     *
      * In this very special case we Ack a packet we previously received.
      * Therefore our NS is the NR we just received. And our NR is the
      * NS we just received plus one.

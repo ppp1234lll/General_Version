@@ -1,35 +1,28 @@
 /*
  * FreeRTOS Kernel V10.4.6
  * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- *
  * SPDX-License-Identifier: MIT
- *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
  * the Software without restriction, including without limitation the rights to
  * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
  * the Software, and to permit persons to whom the Software is furnished to do so,
  * subject to the following conditions:
- *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  * https://www.FreeRTOS.org
  * https://github.com/FreeRTOS
- *
  */
 
 /**
  * @file atomic.h
  * @brief FreeRTOS atomic operation support.
- *
  * This file implements atomic functions by disabling interrupts globally.
  * Implementations with architecture specific atomic instructions can be
  * provided under each compiler directory.
@@ -54,10 +47,8 @@
 /*
  * Port specific definitions -- entering/exiting critical section.
  * Refer template -- ./lib/FreeRTOS/portable/Compiler/Arch/portmacro.h
- *
  * Every call to ATOMIC_EXIT_CRITICAL() must be closely paired with
  * ATOMIC_ENTER_CRITICAL().
- *
  */
 #if defined( portSET_INTERRUPT_MASK_FROM_ISR )
 
@@ -94,16 +85,12 @@
 
 /**
  * Atomic compare-and-swap
- *
  * @brief Performs an atomic compare-and-swap operation on the specified values.
- *
  * @param[in, out] pulDestination  Pointer to memory location from where value is
  *                               to be loaded and checked.
  * @param[in] ulExchange         If condition meets, write this value to memory.
  * @param[in] ulComparand        Swap condition.
- *
  * @return Unsigned integer of value 1 or 0. 1 for swapped, 0 for not swapped.
- *
  * @note This function only swaps *pulDestination with ulExchange, if previous
  *       *pulDestination value equals ulComparand.
  */
@@ -133,14 +120,11 @@ static portFORCE_INLINE uint32_t Atomic_CompareAndSwap_u32( uint32_t volatile * 
 
 /**
  * Atomic swap (pointers)
- *
  * @brief Atomically sets the address pointed to by *ppvDestination to the value
  *        of *pvExchange.
- *
  * @param[in, out] ppvDestination  Pointer to memory location from where a pointer
  *                                 value is to be loaded and written back to.
  * @param[in] pvExchange           Pointer value to be written to *ppvDestination.
- *
  * @return The initial value of *ppvDestination.
  */
 static portFORCE_INLINE void * Atomic_SwapPointers_p32( void * volatile * ppvDestination,
@@ -161,17 +145,13 @@ static portFORCE_INLINE void * Atomic_SwapPointers_p32( void * volatile * ppvDes
 
 /**
  * Atomic compare-and-swap (pointers)
- *
  * @brief Performs an atomic compare-and-swap operation on the specified pointer
  *        values.
- *
  * @param[in, out] ppvDestination  Pointer to memory location from where a pointer
  *                                 value is to be loaded and checked.
  * @param[in] pvExchange           If condition meets, write this value to memory.
  * @param[in] pvComparand          Swap condition.
- *
  * @return Unsigned integer of value 1 or 0. 1 for swapped, 0 for not swapped.
- *
  * @note This function only swaps *ppvDestination with pvExchange, if previous
  *       *ppvDestination value equals pvComparand.
  */
@@ -199,13 +179,10 @@ static portFORCE_INLINE uint32_t Atomic_CompareAndSwapPointers_p32( void * volat
 
 /**
  * Atomic add
- *
  * @brief Atomically adds count to the value of the specified pointer points to.
- *
  * @param[in,out] pulAddend  Pointer to memory location from where value is to be
  *                         loaded and written back to.
  * @param[in] ulCount      Value to be added to *pulAddend.
- *
  * @return previous *pulAddend value.
  */
 static portFORCE_INLINE uint32_t Atomic_Add_u32( uint32_t volatile * pulAddend,
@@ -226,14 +203,11 @@ static portFORCE_INLINE uint32_t Atomic_Add_u32( uint32_t volatile * pulAddend,
 
 /**
  * Atomic subtract
- *
  * @brief Atomically subtracts count from the value of the specified pointer
  *        pointers to.
- *
  * @param[in,out] pulAddend  Pointer to memory location from where value is to be
  *                         loaded and written back to.
  * @param[in] ulCount      Value to be subtract from *pulAddend.
- *
  * @return previous *pulAddend value.
  */
 static portFORCE_INLINE uint32_t Atomic_Subtract_u32( uint32_t volatile * pulAddend,
@@ -254,12 +228,9 @@ static portFORCE_INLINE uint32_t Atomic_Subtract_u32( uint32_t volatile * pulAdd
 
 /**
  * Atomic increment
- *
  * @brief Atomically increments the value of the specified pointer points to.
- *
  * @param[in,out] pulAddend  Pointer to memory location from where value is to be
  *                         loaded and written back to.
- *
  * @return *pulAddend value before increment.
  */
 static portFORCE_INLINE uint32_t Atomic_Increment_u32( uint32_t volatile * pulAddend )
@@ -279,12 +250,9 @@ static portFORCE_INLINE uint32_t Atomic_Increment_u32( uint32_t volatile * pulAd
 
 /**
  * Atomic decrement
- *
  * @brief Atomically decrements the value of the specified pointer points to
- *
  * @param[in,out] pulAddend  Pointer to memory location from where value is to be
  *                         loaded and written back to.
- *
  * @return *pulAddend value before decrement.
  */
 static portFORCE_INLINE uint32_t Atomic_Decrement_u32( uint32_t volatile * pulAddend )
@@ -305,13 +273,10 @@ static portFORCE_INLINE uint32_t Atomic_Decrement_u32( uint32_t volatile * pulAd
 
 /**
  * Atomic OR
- *
  * @brief Performs an atomic OR operation on the specified values.
- *
  * @param [in, out] pulDestination  Pointer to memory location from where value is
  *                                to be loaded and written back to.
  * @param [in] ulValue            Value to be ORed with *pulDestination.
- *
  * @return The original value of *pulDestination.
  */
 static portFORCE_INLINE uint32_t Atomic_OR_u32( uint32_t volatile * pulDestination,
@@ -332,13 +297,10 @@ static portFORCE_INLINE uint32_t Atomic_OR_u32( uint32_t volatile * pulDestinati
 
 /**
  * Atomic AND
- *
  * @brief Performs an atomic AND operation on the specified values.
- *
  * @param [in, out] pulDestination  Pointer to memory location from where value is
  *                                to be loaded and written back to.
  * @param [in] ulValue            Value to be ANDed with *pulDestination.
- *
  * @return The original value of *pulDestination.
  */
 static portFORCE_INLINE uint32_t Atomic_AND_u32( uint32_t volatile * pulDestination,
@@ -359,13 +321,10 @@ static portFORCE_INLINE uint32_t Atomic_AND_u32( uint32_t volatile * pulDestinat
 
 /**
  * Atomic NAND
- *
  * @brief Performs an atomic NAND operation on the specified values.
- *
  * @param [in, out] pulDestination  Pointer to memory location from where value is
  *                                to be loaded and written back to.
  * @param [in] ulValue            Value to be NANDed with *pulDestination.
- *
  * @return The original value of *pulDestination.
  */
 static portFORCE_INLINE uint32_t Atomic_NAND_u32( uint32_t volatile * pulDestination,
@@ -386,13 +345,10 @@ static portFORCE_INLINE uint32_t Atomic_NAND_u32( uint32_t volatile * pulDestina
 
 /**
  * Atomic XOR
- *
  * @brief Performs an atomic XOR operation on the specified values.
- *
  * @param [in, out] pulDestination  Pointer to memory location from where value is
  *                                to be loaded and written back to.
  * @param [in] ulValue            Value to be XORed with *pulDestination.
- *
  * @return The original value of *pulDestination.
  */
 static portFORCE_INLINE uint32_t Atomic_XOR_u32( uint32_t volatile * pulDestination,

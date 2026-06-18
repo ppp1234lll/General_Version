@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,18 +25,14 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
  *         Simon Goldschmidt
- *
  */
 
 /**
  * @defgroup httpd HTTP server
  * @ingroup apps
- *
  * This httpd supports for a
  * rudimentary server-side-include facility which will replace tags of the form
  * <!--#tag--> in any file whose extension is .shtml, .shtm or .ssi with
@@ -48,42 +41,30 @@
  * Additionally, a simple common
  * gateway interface (CGI) handling mechanism has been added to allow clients
  * to hook functions to particular request URIs.
- *
  * To enable SSI support, define label LWIP_HTTPD_SSI in lwipopts.h.
  * To enable CGI support, define label LWIP_HTTPD_CGI in lwipopts.h.
- *
  * By default, the server assumes that HTTP headers are already present in
  * each file stored in the file system.  By defining LWIP_HTTPD_DYNAMIC_HEADERS in
  * lwipopts.h, this behavior can be changed such that the server inserts the
  * headers automatically based on the extension of the file being served.  If
  * this mode is used, be careful to ensure that the file system image used
  * does not already contain the header information.
- *
  * File system images without headers can be created using the makefsfile
  * tool with the -h command line option.
- *
- *
  * Notes about valid SSI tags
  * --------------------------
- *
  * The following assumptions are made about tags used in SSI markers:
- *
  * 1. No tag may contain '-' or whitespace characters within the tag name.
  * 2. Whitespace is allowed between the tag leadin "<!--#" and the start of
  *    the tag name and between the tag name and the leadout string "-->".
  * 3. The maximum tag name length is LWIP_HTTPD_MAX_TAG_NAME_LEN, currently 8 characters.
- *
  * Notes on CGI usage
  * ------------------
- *
  * The simple CGI support offered here works with GET method requests only
  * and can handle up to 16 parameters encoded into the URI. The handler
  * function may not write directly to the HTTP output but must return a
  * filename that the HTTP server will send to the browser as a response to
  * the incoming CGI request.
- *
- *
- *
  * The list of supported file types is quite short, so if makefsdata complains
  * about an unknown extension, make sure to add it (and its doctype) to
  * the 'g_psHTTPHeaders' list.
@@ -548,7 +529,6 @@ http_state_free(struct http_state *hs)
 }
 
 /** Call tcp_write() in a loop trying smaller and smaller length
- *
  * @param pcb altcp_pcb to send
  * @param ptr Data to send
  * @param length Length of data to send (in/out: on return, contains the
@@ -615,7 +595,6 @@ http_write(struct altcp_pcb *pcb, const void *ptr, u16_t *length, u8_t apiflags)
 /**
  * The connection shall be actively closed (using RST to close from fault states).
  * Reset the sent- and recv-callbacks.
- *
  * @param pcb the tcp pcb to reset callbacks
  * @param hs connection state to free
  */
@@ -652,7 +631,6 @@ http_close_or_abort_conn(struct altcp_pcb *pcb, struct http_state *hs, u8_t abor
 /**
  * The connection shall be actively closed.
  * Reset the sent- and recv-callbacks.
- *
  * @param pcb the tcp pcb to reset callbacks
  * @param hs connection state to free
  */
@@ -693,7 +671,6 @@ http_eof(struct altcp_pcb *pcb, struct http_state *hs)
  * Extract URI parameters from the parameter-part of an URI in the form
  * "test.cgi?x=y" @todo: better explanation!
  * Pointers to the parameters are stored in hs->param_vals.
- *
  * @param hs http connection state
  * @param params pointer to the NULL-terminated parameter string from the URI
  * @return number of parameters extracted
@@ -764,9 +741,7 @@ extract_uri_parameters(struct http_state *hs, char *params)
  * The tag's name is stored in ssi->tag_name (NULL-terminated), the replacement
  * should be written to hs->tag_insert (up to a length of LWIP_HTTPD_MAX_TAG_INSERT_LEN).
  * The amount of data written is stored to ssi->tag_insert_len.
- *
  * @todo: return tag_insert_len - maybe it can be removed from struct http_state?
- *
  * @param hs http connection state
  */
 static void
@@ -1001,7 +976,6 @@ get_http_content_length(struct http_state *hs)
 }
 
 /** Sub-function of http_send(): send dynamic headers
- *
  * @returns: - HTTP_NO_DATA_TO_SEND: no new data has been enqueued
  *           - HTTP_DATA_TO_SEND_CONTINUE: continue with sending HTTP body
  *           - HTTP_DATA_TO_SEND_BREAK: data has been enqueued, headers pending,
@@ -1099,7 +1073,6 @@ http_send_headers(struct altcp_pcb *pcb, struct http_state *hs)
 
 /** Sub-function of http_send(): end-of-file (or block) is reached,
  * either close the file or read the next block (if supported).
- *
  * @returns: 0 if the file is finished or no data has been read
  *           1 if the file is not finished and data has been read
  */
@@ -1198,7 +1171,6 @@ http_check_eof(struct altcp_pcb *pcb, struct http_state *hs)
 }
 
 /** Sub-function of http_send(): This is the normal send-routine for non-ssi files
- *
  * @returns: - 1: data has been written (so call tcp_ouput)
  *           - 0: no data has been written (no need to call tcp_output)
  */
@@ -1225,7 +1197,6 @@ http_send_data_nonssi(struct altcp_pcb *pcb, struct http_state *hs)
 
 #if LWIP_HTTPD_SSI
 /** Sub-function of http_send(): This is the send-routine for ssi files
- *
  * @returns: - 1: data has been written (so call tcp_ouput)
  *           - 0: no data has been written (no need to call tcp_output)
  */
@@ -1581,7 +1552,6 @@ http_send_data_ssi(struct altcp_pcb *pcb, struct http_state *hs)
 
 /**
  * Try to send more data on this pcb.
- *
  * @param pcb the pcb to send data
  * @param hs connection state
  */
@@ -1662,7 +1632,6 @@ http_send(struct altcp_pcb *pcb, struct http_state *hs)
 
 #if LWIP_HTTPD_SUPPORT_EXTSTATUS
 /** Initialize a http connection with a file to send for an error message
- *
  * @param hs http connection state
  * @param error_nr HTTP error number
  * @return ERR_OK if file was found and hs has been initialized correctly
@@ -1703,7 +1672,6 @@ http_find_error_file(struct http_state *hs, u16_t error_nr)
 /**
  * Get the file struct for a 404 error page.
  * Tries some file names and returns NULL if none found.
- *
  * @param uri pointer that receives the actual file name URI
  * @return file struct for the error page or NULL no matching file was found
  */
@@ -1757,7 +1725,6 @@ http_handle_post_finished(struct http_state *hs)
 /** Pass received POST body data to the application and correctly handle
  * returning a response document or closing the connection.
  * ATTENTION: The application is responsible for the pbuf now, so don't free it!
- *
  * @param hs http connection state
  * @param p pbuf to pass to the application
  * @return ERR_OK if passed successfully, another err_t if the response file
@@ -1807,7 +1774,6 @@ http_post_rxpbuf(struct http_state *hs, struct pbuf *p)
 
 /** Handle a post request. Called from http_parse_request when method 'POST'
  * is found.
- *
  * @param p The input pbuf (containing the POST header and body).
  * @param hs The http connection state.
  * @param data HTTP request (header and part of body) from input pbuf(s).
@@ -1919,7 +1885,6 @@ http_post_request(struct pbuf *inp, struct http_state *hs,
  * A POST implementation can call this function to update the TCP window.
  * This can be used to throttle data reception (e.g. when received data is
  * programmed to flash and data is received faster than programmed).
- *
  * @param connection A connection handle passed to httpd_post_begin for which
  *        httpd_post_finished has *NOT* been called yet!
  * @param recved_len Length of data received (for window update)
@@ -1978,7 +1943,6 @@ http_continue(void *connection)
 /**
  * When data has been received in the correct state, try to parse it
  * as a HTTP request.
- *
  * @param inp the received pbuf
  * @param hs the connection state
  * @param pcb the altcp_pcb which received this packet
@@ -2164,7 +2128,6 @@ badrequest:
 /* Check if SSI should be parsed for this file/URL
  * (With LWIP_HTTPD_SSI_BY_FILE_EXTENSION == 2, this function can be
  * overridden by an external implementation.)
- *
  * @return 1 for SSI, 0 for standard files
  */
 static u8_t
@@ -2203,7 +2166,6 @@ http_uri_is_ssi(struct fs_file *file, const char *uri)
 
 /** Try to find the file specified by uri and, if found, initialize hs
  * accordingly.
- *
  * @param hs the connection state
  * @param uri the HTTP header URI
  * @param is_09 1 if the request is HTTP/0.9 (no HTTP headers in response)
@@ -2329,7 +2291,6 @@ http_find_file(struct http_state *hs, const char *uri, int is_09)
 
 /** Initialize a http connection with a file to send (if found).
  * Called by http_find_file and http_find_error_file.
- *
  * @param hs http connection state
  * @param file file structure to send (or NULL if not found)
  * @param is_09 1 if the request is HTTP/0.9 (no HTTP headers in response)
@@ -2499,7 +2460,6 @@ http_sent(void *arg, struct altcp_pcb *pcb, u16_t len)
  * The poll function is called every 2nd second.
  * If there has been no data sent (which resets the retries) in 8 seconds, close.
  * If the last portion of a file has not been sent in 2 seconds, close.
- *
  * This could be increased, but we don't want to waste resources for bad connections.
  */
 static err_t
@@ -2736,7 +2696,6 @@ httpd_inits(struct altcp_tls_config *conf)
 /**
  * @ingroup httpd
  * Set the SSI handler function.
- *
  * @param ssi_handler the SSI handler function
  * @param tags an array of SSI tag strings to search for in SSI-enabled files
  * @param num_tags number of tags in the 'tags' array
@@ -2766,7 +2725,6 @@ http_set_ssi_handler(tSSIHandler ssi_handler, const char **tags, int num_tags)
 /**
  * @ingroup httpd
  * Set an array of CGI filenames/handler functions
- *
  * @param cgis an array of CGI filenames/handler functions
  * @param num_handlers number of elements in the 'cgis' array
  */

@@ -1,7 +1,6 @@
 /*
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -9,7 +8,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -20,9 +18,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  */
 
 #ifndef LWIP_PPP_OPTS_H
@@ -141,7 +137,6 @@
 
 /**
  * PPP_INPROC_IRQ_SAFE==1 call pppos_input() using tcpip_callback().
- *
  * Please read the "PPPoS input path" chapter in the PPP documentation about this option.
  */
 #ifndef PPP_INPROC_IRQ_SAFE
@@ -150,7 +145,6 @@
 
 /**
  * PRINTPKT_SUPPORT==1: Enable PPP print packet support
- *
  * Mandatory for debugging, it displays exchanged packet content in debug trace.
  */
 #ifndef PRINTPKT_SUPPORT
@@ -173,10 +167,8 @@
 
 /**
  * PPP_NOTIFY_PHASE==1: Support PPP notify phase support
- *
  * PPP notify phase support allows you to set a callback which is
  * called on change of the internal PPP state machine.
- *
  * This can be used for example to set a LED pattern depending on the
  * current phase of the PPP session.
  */
@@ -279,7 +271,6 @@
 
 /**
  * PPP_SERVER==1: Enable PPP server support (waiting for incoming PPP session).
- *
  * Currently only supported for PPPoS.
  */
 #ifndef PPP_SERVER
@@ -297,7 +288,6 @@
 
 /**
  * VJ_SUPPORT==1: Support VJ header compression.
- *
  * BEWARE: It is known to be broken when built with some compiler optimizations enabled.
  */
 #ifndef VJ_SUPPORT
@@ -319,22 +309,16 @@
 
 /**
  * PolarSSL embedded library
- *
- *
  * lwIP contains some files fetched from the latest BSD release of
  * the PolarSSL project (PolarSSL 0.10.1-bsd) for ciphers and encryption
  * methods we need for lwIP PPP support.
- *
  * The PolarSSL files were cleaned to contain only the necessary struct
  * fields and functions needed for lwIP.
- *
  * The PolarSSL API was not changed at all, so if you are already using
  * PolarSSL you can choose to skip the compilation of the included PolarSSL
  * library into lwIP.
- *
  * If you are not using the embedded copy you must include external
  * libraries into your arch/cc.h port file.
- *
  * Beware of the stack requirements which can be a lot larger if you are not
  * using our cleaned PolarSSL library.
  */
@@ -496,7 +480,6 @@
 
 /**
  * PPP_MRU: MRU value we want to negotiate (peer MTU)
- *
  * It only affects PPPoS because PPPoE value is derived from the
  * Ethernet interface MTU and PPPoL2TP have a separate setting.
  */
@@ -506,11 +489,9 @@
 
 /**
  * PPP_MAXMRU: Normally limit peer MRU to this
- *
  * This is the upper limit value to which we set our interface MTU.
  * If the peer sends a larger number, we will just ignore it as we
  * are not required to maximize the use of the peer capacity.
- *
  * It only affects PPPoS because PPPoE value is derived from the
  * Ethernet interface MTU and PPPoL2TP have a separate setting.
  */
@@ -520,7 +501,6 @@
 
 /**
  * PPP_MINMRU: No peer MRUs below this
- *
  * Peer must be able to receive at least our minimum MTU.
  */
 #ifndef PPP_MINMRU

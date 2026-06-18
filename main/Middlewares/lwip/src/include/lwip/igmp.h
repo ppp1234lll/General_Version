@@ -6,7 +6,6 @@
 /*
  * Copyright (c) 2002 CITEL Technologies Ltd.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -18,7 +17,6 @@
  * 3. Neither the name of CITEL Technologies Ltd nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY CITEL TECHNOLOGIES AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -30,7 +28,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
  * This file is a contribution to the lwIP TCP/IP stack.
  * The Swedish Institute of Computer Science and Adam Dunkels
  * are specifically granted permission to redistribute this
@@ -66,7 +63,6 @@ extern "C" {
  * these should really be linked from the interface, but
  * if we keep them separate we will not affect the lwip original code
  * too much
- *
  * There will be a group for the all systems group address but this
  * will not run the state machine as it is used to kick off reports
  * from all the other groups

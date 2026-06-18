@@ -11,5 +11,9 @@ void bsp_InitUsart0_DMA(void);
 /* 提供给其他C文件调用的函数 */
 void bsp_InitUsart0(uint32_t bound);
 void usart0_send_str(uint8_t *buff, uint16_t len);
+void usart0_dma_rx_enable(void);
 
+uint8_t *usart0_rx_get_frame(void);
+
+void usart0_test(void);
 #endif

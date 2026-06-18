@@ -1,15 +1,13 @@
-/*****************************************************************************
+/*
+*********************************************************************************************************
 * pppoe.h - PPP Over Ethernet implementation for lwIP.
-*
 * Copyright (c) 2006 by Marc Boucher, Services Informatiques (MBSI) inc.
-*
 * The authors hereby grant permission to use, copy, modify, distribute,
 * and license this software and its documentation for any purpose, provided
 * that existing copyright notices are retained in all copies and that this
 * notice and the following disclaimer are included verbatim in any 
 * distributions. No written agreement, license, or royalty fee is required
 * for any of the authorized uses.
-*
 * THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
 * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
@@ -20,25 +18,19 @@
 * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
 ******************************************************************************
 * REVISION HISTORY
-*
 * 06-01-01 Marc Boucher <marc@mbsi.ca>
 *   Ported to lwIP.
-*****************************************************************************/
-
-
-
+*********************************************************************************************************
+*/
 /* based on NetBSD: if_pppoe.c,v 1.64 2006/01/31 23:50:15 martin Exp */
 
 /*-
  * Copyright (c) 2002 The NetBSD Foundation, Inc.
  * All rights reserved.
- *
  * This code is derived from software contributed to The NetBSD Foundation
  * by Martin Husemann <martin@NetBSD.org>.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -54,7 +46,6 @@
  * 4. Neither the name of The NetBSD Foundation nor the names of its
  *    contributors may be used to endorse or promote products derived
  *    from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
  * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
  * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR

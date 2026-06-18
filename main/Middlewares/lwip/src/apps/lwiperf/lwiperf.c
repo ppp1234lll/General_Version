@@ -6,11 +6,9 @@
 /**
  * @defgroup iperf Iperf server
  * @ingroup apps
- *
  * This is a simple performance measuring client/server to check your bandwidth using
  * iPerf2 on a PC as server/client.
  * It is currently a minimal implementation providing a TCP client/server only.
- *
  * @todo:
  * - implement UDP mode
  * - protect combined sessions handling (via 'related_master_state') against reallocation
@@ -21,10 +19,8 @@
 /*
  * Copyright (c) 2014 Simon Goldschmidt
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -32,7 +28,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -43,9 +38,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Simon Goldschmidt
  */
 
@@ -653,7 +646,6 @@ lwiperf_tcp_accept(void *arg, struct tcp_pcb *newpcb, err_t err)
  * @ingroup iperf
  * Start a TCP iperf server on the default TCP port (5001) and listen for
  * incoming connections from iperf clients.
- *
  * @returns a connection handle that can be used to abort the server
  *          by calling @ref lwiperf_abort()
  */
@@ -668,7 +660,6 @@ lwiperf_start_tcp_server_default(lwiperf_report_fn report_fn, void *report_arg)
  * @ingroup iperf
  * Start a TCP iperf server on a specific IP address and port and listen for
  * incoming connections from iperf clients.
- *
  * @returns a connection handle that can be used to abort the server
  *          by calling @ref lwiperf_abort()
  */
@@ -743,7 +734,6 @@ static err_t lwiperf_start_tcp_server_impl(const ip_addr_t *local_addr, u16_t lo
 /**
  * @ingroup iperf
  * Start a TCP iperf client to the default TCP port (5001).
- *
  * @returns a connection handle that can be used to abort the client
  *          by calling @ref lwiperf_abort()
  */
@@ -757,7 +747,6 @@ void* lwiperf_start_tcp_client_default(const ip_addr_t* remote_addr,
 /**
  * @ingroup iperf
  * Start a TCP iperf client to a specific IP address and port.
- *
  * @returns a connection handle that can be used to abort the client
  *          by calling @ref lwiperf_abort()
  */

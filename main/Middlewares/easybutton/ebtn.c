@@ -9,7 +9,6 @@ static ebtn_t ebtn_default;
 
 /**
  * \brief           Process the button information and state
- *
  * \param[in]       btn: Button instance to process
  * \param[in]       old_state: old state
  * \param[in]       new_state: new state
@@ -40,14 +39,12 @@ static void prv_process_btn(ebtn_btn_t *btn, uint8_t old_state, uint8_t new_stat
     {
         /*
          * Handle debounce and send on-press event
-         *
          * This is when we detect valid press
          */
         if (!(btn->flags & EBTN_FLAG_ONPRESS_SENT))
         {
             /*
              * Run if statement when:
-             *
              * - Runtime mode is enabled -> user sets its own config for debounce
              * - Config debounce time for press is more than `0`
              */
@@ -82,7 +79,6 @@ static void prv_process_btn(ebtn_btn_t *btn, uint8_t old_state, uint8_t new_stat
 
         /*
          * Handle keep alive, but only if on-press event has been sent
-         *
          * Keep alive is sent when valid press is being detected
          */
         else
@@ -114,14 +110,12 @@ static void prv_process_btn(ebtn_btn_t *btn, uint8_t old_state, uint8_t new_stat
     {
         /*
          * We only need to react if on-press event has even been started.
-         *
          * Do nothing if that was not the case
          */
         if (btn->flags & EBTN_FLAG_ONPRESS_SENT)
         {
             /*
              * Run if statement when:
-             *
              * - Runtime mode is enabled -> user sets its own config for debounce
              * - Config debounce time for release is more than `0`
              */
@@ -156,7 +150,6 @@ static void prv_process_btn(ebtn_btn_t *btn, uint8_t old_state, uint8_t new_stat
                     /*
                      * There was an on-release event, but timing
                      * for click event detection is outside allowed window.
-                     *
                      * Reset clicks counter -> not valid sequence for click event.
                      */
                     btn->click_cnt = 0;
@@ -181,7 +174,6 @@ static void prv_process_btn(ebtn_btn_t *btn, uint8_t old_state, uint8_t new_stat
             /*
              * Based on te configuration, this part of the code
              * will send on-click event after certain timeout.
-             *
              * This feature is useful if users prefers multi-click feature
              * that is reported only after last click event happened,
              * including number of clicks made by user
@@ -232,7 +224,6 @@ int ebtn_init(ebtn_btn_t *btns, uint16_t btns_cnt, ebtn_btn_combo_t *btns_combo,
 
 /**
  * \brief           Get all button state with get_state_fn.
- *
  * \param[out]       state_array: store the button state
  */
 static void ebtn_get_current_state(bit_array_t *state_array)
@@ -262,7 +253,6 @@ static void ebtn_get_current_state(bit_array_t *state_array)
 
 /**
  * \brief           Process the button state
- *
  * \param[in]       btn: Button instance to process
  * \param[in]       old_state: all button old state
  * \param[in]       curr_state: all button current state
@@ -276,7 +266,6 @@ static void ebtn_process_btn(ebtn_btn_t *btn, bit_array_t *old_state, bit_array_
 
 /**
  * \brief           Process the combo-button state
- *
  * \param[in]       btn: Button instance to process
  * \param[in]       old_state: all button old state
  * \param[in]       curr_state: all button current state

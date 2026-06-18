@@ -15,80 +15,80 @@
 #include "lwip/igmp.h"
 #include "lwip/sockets.h"
 
-#define LOCAL_MULTICAST_PROT    56000  	 // 本机组播端口号
+#define LOCAL_MULTICAST_PROT    56000       // 本机组播端口号
 
 #define MULTICAST_ADDR    "239.255.255.250"  // IPC组播IP地址
-#define MULTICAST_PROT     3702            	 // IPC组播端口号
-#define HIKVISION_MULTICAST_PROT    37020  	 // IPC组播端口号
+#define MULTICAST_PROT     3702                 // IPC组播端口号
+#define HIKVISION_MULTICAST_PROT    37020       // IPC组播端口号
 
 #define DAHUA_MULTICAST_ADDR1    "239.255.255.251"  // IPC组播IP地址
 #define DAHUA_MULTICAST_ADDR2    "255.255.255.255"  // IPC组播IP地址
 #define DAHUA_MULTICAST_PROT1     5050 
-#define DAHUA_MULTICAST_PROT2     37810  	 // IPC组播端口号
+#define DAHUA_MULTICAST_PROT2     37810       // IPC组播端口号
 #define DAHUA_MULTICAST_PROT3     37820
 #define DAHUA_MULTICAST_PROT4     8087  
 
 // 宇视
 #define UNW_MULTICAST_ADDR    "255.255.255.255"  // IPC组播IP地址
-#define UNW_MULTICAST_PROT     3702  	           // IPC组播端口号
+#define UNW_MULTICAST_PROT     3702                 // IPC组播端口号
 
 
 #define TEST_LOCAL_IP      "192.168.2.32"   // PC端测试IP
-#define TEST_LOCAL_PROT     65000            	// PC端测试端口号
+#define TEST_LOCAL_PROT     65000                // PC端测试端口号
 
-#define ONVIF_TX_BUFSIZE	1500	//定义最大发送数据长度
-#define ONVIF_RX_BUFSIZE	4000
+#define ONVIF_TX_BUFSIZE    1500    //定义最大发送数据长度
+#define ONVIF_RX_BUFSIZE    4000
 
 #define IPC_NUM_MAX         10      // IPC搜索个数 
 
 typedef enum 
 {
-	HIKVISION_P = 0,
-	DAHUA_P,
-	UNW_P,
-	ONVIF_P ,
-	IPC_PROTOCOL_END
+    HIKVISION_P = 0,
+    DAHUA_P,
+    UNW_P,
+    ONVIF_P ,
+    IPC_PROTOCOL_END
 }ipc_protocol_t;   // 通信协议
 
 
 typedef enum 
 {
-	HIKVISION = 0,
-	DAHUA,
-	UNW,
-	KEDACOM ,  // 科达
-	JOVISION, 	//中维世纪
+    HIKVISION = 0,
+    DAHUA,
+    UNW,
+    KEDACOM ,  // 科达
+    JOVISION,     //中维世纪
 }ipc_brand_t;   // 品牌
 
 
 //typedef enum 
 //{
-//	ONVIF_INIT = 0,
-//	ONVIF_START,
-//	ONVIF_END,
+//    ONVIF_INIT = 0,
+//    ONVIF_START,
+//    ONVIF_END,
 //}onvif_ipc_e;   // 步骤
 
 #define ONVIF_START     ((uint8_t)0x01)  // 开始搜索
 #define ONVIF_INIT      ((uint8_t)0x02)  // 初始化
 
-#define ONVIF_END      	((uint8_t)0x80)  // 搜索结束
+#define ONVIF_END          ((uint8_t)0x80)  // 搜索结束
 
 typedef struct
 {
-	uint8_t brand;
-	uint8_t ip[4];
-	uint8_t mac[6];
-	char 	model[32];
-	char	osd[128];
+    uint8_t brand;
+    uint8_t ip[4];
+    uint8_t mac[6];
+    char     model[32];
+    char    osd[128];
 }ipc_t;
 
 typedef struct
 {
-	uint8_t search_flag;// 查询标志位(第0位搜索：0禁止，1允许)
-	uint8_t ipc_num;    // 数量
-	ipc_t   ipc_param[IPC_NUM_MAX];
-	uint16_t onvif_times;
-	ipc_protocol_t ipc_protocol_status;
+    uint8_t search_flag;// 查询标志位(第0位搜索：0禁止，1允许)
+    uint8_t ipc_num;    // 数量
+    ipc_t   ipc_param[IPC_NUM_MAX];
+    uint16_t onvif_times;
+    ipc_protocol_t ipc_protocol_status;
 }IPC_Info_t;      // IPC摄像头参数
 
 

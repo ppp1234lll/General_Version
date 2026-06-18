@@ -1,21 +1,16 @@
 /**
  * @file
  * Transmission Control Protocol, incoming traffic
- *
  * The input processing functions of the TCP layer.
- *
  * These functions are generally called in the order (ip_input() ->)
  * tcp_input() -> * tcp_process() -> tcp_receive() (-> application).
- *
  */
 
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -23,7 +18,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -34,11 +28,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 #include "lwip/opt.h"
@@ -110,7 +101,6 @@ static void tcp_remove_sacks_gt(struct tcp_pcb *pcb, u32_t seq);
  * the segment between the PCBs and passes it on to tcp_process(), which implements
  * the TCP finite state machine. This function is called by the IP layer (in
  * ip_input()).
- *
  * @param p received TCP segment to process (p->payload pointing to the TCP header)
  * @param inp network interface on which this segment was received
  */
@@ -620,9 +610,7 @@ tcp_input_delayed_close(struct tcp_pcb *pcb)
 /**
  * Called by tcp_input() when a segment arrives for a listening
  * connection (from tcp_input()).
- *
  * @param pcb the tcp_pcb_listen for which a segment arrived
- *
  * @note the segment which arrived is saved in global variables, therefore only the pcb
  *       involved is passed as a parameter to this function
  */
@@ -732,9 +720,7 @@ tcp_listen_input(struct tcp_pcb_listen *pcb)
 /**
  * Called by tcp_input() when a segment arrives for a connection in
  * TIME_WAIT.
- *
  * @param pcb the tcp_pcb for which a segment arrived
- *
  * @note the segment which arrived is saved in global variables, therefore only the pcb
  *       involved is passed as a parameter to this function
  */
@@ -781,9 +767,7 @@ tcp_timewait_input(struct tcp_pcb *pcb)
  * states tcp_receive() is called to receive data. The tcp_seg
  * argument will be freed by the caller (tcp_input()) unless the
  * recv_data pointer in the pcb is set.
- *
  * @param pcb the tcp_pcb for which a segment arrived
- *
  * @note the segment which arrived is saved in global variables, therefore only the pcb
  *       involved is passed as a parameter to this function
  */
@@ -1057,7 +1041,6 @@ tcp_process(struct tcp_pcb *pcb)
 #if TCP_QUEUE_OOSEQ
 /**
  * Insert segment into the list (segments covered with new one will be deleted)
- *
  * Called from tcp_receive()
  */
 static void
@@ -1144,10 +1127,8 @@ tcp_free_acked_segments(struct tcp_pcb *pcb, struct tcp_seg *seg_list, const cha
  * segment on any of the receive queues (pcb->recved or pcb->ooseq). If the segment
  * is buffered, the pbuf is referenced by pbuf_ref so that it will not be freed until
  * it has been removed from the buffer.
- *
  * If the incoming segment constitutes an ACK for a segment that was used for RTT
  * estimation, the RTT is estimated here as well.
- *
  * Called from tcp_process().
  */
 static void
@@ -1193,17 +1174,13 @@ tcp_receive(struct tcp_pcb *pcb)
      * 3) the advertised window hasn't changed
      * 4) There is outstanding unacknowledged data (retransmission timer running)
      * 5) The ACK is == biggest ACK sequence number so far seen (snd_una)
-     *
      * If it passes all five, should process as a dupack:
      * a) dupacks < 3: do nothing
      * b) dupacks == 3: fast retransmit
      * c) dupacks > 3: increase cwnd
-     *
      * If it only passes 1-3, should reset dupack counter (and add to
      * stats, which we don't do in lwIP)
-     *
      * If it only passes 1, should reset dupack counter
-     *
      */
 
     /* Clause 1 */
@@ -1915,10 +1892,8 @@ tcp_get_next_optbyte(void)
 
 /**
  * Parses the options contained in the incoming segment.
- *
  * Called from tcp_listen_input() and tcp_process().
  * Currently, only the MSS option is supported!
- *
  * @param pcb the tcp_pcb for which a segment arrived
  */
 static void
@@ -2050,11 +2025,9 @@ tcp_trigger_input_pcb_close(void)
 #if LWIP_TCP_SACK_OUT
 /**
  * Called by tcp_receive() to add new SACK entry.
- *
  * The new SACK entry will be placed at the beginning of rcv_sacks[], as the newest one.
  * Existing SACK entries will be "pushed back", to preserve their order.
  * This is the behavior described in RFC 2018, section 4.
- *
  * @param pcb the tcp_pcb for which a segment arrived
  * @param left the left side of the SACK (the first sequence number)
  * @param right the right side of the SACK (the first sequence number past this SACK)
@@ -2111,11 +2084,9 @@ tcp_add_sack(struct tcp_pcb *pcb, u32_t left, u32_t right)
 
 /**
  * Called to remove a range of SACKs.
- *
  * SACK entries will be removed or adjusted to not acknowledge any sequence
  * numbers that are less than 'seq' passed. It not only invalidates entries,
  * but also moves all entries that are still valid to the beginning.
- *
  * @param pcb the tcp_pcb to modify
  * @param seq the lowest sequence number to keep in SACK entries
  */
@@ -2151,11 +2122,9 @@ tcp_remove_sacks_lt(struct tcp_pcb *pcb, u32_t seq)
 #if defined(TCP_OOSEQ_BYTES_LIMIT) || defined(TCP_OOSEQ_PBUFS_LIMIT)
 /**
  * Called to remove a range of SACKs.
- *
  * SACK entries will be removed or adjusted to not acknowledge any sequence
  * numbers that are greater than (or equal to) 'seq' passed. It not only invalidates entries,
  * but also moves all entries that are still valid to the beginning.
- *
  * @param pcb the tcp_pcb to modify
  * @param seq the highest sequence number to keep in SACK entries
  */

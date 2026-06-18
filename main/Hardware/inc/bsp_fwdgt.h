@@ -1,12 +1,24 @@
+/*
+*********************************************************************************************************
+*    函 数 名: fwdgt操作模块
+*    功能说明: bsp_fwdgt.h
+*    形    参: V1.0
+*    返 回 值: 
+*********************************************************************************************************
+*/
+
 #ifndef _BSP_FWDGT_H_
 #define _BSP_FWDGT_H_
 
 #include "./SYSTEM/sys/sys.h"
 
-void bsp_InitFwdgt(uint8_t prer,uint16_t rlr);//FWDGT初始化
-void FeedFwdgt(void);  //喂狗函数
+// 外部函数声明
+void bsp_InitFwdgt(uint8_t prer,uint16_t rlr);      // FWDGT初始化
+void FeedFwdgt(void);                               // 喂狗函数
 
+// 测试函数
 void fwdgt_test(void);
 #endif
 
+/**************************************** END OF FILE **************************************************/
 

@@ -1,7 +1,6 @@
 /**
  * @file
  * Network buffer management
- *
  * @defgroup netbuf Network buffers
  * @ingroup netconn
  * Network buffer descriptor for @ref netconn. Based on @ref pbuf internally
@@ -13,10 +12,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -24,7 +21,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -35,11 +31,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 #include "lwip/opt.h"
@@ -55,7 +48,6 @@
  * @ingroup netbuf
  * Create (allocate) and initialize a new netbuf.
  * The netbuf doesn't yet contain a packet buffer!
- *
  * @return a pointer to a new netbuf
  *         NULL on lack of memory
  */
@@ -74,7 +66,6 @@ netbuf *netbuf_new(void)
 /**
  * @ingroup netbuf
  * Deallocate a netbuf allocated by netbuf_new().
- *
  * @param buf pointer to a netbuf allocated by netbuf_new()
  */
 void
@@ -92,7 +83,6 @@ netbuf_delete(struct netbuf *buf)
 /**
  * @ingroup netbuf
  * Allocate memory for a packet buffer for a given netbuf.
- *
  * @param buf the netbuf for which to allocate a packet buffer
  * @param size the size of the packet buffer to allocate
  * @return pointer to the allocated memory
@@ -120,7 +110,6 @@ netbuf_alloc(struct netbuf *buf, u16_t size)
 /**
  * @ingroup netbuf
  * Free the packet buffer included in a netbuf
- *
  * @param buf pointer to the netbuf which contains the packet buffer to free
  */
 void
@@ -140,7 +129,6 @@ netbuf_free(struct netbuf *buf)
 /**
  * @ingroup netbuf
  * Let a netbuf reference existing (non-volatile) data.
- *
  * @param buf netbuf which should reference the data
  * @param dataptr pointer to the data to reference
  * @param size size of the data
@@ -168,7 +156,6 @@ netbuf_ref(struct netbuf *buf, const void *dataptr, u16_t size)
 /**
  * @ingroup netbuf
  * Chain one netbuf to another (@see pbuf_chain)
- *
  * @param head the first netbuf
  * @param tail netbuf to chain after head, freed by this function, may not be reference after returning
  */
@@ -185,7 +172,6 @@ netbuf_chain(struct netbuf *head, struct netbuf *tail)
 /**
  * @ingroup netbuf
  * Get the data pointer and length of the data inside a netbuf.
- *
  * @param buf netbuf to get the data from
  * @param dataptr pointer to a void pointer where to store the data pointer
  * @param len pointer to an u16_t where the length of the data is stored
@@ -212,7 +198,6 @@ netbuf_data(struct netbuf *buf, void **dataptr, u16_t *len)
  * Move the current data pointer of a packet buffer contained in a netbuf
  * to the next part.
  * The packet buffer itself is not modified.
- *
  * @param buf the netbuf to modify
  * @return -1 if there is no next part
  *         1  if moved to the next part but now there is no next part
@@ -237,7 +222,6 @@ netbuf_next(struct netbuf *buf)
  * Move the current data pointer of a packet buffer contained in a netbuf
  * to the beginning of the packet.
  * The packet buffer itself is not modified.
- *
  * @param buf the netbuf to modify
  */
 void

@@ -7,10 +7,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -18,7 +16,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -29,11 +26,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 #ifndef LWIP_HDR_TCP_H
 #define LWIP_HDR_TCP_H
@@ -60,7 +54,6 @@ struct tcp_pcb_listen;
 
 /** Function prototype for tcp accept callback functions. Called when a new
  * connection can be accepted on a listening pcb.
- *
  * @param arg Additional argument to pass to the callback function (@see tcp_arg())
  * @param newpcb The new connection pcb
  * @param err An error code if there has been an error accepting.
@@ -71,7 +64,6 @@ typedef err_t (*tcp_accept_fn)(void *arg, struct tcp_pcb *newpcb, err_t err);
 
 /** Function prototype for tcp receive callback functions. Called when data has
  * been received.
- *
  * @param arg Additional argument to pass to the callback function (@see tcp_arg())
  * @param tpcb The connection pcb which received data
  * @param p The received data (or NULL when the connection has been closed!)
@@ -85,7 +77,6 @@ typedef err_t (*tcp_recv_fn)(void *arg, struct tcp_pcb *tpcb,
 /** Function prototype for tcp sent callback functions. Called when sent data has
  * been acknowledged by the remote side. Use it to free corresponding resources.
  * This also means that the pcb has now space available to send new data.
- *
  * @param arg Additional argument to pass to the callback function (@see tcp_arg())
  * @param tpcb The connection pcb for which data has been acknowledged
  * @param len The amount of bytes acknowledged
@@ -98,7 +89,6 @@ typedef err_t (*tcp_sent_fn)(void *arg, struct tcp_pcb *tpcb,
 
 /** Function prototype for tcp poll callback functions. Called periodically as
  * specified by @see tcp_poll.
- *
  * @param arg Additional argument to pass to the callback function (@see tcp_arg())
  * @param tpcb tcp pcb
  * @return ERR_OK: try to send some data by calling tcp_output
@@ -109,9 +99,7 @@ typedef err_t (*tcp_poll_fn)(void *arg, struct tcp_pcb *tpcb);
 
 /** Function prototype for tcp error callback functions. Called when the pcb
  * receives a RST or is unexpectedly closed for any other reason.
- *
  * @note The corresponding pcb is already freed when this callback is called!
- *
  * @param arg Additional argument to pass to the callback function (@see tcp_arg())
  * @param err Error code to indicate why the pcb has been closed
  *            ERR_ABRT: aborted through tcp_abort or by a TCP timer
@@ -122,13 +110,11 @@ typedef void  (*tcp_err_fn)(void *arg, err_t err);
 /** Function prototype for tcp connected callback functions. Called when a pcb
  * is connected to the remote side after initiating a connection attempt by
  * calling tcp_connect().
- *
  * @param arg Additional argument to pass to the callback function (@see tcp_arg())
  * @param tpcb The connection pcb which is connected
  * @param err An unused error code, always ERR_OK currently ;-) @todo!
  *            Only return ERR_ABRT if you have called tcp_abort from within the
  *            callback function!
- *
  * @note When a connection attempt fails, the error callback is currently called!
  */
 typedef err_t (*tcp_connected_fn)(void *arg, struct tcp_pcb *tpcb, err_t err);
@@ -166,14 +152,12 @@ struct tcp_sack_range {
 
 /** Function prototype for deallocation of arguments. Called *just before* the
  * pcb is freed, so don't expect to be able to do anything with this pcb!
- *
  * @param id ext arg id (allocated via @ref tcp_ext_arg_alloc_id)
  * @param data pointer to the data (set via @ref tcp_ext_arg_set before)
  */
 typedef void (*tcp_extarg_callback_pcb_destroyed_fn)(u8_t id, void *data);
 
 /** Function prototype to transition arguments from a listening pcb to an accepted pcb
- *
  * @param id ext arg id (allocated via @ref tcp_ext_arg_alloc_id)
  * @param lpcb the listening pcb accepting a connection
  * @param cpcb the newly allocated connection pcb

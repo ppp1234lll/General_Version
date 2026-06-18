@@ -1,15 +1,11 @@
 /**
  * @file
  * SMTP client module
- *
  * Author: Simon Goldschmidt
- *
  * @defgroup smtp SMTP client
  * @ingroup apps
- *
  * This is simple SMTP client for raw API.
  * It is a minimal implementation of SMTP as specified in RFC 5321.
- *
  * Example usage:
 @code{.c}
  void my_smtp_result_fn(void *arg, u8_t smtp_result, u16_t srv_err, err_t err)
@@ -29,7 +25,6 @@
 
  * When using from any other thread than the tcpip_thread (for NO_SYS==0), use
  * smtp_send_mail_int()!
- *
  * SMTP_BODYDH usage:
 @code{.c}
  int my_smtp_bodydh_fn(void *arg, struct smtp_bodydh *bdh)
@@ -46,12 +41,10 @@
  smtp_send_mail_bodycback("sender", "recipient", "subject",
                 my_smtp_bodydh_fn, my_smtp_result_fn, some_argument);
 @endcode
- *
  * @todo:
  * - attachments (the main difficulty here is streaming base64-encoding to
  *   prevent having to allocate a buffer for the whole encoded file at once)
  * - test with more mail servers...
- *
  */
 
 #include "lwip/apps/smtp.h"
@@ -342,7 +335,6 @@ smtp_pbuf_str(struct pbuf* p)
 
 /** @ingroup smtp
  * Set IP address or DNS name for next SMTP connection
- *
  * @param server IP address (in ASCII representation) or DNS name of the server
  */
 err_t
@@ -368,7 +360,6 @@ smtp_set_server_addr(const char* server)
 
 /** @ingroup smtp
  * Set TCP port for next SMTP connection
- *
  * @param port TCP port
  */
 void
@@ -381,7 +372,6 @@ smtp_set_server_port(u16_t port)
 #if LWIP_ALTCP && LWIP_ALTCP_TLS
 /** @ingroup smtp
  * Set TLS configuration for next SMTP connection
- *
  * @param tls_config TLS configuration
  */
 void
@@ -394,7 +384,6 @@ smtp_set_tls_config(struct altcp_tls_config *tls_config)
 
 /** @ingroup smtp
  * Set authentication parameters for next SMTP connection
- *
  * @param username login name as passed to the server
  * @param pass password passed to the server together with username
  */
@@ -570,7 +559,6 @@ leave:
 
 /** @ingroup smtp
  *  Send an email via the currently selected server, username and password.
- *
  * @param from source email address (must be NULL-terminated)
  * @param to target email address (must be NULL-terminated)
  * @param subject email subject (must be NULL-terminated)
@@ -679,9 +667,7 @@ smtp_send_mail_static(const char *from, const char* to, const char* subject,
  * parameter which contains all the other parameters.
  * To be used with tcpip_callback to send mail from interrupt context or from
  * another thread.
- *
  * WARNING: server and authentication must stay untouched until this function has run!
- *
  * Usage example:
  * - allocate a struct smtp_send_request (in a way that is allowed in interrupt context)
  * - fill the members of the struct as if calling smtp_send_mail
@@ -948,7 +934,6 @@ smtp_base64_encode(char* target, size_t target_len, const char* source, size_t s
 /** Parse pbuf to see if it contains the beginning of an answer.
  * If so, it returns the contained response code as number between 1 and 999.
  * If not, zero is returned.
- *
  * @param s smtp session struct
  */
 static u16_t
@@ -977,10 +962,8 @@ smtp_is_response(struct smtp_session *s)
 /** Parse pbuf to see if it contains a fully received answer.
  * If one is found, ERR_OK is returned.
  * If none is found, ERR_VAL is returned.
- *
  * A fully received answer is a 3-digit number followed by a space,
  * some string and a CRLF as line ending.
- *
  * @param s smtp session struct
  */
 static err_t
@@ -1439,7 +1422,6 @@ smtp_process(void *arg, struct altcp_pcb *pcb, struct pbuf *p)
 
 #if SMTP_BODYDH
 /** Elementary sub-function to send data
- *
  * @returns: BDHALLDATASENT all data has been written
  *           BDHSOMEDATASENT some data has been written
  *           0 no data has been written

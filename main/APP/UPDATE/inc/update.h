@@ -13,17 +13,17 @@
 /* 20201103 */
 typedef struct
 {
-	uint8_t mode;			// 0-不更新 1-通过LWIP更新 2-通过GPRS更新
-	
-	uint8_t ip[4]; 			// 更新地址
-	uint32_t port; 			// 更新端口
-	struct {
-		uint8_t state; 		// 状态
-		uint8_t connect; 	// 连接
-	} tcp_t;
-	struct {
-		uint8_t connect;
-	} gprs_t;
+    uint8_t mode;            // 0-不更新 1-通过LWIP更新 2-通过GPRS更新
+    
+    uint8_t ip[4];             // 更新地址
+    uint32_t port;             // 更新端口
+    struct {
+        uint8_t state;         // 状态
+        uint8_t connect;     // 连接
+    } tcp_t;
+    struct {
+        uint8_t connect;
+    } gprs_t;
 } update_param_t;
 ////
 

@@ -1,20 +1,22 @@
-/********************************************************************************
+/*
+*********************************************************************************************************
 * @File name  : 温湿度模块
 * @Description: 模拟IIC通信
 * @Author     : ZHLE
 *  Version Date        Modification Description
-	9、AHT20温湿度传感器：(模拟IIC方式)，引脚分配为：  
-		      SCL:	PD12
-		      SDA:  PD11
+*    9、AHT20温湿度传感器：(模拟IIC方式)，引脚分配为：  
+*            SCL:    PD12
+*            SDA:    PD11
+*********************************************************************************************************
+*/
+#include "./Driver/inc/aht20.h"
+#include "bsp.h"
+#include "appconfig.h"
 
-********************************************************************************/
+#if (configUSE_AHT20 == 1)
 
-#include "aht20.h"
-#include "aht20_drv.h"
-#include "./SYSTEM/delay/delay.h"
-
+/* 定义AHT20的从地址为0x70 */
 #define ATH20_SLAVE_ADDRESS (0x70)
-
 
 static const uint8_t crc_table[] =
 {
@@ -38,170 +40,173 @@ static const uint8_t crc_table[] =
 
 /*
 *********************************************************************************************************
-*	函 数 名: cal_crc_table
-*	功能说明: CRC校验计算
-*	形    参: 
-*	返 回 值:  无
+*    函 数 名: cal_crc_table
+*    功能说明: CRC校验计算
+*    形    参: 
+*    返 回 值: 无
 *********************************************************************************************************
 */
 uint8_t cal_crc_table(uint8_t *ptr, uint8_t len)
 {
-	uint8_t crc = 0xFF;
+    uint8_t crc = 0xFF;
 
-	while (len--)
-	{
-		crc = crc_table[crc ^ *ptr++];
-	}
-	return (crc);
+    while (len--)
+    {
+        crc = crc_table[crc ^ *ptr++];
+    }
+    return (crc);
 }
 
 /*
 *********************************************************************************************************
-*	函 数 名: aht20_i2c_read_function
-*	功能说明: 读数据
-*	形    参: 
-*	@addr		: 寄存器地址
-*	@buf		: 存储地址
-*	@size	  : 数据长度
-*	返 回 值:  无
+*    函 数 名: aht20_i2c_read_bytes
+*    功能说明: 读数据
+*    形    参: 
+*    返 回 值: 寄存器地址
+*    @buf      : 存储地址
+*    @size     : 数据长度
+*    返 回 值:  无
 *********************************************************************************************************
 */
-uint8_t aht20_i2c_read_function(uint8_t addr, uint8_t *buf, uint8_t size)
+uint8_t aht20_i2c_read_bytes(uint8_t addr, uint8_t *buf, uint8_t size)
 {
-	uint8_t ret   = 0;
-	uint8_t index = 0;
+    uint8_t ret   = 0;
+    uint8_t index = 0;
 
-	aht20_i2c_start();
-	aht20_drive_write_byte(addr|0x01);
-	ret = aht20_i2c_wait_ack();
-	for(index=0; index<size; index++)
-	{
-		if(index == (size-1))
-		{
-			buf[index] = aht20_drive_read_byte(0);
-		}
-		else
-		{
-			buf[index] = aht20_drive_read_byte(1);
-		}
-	}
-	aht20_i2c_stop();
+    siic_start();
+    siic_write_byte(addr|0x01);
+    ret = siic_wait_ack();
+    for(index=0; index<size; index++)
+    {
+        if(index == (size-1))
+        {
+            buf[index] = siic_read_byte(0);
+        }
+        else
+        {
+            buf[index] = siic_read_byte(1);
+        }
+    }
+    siic_stop();
 
-	return ret;
+    return ret;
 }
 
 /*
 *********************************************************************************************************
-*	函 数 名: aht20_i2c_write_function
-*	功能说明: 写数据
-*	形    参: 
-*	@addr		: 寄存器地址
-*	@buf		: 存储地址
-*	@size	  : 数据长度
-*	返 回 值: 成功/失败
+*    函 数 名: aht20_i2c_write_bytes
+*    功能说明: 写数据
+*    形    参: 
+*    返 回 值: 寄存器地址
+*    @buf      : 存储地址
+*    @size     : 数据长度
+*    返 回 值: 成功/失败
 *********************************************************************************************************
 */
-static uint8_t aht20_i2c_write_function(uint8_t addr, uint8_t *buf, uint8_t size)
+uint8_t aht20_i2c_write_bytes(uint8_t addr, uint8_t *buf, uint8_t size)
 {
-	uint8_t ret   = 0;
-	uint8_t index = 0;
+    uint8_t ret   = 0;
+    uint8_t index = 0;
 
-	aht20_i2c_start();
-	aht20_drive_write_byte(addr|0x00);
-	ret = aht20_i2c_wait_ack();
-	for(index=0; index<size; index++)
-	{
-		aht20_drive_write_byte(buf[index]);
-		ret = aht20_i2c_wait_ack();
-	}
-	aht20_i2c_stop();
+    siic_start();
+    siic_write_byte(addr|0x00);
+    ret = siic_wait_ack();
+    for(index=0; index<size; index++)
+    {
+        siic_write_byte(buf[index]);
+        ret = siic_wait_ack();
+    }
+    siic_stop();
 
-	return ret;
+    return ret;
 }
 
 /*
 *********************************************************************************************************
-*	函 数 名: aht20_init_function
-*	功能说明: 初始化
-*	形    参: 无
-*	返 回 值: 无
+*    函 数 名: aht20_init
+*    功能说明: 初始化
+*    形    参: 无
+*    返 回 值: 无
 *********************************************************************************************************
 */
-void aht20_init_function(void)
+void aht20_init(void)
 {
-	uint8_t buff[1] = {0};
+    uint8_t buff[1] = {0};
 
-	aht20_i2c_init();
+    bsp_init_siic();
 
-	/* 激活采集 */
-	delay_ms(100);
-	aht20_i2c_read_function(ATH20_SLAVE_ADDRESS, buff, 1);
+    /* 激活采集 */
+    delay_ms(100);
+    aht20_i2c_read_bytes(ATH20_SLAVE_ADDRESS, buff, 1);
 }
 
 /*
 *********************************************************************************************************
-*	函 数 名: aht20_init_function
-*	功能说明: 初始化
-*	形    参: 无
-*	返 回 值: 无
+*    函 数 名: aht20_measure
+*    功能说明: 测量温度和湿度
+*    形    参: 
+*    返 回 值: 温湿度指针
+*    @temperature : 温度指针
+*    返 回 值: 成功/失败
 *********************************************************************************************************
 */
 
 int8_t aht20_measure(double *humidity, double *temperature)
 {
-	uint32_t datatemp = 0;
-	double data = 0;
-	uint8_t  ret      = 0;
-	uint8_t  buff[7]  = {0};
+    uint32_t datatemp = 0;
+    double data = 0;
+    uint8_t  ret      = 0;
+    uint8_t  buff[7]  = {0};
     
-	buff[0] = 0xAC;
-	buff[1] = 0x33;
-	buff[2] = 0x00;
-	ret = aht20_i2c_write_function(ATH20_SLAVE_ADDRESS, buff, 3);	//触发测量
-	if(ret != 0)
-		return ret;
-//	delay_ms(80);
-	ret = aht20_i2c_read_function(ATH20_SLAVE_ADDRESS, buff, 7);	//读取状态字
-	if(ret != 0)
-		return ret;
-	
-	if(buff[6] != cal_crc_table(buff, 6))
-		return 1;
-	datatemp = buff[1];
-	datatemp = (datatemp<<8) | buff[2];
-	datatemp = (datatemp<<4) | (buff[3]>>4);
-	data = datatemp;
-	*humidity = (data / 1048576.0f) * 100.0f;
-	
-	datatemp = 0;
-	datatemp = buff[3] & 0x0F;
-	datatemp = (datatemp<<8) | buff[4];
-	datatemp = (datatemp<<8) | buff[5];
-	data = datatemp;
-	*temperature = (data / 1048576.0f) * 200.0f - 50.0f;
+    buff[0] = 0xAC;
+    buff[1] = 0x33;
+    buff[2] = 0x00;
+    ret = aht20_i2c_write_bytes(ATH20_SLAVE_ADDRESS, buff, 3);    //触发测量
+    if(ret != 0)
+        return ret;
+//    delay_ms(80);
+    ret = aht20_i2c_read_bytes(ATH20_SLAVE_ADDRESS, buff, 7);    //读取状态字
+    if(ret != 0)
+        return ret;
     
-	return ret;
+    if(buff[6] != cal_crc_table(buff, 6))
+        return 1;
+    datatemp = buff[1];
+    datatemp = (datatemp<<8) | buff[2];
+    datatemp = (datatemp<<4) | (buff[3]>>4);
+    data = datatemp;
+    *humidity = (data / 1048576.0f) * 100.0f;
+    
+    datatemp = 0;
+    datatemp = buff[3] & 0x0F;
+    datatemp = (datatemp<<8) | buff[4];
+    datatemp = (datatemp<<8) | buff[5];
+    data = datatemp;
+    *temperature = (data / 1048576.0f) * 200.0f - 50.0f;
+    
+    return ret;
 }
 
-/************************************************************
-*
-* Function name	: aht20_test
-* Description	: 温湿度测试
-* Parameter		:
-* Return		:
-*
-************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: aht20_test
+*    功能说明: 测试温度和湿度
+*    形    参: 无
+*    返 回 值: 无
+*********************************************************************************************************
+*/
 void aht20_test(void)
 {
-	double det_temp = 0;
-	double det_humi = 0;
-	while(1)
-	{
-		aht20_measure(&det_humi,&det_temp);
-		printf("temp=%03f...humi=%03f \n",det_temp,det_humi);
-		delay_ms(1000);	
-	}
+    double det_temp = 0;
+    double det_humi = 0;
+    while(1)
+    {
+        aht20_measure(&det_humi,&det_temp);
+        printf("temp=%03f...humi=%03f \n",det_temp,det_humi);
+        delay_ms(1000);    
+    }
 }
 
+#endif
 
 

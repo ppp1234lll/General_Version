@@ -1,16 +1,13 @@
 /**
  * @file
- *
  * IPv6 addresses.
  */
 
 /*
  * Copyright (c) 2010 Inico Technologies Ltd.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -18,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -29,13 +25,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Ivan Delamer <delamer@inicotech.com>
- *
  * Functions for handling IPv6 addresses.
- *
  * Please coordinate changes and requests with Ivan Delamer
  * <delamer@inicotech.com>
  */
@@ -63,7 +55,6 @@ const ip_addr_t ip6_addr_any = IPADDR6_INIT(0ul, 0ul, 0ul, 0ul);
  * Check whether "cp" is a valid ascii representation
  * of an IPv6 address and convert to a binary address.
  * Returns 1 if the address is valid, 0 if not.
- *
  * @param cp IPv6 address in ascii representation (e.g. "FF01::1")
  * @param addr pointer to which to save the ip address in network order
  * @return 1 if cp could be converted to addr, 0 on failure
@@ -209,7 +200,6 @@ fix_byte_order_and_return:
 /**
  * Convert numeric IPv6 address into ASCII representation.
  * returns ptr to static buffer; not reentrant!
- *
  * @param addr ip6 address in network order to convert
  * @return pointer to a global static (!) buffer that holds the ASCII
  *         representation of addr
@@ -223,7 +213,6 @@ ip6addr_ntoa(const ip6_addr_t *addr)
 
 /**
  * Same as ipaddr_ntoa, but reentrant since a user-supplied buffer is used.
- *
  * @param addr ip6 address in network order to convert
  * @param buf target buffer where the string is stored
  * @param buflen length of buf

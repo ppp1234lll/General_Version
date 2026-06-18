@@ -40,27 +40,22 @@ typedef bit_array_t bit_array_val_t;
 /**
  * @brief This macro computes the number of bit array variables necessary to
  * represent a bitmap with @a num_bits.
- *
  * @param num_bits Number of bits.
  */
 #define BIT_ARRAY_BITMAP_SIZE(num_bits) (1 + ((num_bits)-1) / BIT_ARRAY_BITS)
 
 /**
  * @brief Define an array of bit array variables.
- *
  * This macro defines an array of bit array variables containing at least
  * @a num_bits bits.
- *
  * @note
  * If used from file scope, the bits of the array are initialized to zero;
  * if used from within a function, the bits are left uninitialized.
- *
  * @cond INTERNAL_HIDDEN
  * @note
  * This macro should be replicated in the PREDEFINED field of the documentation
  * Doxyfile.
  * @endcond
- *
  * @param name Name of array of bit array variables.
  * @param num_bits Number of bits needed.
  */
@@ -93,12 +88,9 @@ static inline void _bit_array_mask_top_word(bit_array_t *target, int num_bits)
 
 /**
  * @brief Bit Array test a bit.
- *
  * This routine tests whether bit number @a bit of @a target is set or not.
- *
  * @param target Address of bit array variable or array.
  * @param bit Bit number (starting from 0).
- *
  * @return true if the bit was set, false if it wasn't.
  */
 static inline int bit_array_get(const bit_array_t *target, int bit)
@@ -110,9 +102,7 @@ static inline int bit_array_get(const bit_array_t *target, int bit)
 
 /**
  * @brief Bit Array clear a bit.
- *
  * Bit Array clear bit number @a bit of @a target.
- *
  * @param target Address of bit array variable or array.
  * @param bit Bit number (starting from 0).
  */
@@ -125,9 +115,7 @@ static inline void bit_array_clear(bit_array_t *target, int bit)
 
 /**
  * @brief Bit Array set a bit.
- *
  * Bit Array set bit number @a bit of @a target.
- *
  * @param target Address of bit array variable or array.
  * @param bit Bit number (starting from 0).
  */
@@ -140,9 +128,7 @@ static inline void bit_array_set(bit_array_t *target, int bit)
 
 /**
  * @brief Bit Array toggle a bit.
- *
  * Bit Array toggle bit number @a bit of @a target.
- *
  * @param target Address of bit array variable or array.
  * @param bit Bit number (starting from 0).
  */
@@ -155,9 +141,7 @@ static inline void bit_array_toggle(bit_array_t *target, int bit)
 
 /**
  * @brief Bit Array set a bit to a given value.
- *
  * Bit Array set bit number @a bit of @a target to value @a val.
- *
  * @param target Address of bit array variable or array.
  * @param bit Bit number (starting from 0).
  * @param val true for 1, false for 0.

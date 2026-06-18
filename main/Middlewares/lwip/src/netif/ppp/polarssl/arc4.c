@@ -1,12 +1,8 @@
 /*
  *  An implementation of the ARCFOUR algorithm
- *
  *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
- *
  *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>
- *
  *  All rights reserved.
- *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
  *  are met:
@@ -34,7 +30,6 @@
  */
 /*
  *  The ARCFOUR algorithm was publicly disclosed on 94/09.
- *
  *  http://groups.google.com/group/sci.crypt/msg/10a300c9d21afca0
  */
 

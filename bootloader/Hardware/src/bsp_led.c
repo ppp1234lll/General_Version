@@ -2,24 +2,24 @@
 #include "bsp.h"
 
 /*
-    2、指示灯（原理图）：
+2、指示灯（原理图）：
 
-        系统状态指示灯  STATE      : PC9
-        网口指示灯      LAN        : PA12
-        4G指示灯        GPRS       : PA11
+	系统状态指示灯  STATE      : PB8
+	网口指示灯      LAN        : PB9
+	4G指示灯       GPRS       : PE0
 */
 
-#define STATE_GPIO_CLK         RCU_GPIOC
-#define STATE_GPIO_PORT        GPIOC
-#define STATE_GPIO_PIN         GPIO_PIN_9
+#define STATE_GPIO_CLK         RCU_GPIOB
+#define STATE_GPIO_PORT        GPIOB
+#define STATE_GPIO_PIN         GPIO_PIN_8
 
-#define LAN_GPIO_CLK           RCU_GPIOA
-#define LAN_GPIO_PORT          GPIOA
-#define LAN_GPIO_PIN           GPIO_PIN_12
+#define LAN_GPIO_CLK           RCU_GPIOB
+#define LAN_GPIO_PORT          GPIOB
+#define LAN_GPIO_PIN           GPIO_PIN_9
 
-#define GPRS_GPIO_CLK          RCU_GPIOA
-#define GPRS_GPIO_PORT         GPIOA
-#define GPRS_GPIO_PIN          GPIO_PIN_11
+#define GPRS_GPIO_CLK          RCU_GPIOE
+#define GPRS_GPIO_PORT         GPIOE
+#define GPRS_GPIO_PIN          GPIO_PIN_0
 
 /* 指示灯闪烁时间*/
 #define FLICKER_TIME_Q        (200)
@@ -72,8 +72,8 @@ void bsp_InitLed(void)
 *********************************************************************************************************
 *    函 数 名: led_control_function
 *    功能说明: 点亮指定的LED指示灯。
-*    形    参:  dev  : 指示灯序号
-*               state: 指示灯状态
+*    形    参: dev  : 指示灯序号
+*    返 回 值: 指示灯状态
 *    返 回 值: 无
 *********************************************************************************************************
 */
@@ -104,8 +104,8 @@ void led_control_function(LD_DEV dev, LED_STATUS state)
 *********************************************************************************************************
 *    函 数 名: led_out_control_function
 *    功能说明: 点亮外部LED指示灯。
-*    形    参:  dev  : 指示灯序号
-*               state: 指示灯状态
+*    形    参: dev  : 指示灯序号
+*    返 回 值: 指示灯状态
 *    返 回 值: 无
 *********************************************************************************************************
 */

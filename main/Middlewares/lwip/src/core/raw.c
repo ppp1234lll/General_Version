@@ -4,7 +4,6 @@
  * different types of protocols besides (or overriding) those
  * already available in lwIP.<br>
  * See also @ref raw_raw
- *
  * @defgroup raw_raw RAW
  * @ingroup callbackstyle_api
  * Implementation of raw protocol PCBs for low-level handling of
@@ -16,10 +15,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -27,7 +24,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -38,11 +34,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 #include "lwip/opt.h"
@@ -117,11 +110,9 @@ raw_input_local_match(struct raw_pcb *pcb, u8_t broadcast)
 /**
  * Determine if in incoming IP packet is covered by a RAW PCB
  * and if so, pass it to a user-provided receive callback function.
- *
  * Given an incoming IP datagram (as a chain of pbufs) this function
  * finds a corresponding RAW PCB and calls the corresponding receive
  * callback function.
- *
  * @param p pbuf to be demultiplexed to a RAW PCB.
  * @param inp network interface on which the datagram was received.
  * @return - 1 if the packet has been eaten by a RAW PCB receive
@@ -129,7 +120,6 @@ raw_input_local_match(struct raw_pcb *pcb, u8_t broadcast)
  *           packet any longer, and MAY NOT call pbuf_free().
  * @return - 0 if packet is not eaten (pbuf is still referenced by the
  *           caller).
- *
  */
 raw_input_state_t
 raw_input(struct pbuf *p, struct netif *inp)
@@ -205,16 +195,13 @@ raw_input(struct pbuf *p, struct netif *inp)
 /**
  * @ingroup raw_raw
  * Bind a RAW PCB.
- *
  * @param pcb RAW PCB to be bound with a local address ipaddr.
  * @param ipaddr local IP address to bind with. Use IP4_ADDR_ANY to
  * bind to all local interfaces.
- *
  * @return lwIP error code.
  * - ERR_OK. Successful. No error occurred.
  * - ERR_USE. The specified IP address is already bound to by
  * another RAW PCB.
- *
  * @see raw_disconnect()
  */
 err_t
@@ -243,10 +230,8 @@ raw_bind(struct raw_pcb *pcb, const ip_addr_t *ipaddr)
  * After calling this function, all packets received via this PCB
  * are guaranteed to have come in via the specified netif, and all
  * outgoing packets will go out via the specified netif.
- *
  * @param pcb RAW PCB to be bound with netif.
  * @param netif netif to bind to. Can be NULL.
- *
  * @see raw_disconnect()
  */
 void
@@ -264,14 +249,10 @@ raw_bind_netif(struct raw_pcb *pcb, const struct netif *netif)
  * @ingroup raw_raw
  * Connect an RAW PCB. This function is required by upper layers
  * of lwip. Using the raw api you could use raw_sendto() instead
- *
  * This will associate the RAW PCB with the remote address.
- *
  * @param pcb RAW PCB to be connected with remote address ipaddr and port.
  * @param ipaddr remote IP address to connect with.
- *
  * @return lwIP error code
- *
  * @see raw_disconnect() and raw_sendto()
  */
 err_t
@@ -297,7 +278,6 @@ raw_connect(struct raw_pcb *pcb, const ip_addr_t *ipaddr)
 /**
  * @ingroup raw_raw
  * Disconnect a RAW PCB.
- *
  * @param pcb the raw pcb to disconnect.
  */
 void
@@ -323,7 +303,6 @@ raw_disconnect(struct raw_pcb *pcb)
  * @ingroup raw_raw
  * Set the callback function for received packets that match the
  * raw PCB's protocol and binding.
- *
  * The callback function MUST either
  * - eat the packet by calling pbuf_free() and returning non-zero. The
  *   packet will not be passed to other raw PCBs or other protocol layers.
@@ -344,11 +323,9 @@ raw_recv(struct raw_pcb *pcb, raw_recv_fn recv, void *recv_arg)
  * Send the raw IP packet to the given address. An IP header will be prepended
  * to the packet, unless the RAW_FLAGS_HDRINCL flag is set on the PCB. In that
  * case, the packet must include an IP header, which will then be sent as is.
- *
  * @param pcb the raw pcb which to send
  * @param p the IP payload to send
  * @param ipaddr the destination address of the IP packet
- *
  */
 err_t
 raw_sendto(struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *ipaddr)
@@ -410,7 +387,6 @@ raw_sendto(struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *ipaddr)
  * netif and source IP address. An IP header will be prepended to the packet,
  * unless the RAW_FLAGS_HDRINCL flag is set on the PCB. In that case, the
  * packet must include an IP header, which will then be sent as is.
- *
  * @param pcb RAW PCB used to send the data
  * @param p chain of pbufs to be sent
  * @param dst_ip destination IP address
@@ -538,10 +514,8 @@ raw_sendto_if_src(struct raw_pcb *pcb, struct pbuf *p, const ip_addr_t *dst_ip,
 /**
  * @ingroup raw_raw
  * Send the raw IP packet to the address given by raw_connect()
- *
  * @param pcb the raw pcb which to send
  * @param p the IP payload to send
- *
  */
 err_t
 raw_send(struct raw_pcb *pcb, struct pbuf *p)
@@ -552,10 +526,8 @@ raw_send(struct raw_pcb *pcb, struct pbuf *p)
 /**
  * @ingroup raw_raw
  * Remove an RAW PCB.
- *
  * @param pcb RAW PCB to be removed. The PCB is removed from the list of
  * RAW PCB's and the data structure is freed from memory.
- *
  * @see raw_new()
  */
 void
@@ -584,12 +556,9 @@ raw_remove(struct raw_pcb *pcb)
 /**
  * @ingroup raw_raw
  * Create a RAW PCB.
- *
  * @return The RAW PCB which was created. NULL if the PCB data structure
  * could not be allocated.
- *
  * @param proto the protocol number of the IPs payload (e.g. IP_PROTO_ICMP)
- *
  * @see raw_remove()
  */
 struct raw_pcb *
@@ -620,16 +589,13 @@ raw_new(u8_t proto)
 /**
  * @ingroup raw_raw
  * Create a RAW PCB for specific IP type.
- *
  * @return The RAW PCB which was created. NULL if the PCB data structure
  * could not be allocated.
- *
  * @param type IP address type, see @ref lwip_ip_addr_type definitions.
  * If you want to listen to IPv4 and IPv6 (dual-stack) packets,
  * supply @ref IPADDR_TYPE_ANY as argument and bind to @ref IP_ANY_TYPE.
  * @param proto the protocol number (next header) of the IPv6 packet payload
  *              (e.g. IP6_NEXTH_ICMP6)
- *
  * @see raw_remove()
  */
 struct raw_pcb *
@@ -650,7 +616,6 @@ raw_new_ip_type(u8_t type, u8_t proto)
 }
 
 /** This function is called from netif.c when address is changed
- *
  * @param old_addr IP address of the netif before change
  * @param new_addr IP address of the netif after change
  */

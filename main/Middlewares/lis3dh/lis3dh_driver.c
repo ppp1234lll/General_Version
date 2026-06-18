@@ -4,12 +4,12 @@
 * Author             : Fabio Tota
 * Version            : $Revision:$
 * Date               : $Date:$
-* Description        : LIS3DH driver file
+*    ????: LIS3DH driver file
 *                      
 * HISTORY:
-* Date               |	Modification                    |	Author
-* 24/06/2011         |	Initial Revision                |	Fabio Tota
-* 11/06/2012         |	Support for multiple drivers in the same program |	Abhishek Anand
+* Date               |    Modification                    |    Author
+* 24/06/2011         |    Initial Revision                |    Fabio Tota
+* 11/06/2012         |    Support for multiple drivers in the same program |    Abhishek Anand
 
 ********************************************************************************
 * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
@@ -18,26 +18,24 @@
 * INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE
 * CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING
 * INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-*
 * THIS SOFTWARE IS SPECIFICALLY DESIGNED FOR EXCLUSIVE USE WITH ST PARTS.
-*
 *******************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
 #include <hal_lis3dh.h>
 #include "lis3dh_driver.h"
 
-
-
 /* Private functions ---------------------------------------------------------*/
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetWHO_AM_I
-* Description    : Read identification code by WHO_AM_I register
-* Input          : Char to empty by Device identification Value
-* Output         : None
-* Return         : Status [value of FSS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetWHO_AM_I
+*    功能说明: Read identification code by WHO_AM_I register
+*    形    参: Char to empty by Device identification Value
+*    返 回 值: None
+*    ? ? ?: Status [value of FSS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetWHO_AM_I(u8_t* val){
   
   if( !LIS3DH_ReadReg(LIS3DH_WHO_AM_I, val) )
@@ -47,13 +45,15 @@ status_t LIS3DH_GetWHO_AM_I(u8_t* val){
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetStatusAUX
-* Description    : Read the AUX status register
-* Input          : Char to empty by status register buffer
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetStatusAUX
+*    功能说明: Read the AUX status register
+*    形    参: Char to empty by status register buffer
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetStatusAUX(u8_t* val) {
   
   if( !LIS3DH_ReadReg(LIS3DH_STATUS_AUX, val) )
@@ -64,14 +64,16 @@ status_t LIS3DH_GetStatusAUX(u8_t* val) {
 
 
 
-/*******************************************************************************
+/*
+*********************************************************************************************************
 * Function Name  : LIS3DH_GetStatusAUXBIT
-* Description    : Read the AUX status register BIT
+*    ????: Read the AUX status register BIT
 * Input          : LIS3DH_STATUS_AUX_321OR, LIS3DH_STATUS_AUX_3OR, LIS3DH_STATUS_AUX_2OR, LIS3DH_STATUS_AUX_1OR,
-                   LIS3DH_STATUS_AUX_321DA, LIS3DH_STATUS_AUX_3DA, LIS3DH_STATUS_AUX_2DA, LIS3DH_STATUS_AUX_1DA
+*                   LIS3DH_STATUS_AUX_321DA, LIS3DH_STATUS_AUX_3DA, LIS3DH_STATUS_AUX_2DA, LIS3DH_STATUS_AUX_1DA
 * Output         : None
-* Return         : Status of BIT [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status of BIT [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetStatusAUXBit(u8_t statusBIT, u8_t* val) {
   u8_t value;  
   
@@ -169,13 +171,15 @@ status_t LIS3DH_GetStatusAUXBit(u8_t statusBIT, u8_t* val) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetODR
-* Description    : Sets LIS3DH Output Data Rate
-* Input          : Output Data Rate
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetODR
+*    功能说明: Sets LIS3DH Output Data Rate
+*    形    参: Output Data Rate
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetODR(LIS3DH_ODR_t ov){
   u8_t value;
   
@@ -192,15 +196,17 @@ status_t LIS3DH_SetODR(LIS3DH_ODR_t ov){
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetTemperature
-* Description    : Sets LIS3DH Output Temperature
-* Input          : MEMS_ENABLE, MEMS_DISABLE
-* Output         : None
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetTemperature
+*    功能说明: Sets LIS3DH Output Temperature
+*    形    参: MEMS_ENABLE, MEMS_DISABLE
+*    返 回 值: None
 * Note           : For Read Temperature by LIS3DH_OUT_AUX_3, LIS3DH_SetADCAux and LIS3DH_SetBDU 
-				   functions must be ENABLE
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*                   functions must be ENABLE
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetTemperature(State_t state){
   u8_t value;
   
@@ -217,13 +223,15 @@ status_t LIS3DH_SetTemperature(State_t state){
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetADCAux
-* Description    : Sets LIS3DH Output ADC
-* Input          : MEMS_ENABLE, MEMS_DISABLE
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetADCAux
+*    功能说明: Sets LIS3DH Output ADC
+*    形    参: MEMS_ENABLE, MEMS_DISABLE
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetADCAux(State_t state){
   u8_t value;
   
@@ -240,13 +248,15 @@ status_t LIS3DH_SetADCAux(State_t state){
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetAuxRaw
-* Description    : Read the Aux Values Output Registers
-* Input          : Buffer to empty
-* Output         : Aux Values Registers buffer
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetAuxRaw
+*    功能说明: Read the Aux Values Output Registers
+*    形    参: Buffer to empty
+*    返 回 值: Aux Values Registers buffer
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetAuxRaw(LIS3DH_Aux123Raw_t* buff) {
   u8_t valueL;
   u8_t valueH;
@@ -279,13 +289,15 @@ status_t LIS3DH_GetAuxRaw(LIS3DH_Aux123Raw_t* buff) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetTempRaw
-* Description    : Read the Temperature Values by AUX Output Registers OUT_3_H
-* Input          : Buffer to empty
-* Output         : Temperature Values Registers buffer
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetTempRaw
+*    功能说明: Read the Temperature Values by AUX Output Registers OUT_3_H
+*    形    参: Buffer to empty
+*    返 回 值: Temperature Values Registers buffer
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetTempRaw(i8_t* buff) {
   u8_t valueL;
   u8_t valueH;
@@ -302,13 +314,15 @@ status_t LIS3DH_GetTempRaw(i8_t* buff) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetMode
-* Description    : Sets LIS3DH Operating Mode
-* Input          : Modality (LIS3DH_NORMAL, LIS3DH_LOW_POWER, LIS3DH_POWER_DOWN)
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetMode
+*    功能说明: Sets LIS3DH Operating Mode
+*    形    参: Modality (LIS3DH_NORMAL, LIS3DH_LOW_POWER, LIS3DH_POWER_DOWN)
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetMode(LIS3DH_Mode_t md) {
   u8_t value;
   u8_t value2;
@@ -337,7 +351,7 @@ status_t LIS3DH_SetMode(LIS3DH_Mode_t md) {
     value2 |= (MEMS_SET<<LIS3DH_HR);   //set HighResolution_BIT
     break;
     
-  case LIS3DH_LOW_POWER:		
+  case LIS3DH_LOW_POWER:        
     value &= 0xF7;
     value |=  (MEMS_SET<<LIS3DH_LPEN);
     value2 &= 0xF7;
@@ -358,14 +372,16 @@ status_t LIS3DH_SetMode(LIS3DH_Mode_t md) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetAxis
-* Description    : Enable/Disable LIS3DH Axis
-* Input          : LIS3DH_X_ENABLE/DISABLE | LIS3DH_Y_ENABLE/DISABLE | LIS3DH_Z_ENABLE/DISABLE
-* Output         : None
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetAxis
+*    功能说明: Enable/Disable LIS3DH Axis
+*    形    参: LIS3DH_X_ENABLE/DISABLE | LIS3DH_Y_ENABLE/DISABLE | LIS3DH_Z_ENABLE/DISABLE
+*    返 回 值: None
 * Note           : You MUST use all input variable in the argument, as example
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetAxis(LIS3DH_Axis_t axis) {
   u8_t value;
   
@@ -381,20 +397,22 @@ status_t LIS3DH_SetAxis(LIS3DH_Axis_t axis) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetFullScale
-* Description    : Sets the LIS3DH FullScale
-* Input          : LIS3DH_FULLSCALE_2/LIS3DH_FULLSCALE_4/LIS3DH_FULLSCALE_8/LIS3DH_FULLSCALE_16
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetFullScale
+*    功能说明: Sets the LIS3DH FullScale
+*    形    参: LIS3DH_FULLSCALE_2/LIS3DH_FULLSCALE_4/LIS3DH_FULLSCALE_8/LIS3DH_FULLSCALE_16
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetFullScale(LIS3DH_Fullscale_t fs) {
   u8_t value;
   
   if( !LIS3DH_ReadReg(LIS3DH_CTRL_REG4, &value) )
     return MEMS_ERROR;
   
-  value &= 0xCF;	
+  value &= 0xCF;    
   value |= (fs<<LIS3DH_FS);
   
   if( !LIS3DH_WriteReg(LIS3DH_CTRL_REG4, value) )
@@ -404,13 +422,15 @@ status_t LIS3DH_SetFullScale(LIS3DH_Fullscale_t fs) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetBDU
-* Description    : Enable/Disable Block Data Update Functionality
-* Input          : ENABLE/DISABLE
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetBDU
+*    功能说明: Enable/Disable Block Data Update Functionality
+*    形    参: ENABLE/DISABLE
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetBDU(State_t bdu) {
   u8_t value;
   
@@ -427,20 +447,22 @@ status_t LIS3DH_SetBDU(State_t bdu) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetBLE
-* Description    : Set Endianess (MSB/LSB)
-* Input          : BLE_LSB / BLE_MSB
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetBLE
+*    功能说明: Set Endianess (MSB/LSB)
+*    形    参: BLE_LSB / BLE_MSB
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetBLE(LIS3DH_Endianess_t ble) {
   u8_t value;
   
   if( !LIS3DH_ReadReg(LIS3DH_CTRL_REG4, &value) )
     return MEMS_ERROR;
   
-  value &= 0xBF;	
+  value &= 0xBF;    
   value |= (ble<<LIS3DH_BLE);
   
   if( !LIS3DH_WriteReg(LIS3DH_CTRL_REG4, value) )
@@ -450,13 +472,15 @@ status_t LIS3DH_SetBLE(LIS3DH_Endianess_t ble) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetSelfTest
-* Description    : Set Self Test Modality
-* Input          : LIS3DH_SELF_TEST_DISABLE/ST_0/ST_1
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetSelfTest
+*    功能说明: Set Self Test Modality
+*    形    参: LIS3DH_SELF_TEST_DISABLE/ST_0/ST_1
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetSelfTest(LIS3DH_SelfTest_t st) {
   u8_t value;
   
@@ -473,13 +497,15 @@ status_t LIS3DH_SetSelfTest(LIS3DH_SelfTest_t st) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_HPFClick
-* Description    : Enable/Disable High Pass Filter for click
-* Input          : MEMS_ENABLE/MEMS_DISABLE
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_HPFClick
+*    功能说明: Enable/Disable High Pass Filter for click
+*    形    参: MEMS_ENABLE/MEMS_DISABLE
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_HPFClickEnable(State_t hpfe) {
   u8_t value;
   
@@ -496,13 +522,15 @@ status_t LIS3DH_HPFClickEnable(State_t hpfe) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_HPFAOI1
-* Description    : Enable/Disable High Pass Filter for AOI on INT_1
-* Input          : MEMS_ENABLE/MEMS_DISABLE
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_HPFAOI1
+*    功能说明: Enable/Disable High Pass Filter for AOI on INT_1
+*    形    参: MEMS_ENABLE/MEMS_DISABLE
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_HPFAOI1Enable(State_t hpfe) {
   u8_t value;
   
@@ -519,13 +547,15 @@ status_t LIS3DH_HPFAOI1Enable(State_t hpfe) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_HPFAOI2
-* Description    : Enable/Disable High Pass Filter for AOI on INT_2
-* Input          : MEMS_ENABLE/MEMS_DISABLE
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_HPFAOI2
+*    功能说明: Enable/Disable High Pass Filter for AOI on INT_2
+*    形    参: MEMS_ENABLE/MEMS_DISABLE
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_HPFAOI2Enable(State_t hpfe) {
   u8_t value;
   
@@ -542,14 +572,16 @@ status_t LIS3DH_HPFAOI2Enable(State_t hpfe) {
 }
 
 
-/*******************************************************************************
+/*
+*********************************************************************************************************
 * Function Name  : LIS3DH_SetHPFMode
-* Description    : Set High Pass Filter Modality
+*    ????: Set High Pass Filter Modality
 * Input          : LIS3DH_HPM_NORMAL_MODE_RES/LIS3DH_HPM_REF_SIGNAL/
-				   LIS3DH_HPM_NORMAL_MODE/LIS3DH_HPM_AUTORESET_INT
+*                   LIS3DH_HPM_NORMAL_MODE/LIS3DH_HPM_AUTORESET_INT
 * Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetHPFMode(LIS3DH_HPFMode_t hpm) {
   u8_t value;
   
@@ -566,13 +598,15 @@ status_t LIS3DH_SetHPFMode(LIS3DH_HPFMode_t hpm) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetHPFCutOFF
-* Description    : Set High Pass CUT OFF Freq
-* Input          : HPFCF [0,3]
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetHPFCutOFF
+*    功能说明: Set High Pass CUT OFF Freq
+*    形    参: HPFCF [0,3]
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetHPFCutOFF(LIS3DH_HPFCutOffFreq_t hpf) {
   u8_t value;
   
@@ -593,13 +627,15 @@ status_t LIS3DH_SetHPFCutOFF(LIS3DH_HPFCutOffFreq_t hpf) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetFilterDataSel
-* Description    : Set Filter Data Selection bypassed or sent to FIFO OUT register
-* Input          : MEMS_SET, MEMS_RESET
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetFilterDataSel
+*    功能说明: Set Filter Data Selection bypassed or sent to FIFO OUT register
+*    形    参: MEMS_SET, MEMS_RESET
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetFilterDataSel(State_t state) {
   u8_t value;
   
@@ -617,20 +653,22 @@ status_t LIS3DH_SetFilterDataSel(State_t state) {
 }
 
 
-/*******************************************************************************
+/*
+*********************************************************************************************************
 * Function Name  : LIS3DH_SetInt1Pin
-* Description    : Set Interrupt1 pin Function
+*    ????: Set Interrupt1 pin Function
 * Input          :  LIS3DH_CLICK_ON_PIN_INT1_ENABLE/DISABLE    | LIS3DH_I1_INT1_ON_PIN_INT1_ENABLE/DISABLE |              
-                    LIS3DH_I1_INT2_ON_PIN_INT1_ENABLE/DISABLE  | LIS3DH_I1_DRDY1_ON_INT1_ENABLE/DISABLE    |              
-                    LIS3DH_I1_DRDY2_ON_INT1_ENABLE/DISABLE     | LIS3DH_WTM_ON_INT1_ENABLE/DISABLE         |           
-                    LIS3DH_INT1_OVERRUN_ENABLE/DISABLE  
+*                    LIS3DH_I1_INT2_ON_PIN_INT1_ENABLE/DISABLE  | LIS3DH_I1_DRDY1_ON_INT1_ENABLE/DISABLE    |              
+*                    LIS3DH_I1_DRDY2_ON_INT1_ENABLE/DISABLE     | LIS3DH_WTM_ON_INT1_ENABLE/DISABLE         |           
+*                    LIS3DH_INT1_OVERRUN_ENABLE/DISABLE  
 * example        : SetInt1Pin(LIS3DH_CLICK_ON_PIN_INT1_ENABLE | LIS3DH_I1_INT1_ON_PIN_INT1_ENABLE |              
-                    LIS3DH_I1_INT2_ON_PIN_INT1_DISABLE | LIS3DH_I1_DRDY1_ON_INT1_ENABLE | LIS3DH_I1_DRDY2_ON_INT1_ENABLE |
-                    LIS3DH_WTM_ON_INT1_DISABLE | LIS3DH_INT1_OVERRUN_DISABLE   ) 
+*                    LIS3DH_I1_INT2_ON_PIN_INT1_DISABLE | LIS3DH_I1_DRDY1_ON_INT1_ENABLE | LIS3DH_I1_DRDY2_ON_INT1_ENABLE |
+*                    LIS3DH_WTM_ON_INT1_DISABLE | LIS3DH_INT1_OVERRUN_DISABLE   ) 
 * Note           : To enable Interrupt signals on INT1 Pad (You MUST use all input variable in the argument, as example)
 * Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetInt1Pin(LIS3DH_IntPinConf_t pinConf) {
   u8_t value;
   
@@ -647,19 +685,21 @@ status_t LIS3DH_SetInt1Pin(LIS3DH_IntPinConf_t pinConf) {
 }
 
 
-/*******************************************************************************
+/*
+*********************************************************************************************************
 * Function Name  : LIS3DH_SetInt2Pin
-* Description    : Set Interrupt2 pin Function
+*    ????: Set Interrupt2 pin Function
 * Input          : LIS3DH_CLICK_ON_PIN_INT2_ENABLE/DISABLE   | LIS3DH_I2_INT1_ON_PIN_INT2_ENABLE/DISABLE |               
-                   LIS3DH_I2_INT2_ON_PIN_INT2_ENABLE/DISABLE | LIS3DH_I2_BOOT_ON_INT2_ENABLE/DISABLE |                   
-                   LIS3DH_INT_ACTIVE_HIGH/LOW
+*                   LIS3DH_I2_INT2_ON_PIN_INT2_ENABLE/DISABLE | LIS3DH_I2_BOOT_ON_INT2_ENABLE/DISABLE |                   
+*                   LIS3DH_INT_ACTIVE_HIGH/LOW
 * example        : LIS3DH_SetInt2Pin(LIS3DH_CLICK_ON_PIN_INT2_ENABLE/DISABLE | LIS3DH_I2_INT1_ON_PIN_INT2_ENABLE/DISABLE |               
-                   LIS3DH_I2_INT2_ON_PIN_INT2_ENABLE/DISABLE | LIS3DH_I2_BOOT_ON_INT2_ENABLE/DISABLE |                   
-                   LIS3DH_INT_ACTIVE_HIGH/LOW)
+*                   LIS3DH_I2_INT2_ON_PIN_INT2_ENABLE/DISABLE | LIS3DH_I2_BOOT_ON_INT2_ENABLE/DISABLE |                   
+*                   LIS3DH_INT_ACTIVE_HIGH/LOW)
 * Note           : To enable Interrupt signals on INT2 Pad (You MUST use all input variable in the argument, as example)
 * Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetInt2Pin(LIS3DH_IntPinConf_t pinConf) {
   u8_t value;
   
@@ -676,17 +716,19 @@ status_t LIS3DH_SetInt2Pin(LIS3DH_IntPinConf_t pinConf) {
 }                       
 
 
-/*******************************************************************************
+/*
+*********************************************************************************************************
 * Function Name  : LIS3DH_SetClickCFG
-* Description    : Set Click Interrupt config Function
+*    ????: Set Click Interrupt config Function
 * Input          : LIS3DH_ZD_ENABLE/DISABLE | LIS3DH_ZS_ENABLE/DISABLE  | LIS3DH_YD_ENABLE/DISABLE  | 
-                   LIS3DH_YS_ENABLE/DISABLE | LIS3DH_XD_ENABLE/DISABLE  | LIS3DH_XS_ENABLE/DISABLE 
+*                   LIS3DH_YS_ENABLE/DISABLE | LIS3DH_XD_ENABLE/DISABLE  | LIS3DH_XS_ENABLE/DISABLE 
 * example        : LIS3DH_SetClickCFG( LIS3DH_ZD_ENABLE | LIS3DH_ZS_DISABLE | LIS3DH_YD_ENABLE | 
-                               LIS3DH_YS_DISABLE | LIS3DH_XD_ENABLE | LIS3DH_XS_ENABLE)
+*                               LIS3DH_YS_DISABLE | LIS3DH_XD_ENABLE | LIS3DH_XS_ENABLE)
 * Note           : You MUST use all input variable in the argument, as example
 * Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetClickCFG(u8_t status) {
   u8_t value;
   
@@ -703,13 +745,15 @@ status_t LIS3DH_SetClickCFG(u8_t status) {
 }  
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetClickTHS
-* Description    : Set Click Interrupt threshold
-* Input          : Click-click Threshold value [0-127]
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetClickTHS
+*    功能说明: Set Click Interrupt threshold
+*    形    参: Click-click Threshold value [0-127]
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetClickTHS(u8_t ths) {
   
   if(ths>127)     
@@ -722,13 +766,15 @@ status_t LIS3DH_SetClickTHS(u8_t ths) {
 } 
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetClickLIMIT
-* Description    : Set Click Interrupt Time Limit
-* Input          : Click-click Time Limit value [0-127]
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetClickLIMIT
+*    功能说明: Set Click Interrupt Time Limit
+*    形    参: Click-click Time Limit value [0-127]
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetClickLIMIT(u8_t t_limit) {
   
   if(t_limit>127)     
@@ -741,13 +787,15 @@ status_t LIS3DH_SetClickLIMIT(u8_t t_limit) {
 } 
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetClickLATENCY
-* Description    : Set Click Interrupt Time Latency
-* Input          : Click-click Time Latency value [0-255]
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetClickLATENCY
+*    功能说明: Set Click Interrupt Time Latency
+*    形    参: Click-click Time Latency value [0-255]
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetClickLATENCY(u8_t t_latency) {
   
   if( !LIS3DH_WriteReg(LIS3DH_TIME_LATENCY, t_latency) )
@@ -757,13 +805,15 @@ status_t LIS3DH_SetClickLATENCY(u8_t t_latency) {
 } 
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetClickWINDOW
-* Description    : Set Click Interrupt Time Window
-* Input          : Click-click Time Window value [0-255]
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetClickWINDOW
+*    功能说明: Set Click Interrupt Time Window
+*    形    参: Click-click Time Window value [0-255]
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetClickWINDOW(u8_t t_window) {
   
   if( !LIS3DH_WriteReg(LIS3DH_TIME_WINDOW, t_window) )
@@ -773,13 +823,15 @@ status_t LIS3DH_SetClickWINDOW(u8_t t_window) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetClickResponse
-* Description    : Get Click Interrupt Response by CLICK_SRC REGISTER
-* Input          : char to empty by Click Response Typedef
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetClickResponse
+*    功能说明: Get Click Interrupt Response by CLICK_SRC REGISTER
+*    形    参: char to empty by Click Response Typedef
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetClickResponse(u8_t* res) {
   u8_t value;
   
@@ -858,13 +910,15 @@ status_t LIS3DH_GetClickResponse(u8_t* res) {
 } 
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_Int1LatchEnable
-* Description    : Enable Interrupt 1 Latching function
-* Input          : ENABLE/DISABLE
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_Int1LatchEnable
+*    功能说明: Enable Interrupt 1 Latching function
+*    形    参: ENABLE/DISABLE
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_Int1LatchEnable(State_t latch) {
   u8_t value;
   
@@ -881,13 +935,15 @@ status_t LIS3DH_Int1LatchEnable(State_t latch) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_ResetInt1Latch
-* Description    : Reset Interrupt 1 Latching function
-* Input          : None
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_ResetInt1Latch
+*    功能说明: Reset Interrupt 1 Latching function
+*    形    参: None
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_ResetInt1Latch(void) {
   u8_t value;
   
@@ -898,14 +954,16 @@ status_t LIS3DH_ResetInt1Latch(void) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetIntConfiguration
-* Description    : Interrupt 1 Configuration (without LIS3DH_6D_INT)
-* Input          : LIS3DH_INT1_AND/OR | LIS3DH_INT1_ZHIE_ENABLE/DISABLE | LIS3DH_INT1_ZLIE_ENABLE/DISABLE...
-* Output         : None
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetIntConfiguration
+*    功能说明: Interrupt 1 Configuration (without LIS3DH_6D_INT)
+*    形    参: LIS3DH_INT1_AND/OR | LIS3DH_INT1_ZHIE_ENABLE/DISABLE | LIS3DH_INT1_ZLIE_ENABLE/DISABLE...
+*    返 回 值: None
 * Note           : You MUST use all input variable in the argument, as example
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetIntConfiguration(LIS3DH_Int1Conf_t ic) {
   u8_t value;
   
@@ -922,14 +980,16 @@ status_t LIS3DH_SetIntConfiguration(LIS3DH_Int1Conf_t ic) {
 } 
 
      
-/*******************************************************************************
+/*
+*********************************************************************************************************
 * Function Name  : LIS3DH_SetIntMode
-* Description    : Interrupt 1 Configuration mode (OR, 6D Movement, AND, 6D Position)
+*    ????: Interrupt 1 Configuration mode (OR, 6D Movement, AND, 6D Position)
 * Input          : LIS3DH_INT_MODE_OR, LIS3DH_INT_MODE_6D_MOVEMENT, LIS3DH_INT_MODE_AND, 
-				   LIS3DH_INT_MODE_6D_POSITION
+*                   LIS3DH_INT_MODE_6D_POSITION
 * Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetIntMode(LIS3DH_Int1Mode_t int_mode) {
   u8_t value;
   
@@ -946,13 +1006,15 @@ status_t LIS3DH_SetIntMode(LIS3DH_Int1Mode_t int_mode) {
 }
 
     
-/*******************************************************************************
-* Function Name  : LIS3DH_SetInt6D4DConfiguration
-* Description    : 6D, 4D Interrupt Configuration
-* Input          : LIS3DH_INT1_6D_ENABLE, LIS3DH_INT1_4D_ENABLE, LIS3DH_INT1_6D_4D_DISABLE
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetInt6D4DConfiguration
+*    功能说明: 6D, 4D Interrupt Configuration
+*    形    参: LIS3DH_INT1_6D_ENABLE, LIS3DH_INT1_4D_ENABLE, LIS3DH_INT1_6D_4D_DISABLE
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetInt6D4DConfiguration(LIS3DH_INT_6D_4D_t ic) {
   u8_t value;
   u8_t value2;
@@ -992,13 +1054,15 @@ status_t LIS3DH_SetInt6D4DConfiguration(LIS3DH_INT_6D_4D_t ic) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_Get6DPosition
-* Description    : 6D, 4D Interrupt Position Detect
-* Input          : Byte to empty by POSITION_6D_t Typedef
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_Get6DPosition
+*    功能说明: 6D, 4D Interrupt Position Detect
+*    形    参: Byte to empty by POSITION_6D_t Typedef
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_Get6DPosition(u8_t* val){
   u8_t value;
   
@@ -1032,13 +1096,15 @@ status_t LIS3DH_Get6DPosition(u8_t* val){
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetInt1Threshold
-* Description    : Sets Interrupt 1 Threshold
-* Input          : Threshold = [0,31]
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetInt1Threshold
+*    功能说明: Sets Interrupt 1 Threshold
+*    形    参: Threshold = [0,31]
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetInt1Threshold(u8_t ths) {
   if (ths > 127)
     return MEMS_ERROR;
@@ -1050,13 +1116,15 @@ status_t LIS3DH_SetInt1Threshold(u8_t ths) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetInt1Duration
-* Description    : Sets Interrupt 1 Duration
-* Input          : Duration value
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetInt1Duration
+*    功能说明: Sets Interrupt 1 Duration
+*    形    参: Duration value
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetInt1Duration(LIS3DH_Int1Conf_t id) {
   
   if (id > 127)
@@ -1069,14 +1137,16 @@ status_t LIS3DH_SetInt1Duration(LIS3DH_Int1Conf_t id) {
 }
 
 
-/*******************************************************************************
+/*
+*********************************************************************************************************
 * Function Name  : LIS3DH_FIFOModeEnable
-* Description    : Sets Fifo Modality
+*    ????: Sets Fifo Modality
 * Input          : LIS3DH_FIFO_DISABLE, LIS3DH_FIFO_BYPASS_MODE, LIS3DH_FIFO_MODE, 
-				   LIS3DH_FIFO_STREAM_MODE, LIS3DH_FIFO_TRIGGER_MODE
+*                   LIS3DH_FIFO_STREAM_MODE, LIS3DH_FIFO_TRIGGER_MODE
 * Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_FIFOModeEnable(LIS3DH_FifoMode_t fm) {
   u8_t value;  
   
@@ -1178,13 +1248,15 @@ status_t LIS3DH_FIFOModeEnable(LIS3DH_FifoMode_t fm) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetTriggerInt
-* Description    : Trigger event liked to trigger signal INT1/INT2
-* Input          : LIS3DH_TRIG_INT1/LIS3DH_TRIG_INT2
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetTriggerInt
+*    功能说明: Trigger event liked to trigger signal INT1/INT2
+*    形    参: LIS3DH_TRIG_INT1/LIS3DH_TRIG_INT2
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetTriggerInt(LIS3DH_TrigInt_t tr) {
   u8_t value;  
   
@@ -1201,13 +1273,15 @@ status_t LIS3DH_SetTriggerInt(LIS3DH_TrigInt_t tr) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_SetWaterMark
-* Description    : Sets Watermark Value
-* Input          : Watermark = [0,31]
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetWaterMark
+*    功能说明: Sets Watermark Value
+*    形    参: Watermark = [0,31]
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetWaterMark(u8_t wtm) {
   u8_t value;
   
@@ -1227,13 +1301,15 @@ status_t LIS3DH_SetWaterMark(u8_t wtm) {
 }
 
   
-/*******************************************************************************
-* Function Name  : LIS3DH_GetStatusReg
-* Description    : Read the status register
-* Input          : char to empty by Status Reg Value
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetStatusReg
+*    功能说明: Read the status register
+*    形    参: char to empty by Status Reg Value
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetStatusReg(u8_t* val) {
   if( !LIS3DH_ReadReg(LIS3DH_STATUS_REG, val) )
     return MEMS_ERROR;
@@ -1242,16 +1318,18 @@ status_t LIS3DH_GetStatusReg(u8_t* val) {
 }
 
 
-/*******************************************************************************
+/*
+*********************************************************************************************************
 * Function Name  : LIS3DH_GetStatusBIT
-* Description    : Read the status register BIT
+*    ????: Read the status register BIT
 * Input          : LIS3DH_STATUS_REG_ZYXOR, LIS3DH_STATUS_REG_ZOR, LIS3DH_STATUS_REG_YOR, LIS3DH_STATUS_REG_XOR,
-                   LIS3DH_STATUS_REG_ZYXDA, LIS3DH_STATUS_REG_ZDA, LIS3DH_STATUS_REG_YDA, LIS3DH_STATUS_REG_XDA, 
-				   LIS3DH_DATAREADY_BIT
-				   val: Byte to be filled with the status bit	
+*                   LIS3DH_STATUS_REG_ZYXDA, LIS3DH_STATUS_REG_ZDA, LIS3DH_STATUS_REG_YDA, LIS3DH_STATUS_REG_XDA, 
+*                   LIS3DH_DATAREADY_BIT
+*                   val: Byte to be filled with the status bit    
 * Output         : status register BIT
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetStatusBit(u8_t statusBIT, u8_t* val) {
   u8_t value;  
   
@@ -1337,13 +1415,15 @@ status_t LIS3DH_GetStatusBit(u8_t statusBIT, u8_t* val) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetAccAxesRaw
-* Description    : Read the Acceleration Values Output Registers
-* Input          : buffer to empity by AxesRaw_t Typedef
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetAccAxesRaw
+*    功能说明: Read the Acceleration Values Output Registers
+*    形    参: buffer to empity by AxesRaw_t Typedef
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetAccAxesRaw(AxesRaw_t* buff) {
   i16_t value;
   u8_t *valueL = (u8_t *)(&value);
@@ -1377,13 +1457,15 @@ status_t LIS3DH_GetAccAxesRaw(AxesRaw_t* buff) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetInt1Src
-* Description    : Reset Interrupt 1 Latching function
-* Input          : Char to empty by Int1 source value
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetInt1Src
+*    功能说明: Reset Interrupt 1 Latching function
+*    形    参: Char to empty by Int1 source value
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetInt1Src(u8_t* val) {
   
   if( !LIS3DH_ReadReg(LIS3DH_INT1_SRC, val) )
@@ -1393,14 +1475,16 @@ status_t LIS3DH_GetInt1Src(u8_t* val) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetInt1SrcBit
-* Description    : Reset Interrupt 1 Latching function
-* Input          : statusBIT: LIS3DH_INT_SRC_IA, LIS3DH_INT_SRC_ZH, LIS3DH_INT_SRC_ZL.....
-*                  val: Byte to be filled with the status bit
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetInt1SrcBit
+*    功能说明: Reset Interrupt 1 Latching function
+*    形    参: statusBIT: LIS3DH_INT_SRC_IA, LIS3DH_INT_SRC_ZH, LIS3DH_INT_SRC_ZL.....
+*    返 回 值: Byte to be filled with the status bit
 * Output         : None
-* Return         : Status of BIT [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status of BIT [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetInt1SrcBit(u8_t statusBIT, u8_t* val) {
   u8_t value;  
    
@@ -1486,13 +1570,15 @@ status_t LIS3DH_GetInt1SrcBit(u8_t statusBIT, u8_t* val) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetFifoSourceReg
-* Description    : Read Fifo source Register
-* Input          : Byte to empty by FIFO source register value
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetFifoSourceReg
+*    功能说明: Read Fifo source Register
+*    形    参: Byte to empty by FIFO source register value
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetFifoSourceReg(u8_t* val) {
   
   if( !LIS3DH_ReadReg(LIS3DH_FIFO_SRC_REG, val) )
@@ -1502,14 +1588,16 @@ status_t LIS3DH_GetFifoSourceReg(u8_t* val) {
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetFifoSourceBit
-* Description    : Read Fifo WaterMark source bit
-* Input          : statusBIT: LIS3DH_FIFO_SRC_WTM, LIS3DH_FIFO_SRC_OVRUN, LIS3DH_FIFO_SRC_EMPTY
-*				   val: Byte to fill  with the bit value
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetFifoSourceBit
+*    功能说明: Read Fifo WaterMark source bit
+*    形    参: statusBIT: LIS3DH_FIFO_SRC_WTM, LIS3DH_FIFO_SRC_OVRUN, LIS3DH_FIFO_SRC_EMPTY
+*    返 回 值: Byte to fill  with the bit value
 * Output         : None
-* Return         : Status of BIT [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+*    ? ? ?: Status of BIT [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetFifoSourceBit(u8_t statusBIT,  u8_t* val){
   u8_t value;  
   
@@ -1552,13 +1640,15 @@ status_t LIS3DH_GetFifoSourceBit(u8_t statusBIT,  u8_t* val){
 }
 
 
-/*******************************************************************************
-* Function Name  : LIS3DH_GetFifoSourceFSS
-* Description    : Read current number of unread samples stored in FIFO
-* Input          : Byte to empty by FIFO unread sample value
-* Output         : None
-* Return         : Status [value of FSS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_GetFifoSourceFSS
+*    功能说明: Read current number of unread samples stored in FIFO
+*    形    参: Byte to empty by FIFO unread sample value
+*    返 回 值: None
+*    ? ? ?: Status [value of FSS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_GetFifoSourceFSS(u8_t* val){
   u8_t value;
   
@@ -1573,13 +1663,15 @@ status_t LIS3DH_GetFifoSourceFSS(u8_t* val){
 }
 
       
-/*******************************************************************************
-* Function Name  : LIS3DH_SetSPIInterface
-* Description    : Set SPI mode: 3 Wire Interface OR 4 Wire Interface
-* Input          : LIS3DH_SPI_3_WIRE, LIS3DH_SPI_4_WIRE
-* Output         : None
-* Return         : Status [MEMS_ERROR, MEMS_SUCCESS]
-*******************************************************************************/
+/*
+*********************************************************************************************************
+*    函 数 名: LIS3DH_SetSPIInterface
+*    功能说明: Set SPI mode: 3 Wire Interface OR 4 Wire Interface
+*    形    参: LIS3DH_SPI_3_WIRE, LIS3DH_SPI_4_WIRE
+*    返 回 值: None
+*    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
+*********************************************************************************************************
+*/
 status_t LIS3DH_SetSPIInterface(LIS3DH_SPIMode_t spi) {
   u8_t value;
   

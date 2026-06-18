@@ -3,9 +3,9 @@
 
 #include "bsp.h"
 
-#define NONCE_LENGTH  		22      // 定义nonce字节长度
+#define NONCE_LENGTH          22      // 定义nonce字节长度
 #define NONCE_B64_LENGTH  (((NONCE_LENGTH + 2) / 3) * 4 + 1)
-#define CREATED_LENGTH  	32    // 定义时间戳字节长度
+#define CREATED_LENGTH      32    // 定义时间戳字节长度
 #define PASSWORD_LENGTH   32    // 定义密码鉴权字节长度
 
 int charIndex(const char* str, char c);

@@ -3,9 +3,7 @@
  * @brief    CMSIS Cortex-M4 Core Peripheral Access Layer Header File
  * @version  V3.30
  * @date     17. February 2014
- *
  * @note
- *
  ******************************************************************************/
 /* Copyright (c) 2009 - 2014 ARM LIMITED
 
@@ -20,7 +18,6 @@
    - Neither the name of ARM nor the names of its contributors may be used
      to endorse or promote products derived from this software without
      specific prior written permission.
-   *
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -60,9 +57,11 @@
  */
 
 
-/*******************************************************************************
- *                 CMSIS definitions
- ******************************************************************************/
+/*
+*********************************************************************************************************
+*                 CMSIS definitions
+*********************************************************************************************************
+*/
 /** \ingroup Cortex_M4
   @{
  */
@@ -100,7 +99,7 @@
   #define __INLINE         inline                                     /*!< inline keyword for TASKING Compiler   */
   #define __STATIC_INLINE  static inline
 
-#elif defined ( __CSMC__ )		/* Cosmic */
+#elif defined ( __CSMC__ )        /* Cosmic */
   #define __packed
   #define __ASM            _asm                                      /*!< asm keyword for COSMIC Compiler      */
   #define __INLINE         inline                                    /*use -pc99 on compile line !< inline keyword for COSMIC Compiler   */
@@ -170,8 +169,8 @@
     #define __FPU_USED         0
   #endif
 
-#elif defined ( __CSMC__ )		/* Cosmic */
-  #if ( __CSMC__ & 0x400)		// FPU present for parser
+#elif defined ( __CSMC__ )        /* Cosmic */
+  #if ( __CSMC__ & 0x400)        // FPU present for parser
     #if (__FPU_PRESENT == 1)
       #define __FPU_USED       1
     #else
@@ -243,17 +242,19 @@
 
 
 
-/*******************************************************************************
- *                 Register Abstraction
-  Core Register contain:
-  - Core Register
-  - Core NVIC Register
-  - Core SCB Register
-  - Core SysTick Register
-  - Core Debug Register
-  - Core MPU Register
-  - Core FPU Register
- ******************************************************************************/
+/*
+*********************************************************************************************************
+*                 Register Abstraction
+*  Core Register contain:
+*  - Core Register
+*  - Core NVIC Register
+*  - Core SCB Register
+*  - Core SysTick Register
+*  - Core Debug Register
+*  - Core MPU Register
+*  - Core FPU Register
+*********************************************************************************************************
+*/
 /** \defgroup CMSIS_core_register Defines and Type Definitions
     \brief Type definitions and defines for Cortex-M processor based devices.
 */
@@ -1420,14 +1421,16 @@ typedef struct
 
 
 
-/*******************************************************************************
- *                Hardware Abstraction Layer
-  Core Function Interface contains:
-  - Core NVIC Functions
-  - Core SysTick Functions
-  - Core Debug Functions
-  - Core Register Access Functions
- ******************************************************************************/
+/*
+*********************************************************************************************************
+*                Hardware Abstraction Layer
+*  Core Function Interface contains:
+*  - Core NVIC Functions
+*  - Core SysTick Functions
+*  - Core Debug Functions
+*  - Core Register Access Functions
+*********************************************************************************************************
+*/
 /** \defgroup CMSIS_Core_FunctionInterface Functions and Instructions Reference
 */
 

@@ -1,0 +1,100 @@
+硬件资源:
+
+1、主控:GD32F460VGT6 (FLAH:1024K, RAM:512K, 系统运行时钟频率: 240 MHz)
+   晶振：25MHz
+
+2、指示灯（原理图）：
+	外接电源指示灯  POWER_OUT  : PE6
+	外接网口指示灯  LAN_OUT    : PE5 
+	
+	系统状态指示灯  STATE      : PB8
+	网口指示灯      LAN        : PB9
+	4G指示灯       GPRS       : PE0
+
+3、继电器
+		继电器1：    PE8 
+		继电器2：    PE9
+		继电器3：    PE10
+		继电器4：    PE11
+		继电器5：    PE12
+		继电器6：    PE13
+		继电器7：    PE14
+		继电器8：    PE15         
+
+4、输入检测
+	按键(恢复出厂设置):    PD2
+	箱门检测:              PA11
+	12V电源输入监测:       PD0
+	水浸 :                 PD13    
+	输入检测1：           PD14
+	输入检测2：           PD15
+	输入检测3：           PC8
+	市电火-地：           PA3
+	市电零-地：           PA4
+	市电零火线：          PA5
+
+	光敏电阻输入：        PC0
+
+
+5、485通信：串口3 ,波特率115200    
+		485_TX : PD8
+		485_RX : PD9
+		485_RE : PD10    
+            
+6、BL0910单相计量芯片: 硬件SPI3
+	引脚分配为： BL_SCLK：  PC10
+				BL_MISO： PC11 
+				BL_MOSI： PC11
+
+7、BL0942单相计量芯片: 软件SPI
+	引脚分配为： RCD_SCLK： PB10
+				RCD_MISO： PB14        
+				RCD_MOSI： PB15
+
+8、3轴加速度计LIS3DH: (模拟IIC)，引脚分配为：  
+	SCL:   PE7
+	SDA:   PB1
+	
+9、AHT20温湿度传感器：(模拟IIC方式)，引脚分配为：  
+	SCL:    PD12
+	SDA:    PD11
+
+10、W25Q128存储芯片：(硬件SPI1)，引脚分配为：    
+	MOSI:   PB5
+	MISO:   PB4
+	CLK:    PB3
+	CS:     PD7
+
+12、ML307（4G模块）：串口2，波特率115200，引脚分配为：   
+	4G-TXD：    PD5
+	4G-RXD：    PD6
+	4G_PWRK:    PB7
+	4G_NRST:    PB6
+	4G_CTRL:    PD1
+	SIM-Sel:    PE3     选择SIM
+	
+13、GPS(4G模块)： 串口6， 波特率：9600，引脚分配为： 
+	BDS_TX：    PC6
+	BDS_RX：    PC7    
+	
+14、RTC时钟芯片： 硬件IIC3，引脚分配为： 
+	RTC_SCL：    PA8
+	RTC_SDA：    PC9    
+
+15、调试串口： 串口0， 波特率：115200，引脚分配为：
+	TX：    PA9
+	RX：    PA10    
+
+16、输出控制：
+	风扇:          PA12
+	硬件看门狗:    PA0
+	
+17、光照度模块： 模拟IIC，引脚分配为： 
+	BH1750_SCK：    PE2
+	BH1750_SDA：    PE4
+	
+	
+	
+	
+
+

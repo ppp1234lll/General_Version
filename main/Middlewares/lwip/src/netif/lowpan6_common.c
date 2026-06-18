@@ -1,8 +1,6 @@
 /**
  * @file
- *
  * Common 6LowPAN routines for IPv6. Uses ND tables for link-layer addressing. Fragments packets to 6LowPAN units.
- *
  * This implementation aims to conform to IEEE 802.15.4(-2015), RFC 4944 and RFC 6282.
  * @todo: RFC 6775.
  */
@@ -10,10 +8,8 @@
 /*
  * Copyright (c) 2015 Inico Technologies Ltd.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -21,7 +17,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -32,12 +27,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Ivan Delamer <delamer@inicotech.com>
- *
- *
  * Please coordinate changes and requests with Ivan Delamer
  * <delamer@inicotech.com>
  */
@@ -373,7 +364,6 @@ lowpan6_compress_headers(struct netif *netif, u8_t *inbuf, size_t inbuf_size, u8
 }
 
 /** Decompress IPv6 and UDP headers compressed according to RFC 6282
- *
  * @param lowpan6_buffer compressed headers, first byte is the dispatch byte
  * @param lowpan6_bufsize size of lowpan6_buffer (may include data after headers)
  * @param decomp_buffer buffer where the decompressed headers are stored

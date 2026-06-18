@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2015 Dirk Ziegelmeier
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,11 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Dirk Ziegelmeier
- *
  */
 #ifndef LWIP_HDR_SNMP_OPTS_H
 #define LWIP_HDR_SNMP_OPTS_H
@@ -182,12 +176,10 @@
 /**
  * IANA assigned enterprise ID for lwIP is 26381
  * @see http://www.iana.org/assignments/enterprise-numbers
- *
  * @note this enterprise ID is assigned to the lwIP project,
  * all object identifiers living under this ID are assigned
  * by the lwIP maintainers!
  * @note don't change this define, use snmp_set_device_enterprise_oid()
- *
  * If you need to create your own private MIB you'll need
  * to apply for your own enterprise ID with IANA:
  * http://www.iana.org/numbers.html

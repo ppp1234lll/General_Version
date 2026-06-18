@@ -549,11 +549,6 @@
           <GroupName>Hardware</GroupName>
           <Files>
             <File>
-              <FileName>bsp_usart5.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Hardware\src\bsp_usart5.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_core_dwt.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Hardware\src\bsp_core_dwt.c</FilePath>
@@ -592,6 +587,11 @@
               <FileName>bsp_key.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Hardware\src\bsp_key.c</FilePath>
+            </File>
+            <File>
+              <FileName>bsp_debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Hardware\src\bsp_debug.c</FilePath>
             </File>
           </Files>
         </Group>

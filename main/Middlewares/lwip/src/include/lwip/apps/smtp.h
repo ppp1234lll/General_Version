@@ -32,7 +32,6 @@ extern "C" {
 #define SMTP_RESULT_ERR_MEM       7
 
 /** Prototype of an smtp callback function
- *
  * @param arg argument specified when initiating the email
  * @param smtp_result result of the mail transfer (see defines SMTP_RESULT_*)
  * @param srv_err if aborted by the server, this contains the error code received
@@ -46,7 +45,6 @@ typedef void (*smtp_result_fn)(void *arg, u8_t smtp_result, u16_t srv_err, err_t
  * from interrupt context, e.g. like this:
  *    struct smtp_send_request *req; (to be filled)
  *    tcpip_try_callback(smtp_send_mail_int, (void*)req);
- *
  * For member description, see parameter description of smtp_send_mail().
  * When using with tcpip_callback, this structure has to stay allocated
  * (e.g. using mem_malloc/mem_free) until its 'callback_fn' is called.
@@ -93,7 +91,6 @@ enum bdh_retvals_e {
  * data, your function will be repeatedly called until that happens; so if you
  * know you'll be taking too long to serve your request, pause once in a while
  * by writing length=0 to avoid hogging system resources
- *
  * @param arg argument specified when initiating the email
  * @param smtp_bodydh state handling + buffer structure
  */

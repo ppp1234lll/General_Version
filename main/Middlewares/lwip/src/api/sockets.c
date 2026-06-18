@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,13 +25,9 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  * Improved by Marc Boucher <marc@mbsi.ca> and David Haas <dhaas@alum.rpi.edu>
- *
  */
 
 #include "lwip/opt.h"
@@ -491,7 +484,6 @@ tryget_socket_unconn_locked(int fd)
 
 /**
  * Same as get_socket but doesn't set errno
- *
  * @param fd externally used socket index
  * @return struct lwip_sock for the socket or NULL if not found
  */
@@ -510,7 +502,6 @@ tryget_socket(int fd)
 
 /**
  * Map a externally used socket index to the internal socket representation.
- *
  * @param fd externally used socket index
  * @return struct lwip_sock for the socket or NULL if not found
  */
@@ -530,7 +521,6 @@ get_socket(int fd)
 
 /**
  * Allocate a new socket for a given netconn.
- *
  * @param newconn the netconn for which to allocate a socket
  * @param accepted 1 if socket has been created by accept(),
  *                 0 if socket has been created by socket()
@@ -577,7 +567,6 @@ alloc_socket(struct netconn *newconn, int accepted)
 }
 
 /** Free a socket (under lock)
- *
  * @param sock the socket to free
  * @param is_tcp != 0 for TCP sockets, used to free lastdata
  * @param conn the socekt's netconn is stored here, must be freed externally
@@ -625,7 +614,6 @@ free_socket_free_elements(int is_tcp, struct netconn *conn, union lwip_sock_last
 
 /** Free a socket. The socket's netconn must have been
  * delete before!
- *
  * @param sock the socket to free
  * @param is_tcp != 0 for TCP sockets, used to free lastdata
  */
@@ -651,7 +639,6 @@ free_socket(struct lwip_sock *sock, int is_tcp)
 
 /* Below this, the well-known socket functions are implemented.
  * Use google.com or opengroup.org to get a good description :-)
- *
  * Exceptions are documented!
  */
 
@@ -912,7 +899,6 @@ lwip_connect(int s, const struct sockaddr *name, socklen_t namelen)
 /**
  * Set a socket into listen mode.
  * The socket may not have been used for another connection previously.
- *
  * @param s the socket to set to listening mode
  * @param backlog (ATTENTION: needs TCP_LISTEN_BACKLOG=1)
  * @return 0 on success, non-zero on failure
@@ -1861,7 +1847,6 @@ lwip_unlink_select_cb(struct lwip_select_cb *select_cb)
  * Go through the readset and writeset lists and see which socket of the sockets
  * set in the sets has events. On return, readset, writeset and exceptset have
  * the sockets enabled that had events.
- *
  * @param maxfdp1 the highest socket index in the sets
  * @param readset_in    set of sockets to check for read events
  * @param writeset_in   set of sockets to check for write events
@@ -2230,7 +2215,6 @@ enum lwip_pollscan_opts
 /**
  * Update revents in each struct pollfd.
  * Optionally update select_waiting in struct lwip_sock.
- *
  * @param fds          array of structures to update
  * @param nfds         number of structures in fds
  * @param opts         what to update and how
@@ -2323,7 +2307,6 @@ lwip_pollscan(struct pollfd *fds, nfds_t nfds, enum lwip_pollscan_opts opts)
 
 #if LWIP_NETCONN_FULLDUPLEX
 /* Mark all sockets as used.
- *
  * All sockets are marked (and later unmarked), whether they are open or not.
  * This is OK as lwip_pollscan aborts select when non-open sockets are found.
  */
@@ -2511,7 +2494,6 @@ lwip_poll_should_wake(const struct lwip_select_cb *scb, int fd, int has_recveven
 /**
  * Callback registered in the netconn layer for each socket-netconn.
  * Processes recvevent (data available) and wakes up tasks waiting for select.
- *
  * @note for LWIP_TCPIP_CORE_LOCKING any caller of this function
  * must have the core lock held when signaling the following events
  * as they might cause select_list_cb to be checked:
@@ -2609,7 +2591,6 @@ event_callback(struct netconn *conn, enum netconn_evt evt, u16_t len)
 
 /**
  * Check if any select waiters are waiting on this socket and its events
- *
  * @note on synchronization of select_cb_list:
  * LWIP_TCPIP_CORE_LOCKING: the select_cb_list must only be accessed while holding
  * the core lock. We do a single pass through the list and signal any waiters.
@@ -4064,9 +4045,7 @@ lwip_inet_pton(int af, const char *src, void *dst)
 
 #if LWIP_IGMP
 /** Register a new IGMP membership. On socket close, the membership is dropped automatically.
- *
  * ATTENTION: this function is called from tcpip_thread (or under CORE_LOCK).
- *
  * @return 1 on success, 0 on failure
  */
 static int
@@ -4094,7 +4073,6 @@ lwip_socket_register_membership(int s, const ip4_addr_t *if_addr, const ip4_addr
 
 /** Unregister a previously registered membership. This prevents dropping the membership
  * on socket close.
- *
  * ATTENTION: this function is called from tcpip_thread (or under CORE_LOCK).
  */
 static void
@@ -4121,7 +4099,6 @@ lwip_socket_unregister_membership(int s, const ip4_addr_t *if_addr, const ip4_ad
 }
 
 /** Drop all memberships of a socket that were not dropped explicitly via setsockopt.
- *
  * ATTENTION: this function is NOT called from tcpip_thread (or under CORE_LOCK).
  */
 static void
@@ -4152,9 +4129,7 @@ lwip_socket_drop_registered_memberships(int s)
 
 #if LWIP_IPV6_MLD
 /** Register a new MLD6 membership. On socket close, the membership is dropped automatically.
- *
  * ATTENTION: this function is called from tcpip_thread (or under CORE_LOCK).
- *
  * @return 1 on success, 0 on failure
  */
 static int
@@ -4182,7 +4157,6 @@ lwip_socket_register_mld6_membership(int s, unsigned int if_idx, const ip6_addr_
 
 /** Unregister a previously registered MLD6 membership. This prevents dropping the membership
  * on socket close.
- *
  * ATTENTION: this function is called from tcpip_thread (or under CORE_LOCK).
  */
 static void
@@ -4209,7 +4183,6 @@ lwip_socket_unregister_mld6_membership(int s, unsigned int if_idx, const ip6_add
 }
 
 /** Drop all MLD6 memberships of a socket that were not dropped explicitly via setsockopt.
- *
  * ATTENTION: this function is NOT called from tcpip_thread (or under CORE_LOCK).
  */
 static void

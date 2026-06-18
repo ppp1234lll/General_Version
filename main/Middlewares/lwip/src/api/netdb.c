@@ -1,7 +1,6 @@
 /**
  * @file
  * API functions for name resolving
- *
  * @defgroup netdbapi NETDB API
  * @ingroup socket
  */
@@ -9,7 +8,6 @@
 /*
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,11 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Simon Goldschmidt
- *
  */
 
 #include "lwip/netdb.h"
@@ -84,7 +78,6 @@ int h_errno;
  * Returns an entry containing addresses of address family AF_INET
  * for the host with name name.
  * Due to dns_gethostbyname limitations, only one address is returned.
- *
  * @param name the hostname to resolve
  * @return an entry containing addresses of address family AF_INET
  *         for the host with name name
@@ -151,7 +144,6 @@ lwip_gethostbyname(const char *name)
  * Thread-safe variant of lwip_gethostbyname: instead of using a static
  * buffer, this function takes buffer and errno pointers as arguments
  * and uses these for the result.
- *
  * @param name the hostname to resolve
  * @param ret pre-allocated struct where to store the result
  * @param buf pre-allocated buffer where to store additional data
@@ -234,7 +226,6 @@ lwip_gethostbyname_r(const char *name, struct hostent *ret, char *buf,
  * Frees one or more addrinfo structures returned by getaddrinfo(), along with
  * any additional storage associated with those structures. If the ai_next field
  * of the structure is not null, the entire list of structures is freed.
- *
  * @param ai struct addrinfo to free
  */
 void
@@ -256,18 +247,15 @@ lwip_freeaddrinfo(struct addrinfo *ai)
  * specified service.
  * Memory for the result is allocated internally and must be freed by calling
  * lwip_freeaddrinfo()!
- *
  * Due to a limitation in dns_gethostbyname, only the first address of a
  * host is returned.
  * Also, service names are not supported (only port numbers)!
- *
  * @param nodename descriptive name or address string of the host
  *                 (may be NULL -> local address)
  * @param servname port number as string of NULL
  * @param hints structure containing input values that set socktype and protocol
  * @param res pointer to a pointer where to store the result (set to NULL on failure)
  * @return 0 on success, non-zero on failure
- *
  * @todo: implement AI_V4MAPPED, AI_ADDRCONFIG
  */
 int

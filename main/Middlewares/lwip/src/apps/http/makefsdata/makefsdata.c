@@ -1,11 +1,8 @@
 /**
  * makefsdata: Converts a directory structure for use with the lwIP httpd.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Jim Pettinato
  *         Simon Goldschmidt
- *
  * @todo:
  * - take TCP_MSS, LWIP_TCP_TIMESTAMPS and
  *   PAYLOAD_ALIGN_TYPE/PAYLOAD_ALIGNMENT as arguments

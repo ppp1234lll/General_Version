@@ -1,29 +1,22 @@
 /**
  * @file
  * Dynamic Host Configuration Protocol client
- *
  * @defgroup dhcp4 DHCPv4
  * @ingroup ip4
  * DHCP (IPv4) related functions
  * This is a DHCP client for the lwIP TCP/IP stack. It aims to conform
  * with RFC 2131 and RFC 2132.
- *
  * @todo:
  * - Support for interfaces other than Ethernet (SLIP, PPP, ...)
- *
  * Options:
  * @ref DHCP_COARSE_TIMER_SECS (recommended 60 which is a minute)
  * @ref DHCP_FINE_TIMER_MSECS (recommended 500 which equals TCP coarse timer)
- *
  * dhcp_start() starts a DHCP client instance which
  * configures the interface by obtaining an IP address lease and maintaining it.
- *
  * Use dhcp_release() to end the lease and use dhcp_stop()
  * to remove the DHCP client.
- *
  * @see LWIP_HOOK_DHCP_APPEND_OPTIONS
  * @see LWIP_HOOK_DHCP_PARSE_OPTION
- *
  * @see netifapi_dhcp4
  */
 
@@ -31,10 +24,8 @@
  * Copyright (c) 2001-2004 Leon Woestenberg <leon.woestenberg@gmx.net>
  * Copyright (c) 2001-2004 Axon Digital Design B.V., The Netherlands.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -42,7 +33,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -53,14 +43,11 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
  * The Swedish Institute of Computer Science and Adam Dunkels
  * are specifically granted permission to redistribute this
  * source code.
- *
  * Author: Leon Woestenberg <leon.woestenberg@gmx.net>
- *
  */
 
 #include "lwip/opt.h"
@@ -310,14 +297,11 @@ dhcp_dec_pcb_refcount(void)
 
 /**
  * Back-off the DHCP client (because of a received NAK response).
- *
  * Back-off the DHCP client because of a received NAK. Receiving a
  * NAK means the client asked for something non-sensible, for
  * example when it tries to renew a lease obtained on another network.
- *
  * We clear any existing set IP address and restart DHCP negotiation
  * afresh (as per RFC2131 3.2.3).
- *
  * @param netif the netif under DHCP control
  */
 static void
@@ -339,7 +323,6 @@ dhcp_handle_nak(struct netif *netif)
 #if LWIP_DHCP_DOES_ACD_CHECK
 /**
 * Handle conflict information from ACD module
-*
 * @param netif   network interface to handle conflict information on
 * @param state   acd_callback_enum_t
  */
@@ -383,10 +366,8 @@ dhcp_conflict_callback(struct netif *netif, acd_callback_enum_t state)
 
 /**
  * Checks if the offered IP address is already in use.
- *
  * It does this according to the address conflict detection method described in
  * RFC5227.
- *
  * @param netif the netif under DHCP control
  */
 static void
@@ -405,7 +386,6 @@ dhcp_check(struct netif *netif)
 
 /**
  * Remember the configuration offered by a DHCP server.
- *
  * @param netif the netif under DHCP control
  */
 static void
@@ -436,9 +416,7 @@ dhcp_handle_offer(struct netif *netif, struct dhcp_msg *msg_in)
 
 /**
  * Select a DHCP server offer out of all offers.
- *
  * Simply select the first offer received.
- *
  * @param netif the netif under DHCP control
  * @return lwIP specific error (see error.h)
  */
@@ -540,7 +518,6 @@ dhcp_coarse_tmr(void)
 /**
  * DHCP transaction timeout handling (this function must be called every 500ms,
  * see @ref DHCP_FINE_TIMER_MSECS).
- *
  * A DHCP server is expected to respond within a short period of time.
  * This timer checks whether an outstanding DHCP request is timed out.
  */
@@ -569,10 +546,8 @@ dhcp_fine_tmr(void)
 
 /**
  * A DHCP negotiation transaction, or ARP request, has timed out.
- *
  * The timer that was started with the DHCP or ARP request has
  * timed out, indicating no response was received in time.
- *
  * @param netif the netif under DHCP control
  */
 static void
@@ -606,7 +581,6 @@ dhcp_timeout(struct netif *netif)
 
 /**
  * The renewal period has timed out.
- *
  * @param netif the netif under DHCP control
  */
 static void
@@ -633,7 +607,6 @@ dhcp_t1_timeout(struct netif *netif)
 
 /**
  * The rebind period has timed out.
- *
  * @param netif the netif under DHCP control
  */
 static void
@@ -659,7 +632,6 @@ dhcp_t2_timeout(struct netif *netif)
 
 /**
  * Handle a DHCP ACK packet
- *
  * @param netif the netif under DHCP control
  */
 static void
@@ -749,7 +721,6 @@ dhcp_handle_ack(struct netif *netif, struct dhcp_msg *msg_in)
  * @ingroup dhcp4
  * Set a statically allocated struct dhcp to work with.
  * Using this prevents dhcp_start to allocate it using mem_malloc.
- *
  * @param netif the netif for which to set the struct dhcp
  * @param dhcp (uninitialised) dhcp struct allocated by the application
  */
@@ -772,10 +743,8 @@ dhcp_set_struct(struct netif *netif, struct dhcp *dhcp)
 /**
  * @ingroup dhcp4
  * Removes a struct dhcp from a netif.
- *
  * ATTENTION: Only use this when not using dhcp_set_struct() to allocate the
  *            struct dhcp since the memory is passed back to the heap.
- *
  * @param netif the netif from which to remove the struct dhcp
  */
 void dhcp_cleanup(struct netif *netif)
@@ -796,11 +765,9 @@ void dhcp_cleanup(struct netif *netif)
 /**
  * @ingroup dhcp4
  * Start DHCP negotiation for a network interface.
- *
  * If no DHCP client instance was attached to this interface,
  * a new client is created first. If a DHCP client instance
  * was already present, it restarts negotiation.
- *
  * @param netif The lwIP network interface
  * @return lwIP error code
  * - ERR_OK - No error
@@ -883,11 +850,9 @@ dhcp_start(struct netif *netif)
 /**
  * @ingroup dhcp4
  * Inform a DHCP server of our manual configuration.
- *
  * This informs DHCP servers of our fixed IP address configuration
  * by sending an INFORM message. It does not involve DHCP address
  * configuration, it is just here to be nice to the network.
- *
  * @param netif The lwIP network interface
  */
 void
@@ -930,7 +895,6 @@ dhcp_inform(struct netif *netif)
 }
 
 /** Handle a possible change in the network configuration.
- *
  * This enters the REBOOTING state to verify that the currently bound
  * address is still valid.
  */
@@ -968,11 +932,9 @@ dhcp_network_changed_link_up(struct netif *netif)
 #if LWIP_DHCP_DOES_ACD_CHECK
 /**
  * Decline an offered lease.
- *
  * Tell the DHCP server we do not accept the offered address.
  * One reason to decline the lease is when we find out the address
  * is already in use by another host (through ARP).
- *
  * @param netif the netif under DHCP control
  */
 static err_t
@@ -1012,7 +974,6 @@ dhcp_decline(struct netif *netif)
 
 /**
  * Start the DHCP process, discover a DHCP server.
- *
  * @param netif the netif under DHCP control
  */
 static err_t
@@ -1076,7 +1037,6 @@ dhcp_discover(struct netif *netif)
 
 /**
  * Bind the interface to the offered IP address.
- *
  * @param netif network interface to bind to the offered address
  */
 static void
@@ -1150,7 +1110,6 @@ dhcp_bind(struct netif *netif)
 /**
  * @ingroup dhcp4
  * Renew an existing DHCP lease at the involved DHCP server.
- *
  * @param netif network interface which must renew its lease
  */
 err_t
@@ -1206,7 +1165,6 @@ dhcp_renew(struct netif *netif)
 
 /**
  * Rebind with a DHCP server for an existing DHCP lease.
- *
  * @param netif network interface which must rebind with a DHCP server
  */
 static err_t
@@ -1260,7 +1218,6 @@ dhcp_rebind(struct netif *netif)
 
 /**
  * Enter REBOOTING state to verify an existing lease
- *
  * @param netif network interface which must reboot
  */
 static err_t
@@ -1318,7 +1275,6 @@ dhcp_reboot(struct netif *netif)
 /**
  * @ingroup dhcp4
  * Release a DHCP lease and stop DHCP statemachine (and AUTOIP if LWIP_DHCP_AUTOIP_COOP).
- *
  * @param netif network interface
  */
 void
@@ -1416,7 +1372,6 @@ dhcp_stop(struct netif *netif)
 
 /*
  * Set the DHCP state of a DHCP client.
- *
  * If the state changed, reset the number of tries.
  */
 static void
@@ -1432,7 +1387,6 @@ dhcp_set_state(struct dhcp *dhcp, u8_t new_state)
 /*
  * Concatenate an option type and length field to the outgoing
  * DHCP message.
- *
  */
 static u16_t
 dhcp_option(u16_t options_out_len, u8_t *options, u8_t option_type, u8_t option_len)
@@ -1444,7 +1398,6 @@ dhcp_option(u16_t options_out_len, u8_t *options, u8_t option_type, u8_t option_
 }
 /*
  * Concatenate a single byte to the outgoing DHCP message.
- *
  */
 static u16_t
 dhcp_option_byte(u16_t options_out_len, u8_t *options, u8_t value)
@@ -1501,13 +1454,11 @@ dhcp_option_hostname(u16_t options_out_len, u8_t *options, struct netif *netif)
 
 /**
  * Extract the DHCP message and the DHCP options.
- *
  * Extract the DHCP message and the DHCP options, each into a contiguous
  * piece of memory. As a DHCP message is variable sized by its options,
  * and also allows overriding some fields for options, the easy approach
  * is to first unfold the options into a contiguous piece of memory, and
  * use that further on.
- *
  */
 static err_t
 dhcp_parse_reply(struct pbuf *p, struct dhcp *dhcp)
@@ -1874,7 +1825,6 @@ free_pbuf_and_return:
 
 /**
  * Create a DHCP request, fill in common headers
- *
  * @param netif the netif under DHCP control
  * @param dhcp dhcp control struct
  * @param message_type message type of the request
@@ -1961,7 +1911,6 @@ dhcp_create_msg(struct netif *netif, struct dhcp *dhcp, u8_t message_type, u16_t
 
 /**
  * Add a DHCP message trailer
- *
  * Adds the END option to the DHCP message, and if
  * necessary, up to three padding bytes.
  */
@@ -1980,7 +1929,6 @@ dhcp_option_trailer(u16_t options_out_len, u8_t *options, struct pbuf *p_out)
 }
 
 /** check if DHCP supplied netif->ip_addr
- *
  * @param netif the netif to check
  * @return 1 if DHCP supplied netif->ip_addr (states BOUND or RENEWING),
  *         0 otherwise

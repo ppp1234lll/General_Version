@@ -4,17 +4,17 @@
 
 
 /* 参数 */
-#define PING_NETWORK_DELAY	 100  // ping网络延时判定时间
+#define PING_NETWORK_DELAY     100  // ping网络延时判定时间
 
 #define PING_DEV_MAX_NUM (3)
-#define PING_TIME_OUT	 (4000)
-#define PING_TIME_DELAY	 (2000)
+#define PING_TIME_OUT     (4000)
+#define PING_TIME_DELAY     (2000)
 
 
-#define LWIP_PING_WAIT 		 (1)	// 等待ping
-#define LWIP_PING_SUCCESS 	 (0)	// 成功
-#define LWIP_PING_FAIL	   	 (-1)	// 失败
-#define LWIP_PING_NO_NETWORK (-2)	// 无网络
+#define LWIP_PING_WAIT          (1)    // 等待ping
+#define LWIP_PING_SUCCESS      (0)    // 成功
+#define LWIP_PING_FAIL            (-1)    // 失败
+#define LWIP_PING_NO_NETWORK (-2)    // 无网络
 
 
 /* 函数声明 */

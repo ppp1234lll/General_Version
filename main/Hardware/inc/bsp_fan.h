@@ -5,8 +5,8 @@
 
 typedef enum
 {
-	FAN_OFF = 0, // 关闭
-	FAN_ON  = 1 // 打开
+    FAN_OFF = 0, // 关闭
+    FAN_ON  = 1 // 打开
 } FAN_STATUS;
 
 
@@ -14,7 +14,7 @@ typedef enum
 void bsp_InitFan(void); // 初始化函数
 void fan_control( FAN_STATUS state);
 void fan_test(void);
-	
+    
 #endif
 
 /******************************************  (END OF FILE) **********************************************/

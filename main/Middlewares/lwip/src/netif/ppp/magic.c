@@ -1,20 +1,15 @@
 /*
  * magic.c - PPP Magic Number routines.
- *
  * Copyright (c) 1984-2000 Carnegie Mellon University. All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- *
  * 1. Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
- *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
  *    the documentation and/or other materials provided with the
  *    distribution.
- *
  * 3. The name "Carnegie Mellon University" must not be used to
  *    endorse or promote products derived from this software without
  *    prior written permission. For permission or any legal
@@ -25,12 +20,10 @@
  *      Pittsburgh, PA  15213-3890
  *      (412) 268-4387, fax: (412) 268-7395
  *      tech-transfer@andrew.cmu.edu
- *
  * 4. Redistributions of any form whatsoever must retain the following
  *    acknowledgment:
  *    "This product includes software developed by Computing Services
  *     at Carnegie Mellon University (http://www.cmu.edu/computing/)."
- *
  * CARNEGIE MELLON UNIVERSITY DISCLAIMS ALL WARRANTIES WITH REGARD TO
  * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
  * AND FITNESS, IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY BE LIABLE
@@ -39,19 +32,17 @@
  * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-/*****************************************************************************
+/*
+*********************************************************************************************************
 * randm.c - Random number generator program file.
-*
 * Copyright (c) 2003 by Marc Boucher, Services Informatiques (MBSI) inc.
 * Copyright (c) 1998 by Global Election Systems Inc.
-*
 * The authors hereby grant permission to use, copy, modify, distribute,
 * and license this software and its documentation for any purpose, provided
 * that existing copyright notices are retained in all copies and that this
 * notice and the following disclaimer are included verbatim in any
 * distributions. No written agreement, license, or royalty fee is required
 * for any of the authorized uses.
-*
 * THIS SOFTWARE IS PROVIDED BY THE CONTRIBUTORS *AS IS* AND ANY EXPRESS OR
 * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -62,16 +53,14 @@
 * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
 ******************************************************************************
 * REVISION HISTORY
-*
 * 03-01-01 Marc Boucher <marc@mbsi.ca>
 *   Ported to lwIP.
 * 98-06-03 Guy Lancaster <lancasterg@acm.org>, Global Election Systems Inc.
 *   Extracted from avos.
-*****************************************************************************/
-
+*********************************************************************************************************
+*/
 #include "netif/ppp/ppp_opts.h"
 #if PPP_SUPPORT /* don't build if not configured for use in lwipopts.h */
 
@@ -94,7 +83,6 @@ static u32_t magic_randomseed;    /* Seed used for random number generation. */
  *  and this will use the system timer and other sources to add randomness.
  *  If new random data is available, pass a pointer to that and it will be
  *  included.
- *
  * Ref: Applied Cryptography 2nd Ed. by Bruce Schneier p. 427
  */
 static void magic_churnrand(char *rand_data, u32_t rand_len) {
@@ -143,15 +131,12 @@ void magic_randomize(void) {
 
 /*
  * Fill a buffer with random bytes.
- *
  * Use the random pool to generate random data.  This degrades to pseudo
  *  random when used faster than randomness is supplied using magic_churnrand().
  * Note: It's important that there be sufficient randomness in magic_randpool
  *  before this is called for otherwise the range of the result may be
  *  narrow enough to make a search feasible.
- *
  * Ref: Applied Cryptography 2nd Ed. by Bruce Schneier p. 427
- *
  * XXX Why does he not just call magic_churnrand() for each block?  Probably
  *  so that you don't ever publish the seed which could possibly help
  *  predict future values.
@@ -198,15 +183,12 @@ static u32_t magic_randomseed;      /* Seed used for random number generation. *
 
 /*
  * Initialize the random number generator.
- *
  * Here we attempt to compute a random number seed but even if
  * it isn't random, we'll randomize it later.
- *
  * The current method uses the jiffies counter.  When this is
  * invoked at startup the jiffies counter value may repeat
  * after each boot.  Thus we call it again on the first
  * random event.
- *
  * If LWIP_RAND if available, we do not call srand() as we are
  * not going to call rand().
  */
@@ -239,14 +221,12 @@ void magic_randomize(void) {
 
 /*
  * Return a new 32-bit random number.
- *
  * Here we use the rand() function to supply a pseudo random
  * number which we make truly random by combining it with our own
  * seed which is randomized by truly random events.
  * Thus the numbers will be truly random unless there have been no
  * operator or network events in which case it will be pseudo random
  * seeded by srand().
- *
  * Alternatively, use LWIP_RAND if available, but we do not assume
  * it is returning 32 bits of random data because it is probably
  * going to be defined to directly return the rand() value. For

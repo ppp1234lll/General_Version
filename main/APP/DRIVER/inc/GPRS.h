@@ -14,52 +14,52 @@
 // 发送(数据、命令)状态
 enum GPRS_SEND_CODE_E
 {
-	GPRS_SEND_OK,      // 发送成功
-	GPRS_SEND_TIMEOUT, // 发送超时
-	GPRS_SEND_DISCONN, // 对端断开了连接
-	GPRS_SEND_ERROR,   // 发送异常
-	////
+    GPRS_SEND_OK,      // 发送成功
+    GPRS_SEND_TIMEOUT, // 发送超时
+    GPRS_SEND_DISCONN, // 对端断开了连接
+    GPRS_SEND_ERROR,   // 发送异常
+    ////
 
-	GPRS_SEND_MAX
+    GPRS_SEND_MAX
 };
 ////
 
 // 4G模块通信状态
 typedef enum
 {
-	GPRS_BOOT = 0, // 开机
-	GPRS_INIT , // 初始化
-	GPRS_COMM_CHECK , // 通信检测
-	GPRS_SIM , // SIM卡
-	GPRS_CFUN , // 协议栈
-	GPRS_CEREG , // 网络注册状态
-	GPRS_CCLK , // 同步时间
-	GPRS_MIPCCLK , // 查询拨号状态
-	GPRS_PDP , // 激活网络
-	GPRS_CGPADDR , // IP地址
-	GPRS_CGMR , // 模块型号
-	GPRS_IMEI , // IMEI
-	GPRS_CSQ , // 信号状态
-	GPRS_SUCCESS, 
+    GPRS_BOOT = 0, // 开机
+    GPRS_INIT , // 初始化
+    GPRS_COMM_CHECK , // 通信检测
+    GPRS_SIM , // SIM卡
+    GPRS_CFUN , // 协议栈
+    GPRS_CEREG , // 网络注册状态
+    GPRS_CCLK , // 同步时间
+    GPRS_MIPCCLK , // 查询拨号状态
+    GPRS_PDP , // 激活网络
+    GPRS_CGPADDR , // IP地址
+    GPRS_CGMR , // 模块型号
+    GPRS_IMEI , // IMEI
+    GPRS_CSQ , // 信号状态
+    GPRS_SUCCESS, 
 } GPRS_COMM_STATUS_E;
 
 
 struct gprs_status_t
 {
-	uint8_t mount;   // 挂载状态 	1-挂载成功
-	uint8_t network; // TCP连接状态 1-连接成功
-	
-	uint8_t cmdon;   // 1-发送命令 0-未发送命令
-	uint8_t step;    // 运行步骤计数
-	struct {
-		uint8_t com; // 模块通信状态
-		uint8_t sim; // SIM卡状态
-		uint8_t csq; // 信号状态
-		uint8_t net; // 网络注册状态
-		uint8_t gps; // gps状态
+    uint8_t mount;   // 挂载状态     1-挂载成功
+    uint8_t network; // TCP连接状态 1-连接成功
+    
+    uint8_t cmdon;   // 1-发送命令 0-未发送命令
+    uint8_t step;    // 运行步骤计数
+    struct {
+        uint8_t com; // 模块通信状态
+        uint8_t sim; // SIM卡状态
+        uint8_t csq; // 信号状态
+        uint8_t net; // 网络注册状态
+        uint8_t gps; // gps状态
     uint8_t ip[16]; // IP
-	} status;
-	uint8_t ccid[21];
+    } status;
+    uint8_t ccid[21];
     
   uint8_t imei[16];
   uint8_t model[40];
@@ -68,8 +68,8 @@ struct gprs_status_t
 
 struct GPRS_FEEDBACK
 {
-	const unsigned char *feedback;
-	unsigned int feedback_len;
+    const unsigned char *feedback;
+    unsigned int feedback_len;
 };
 ////
 
@@ -111,11 +111,11 @@ extern int gprs_send_data(const uint8_t *data, int len, int waittime);
 extern int gprs_network_connect_server(const char *host, unsigned short port);
 extern int gprs_send_cmd
 (
-	const uint8_t *AT_cmd,
-	int AT_cmd_len,
-	const struct GPRS_FEEDBACK *feedback_array,
-	unsigned int feedback_count,
-	int waittime
+    const uint8_t *AT_cmd,
+    int AT_cmd_len,
+    const struct GPRS_FEEDBACK *feedback_array,
+    unsigned int feedback_count,
+    int waittime
 );
 extern void gprs_disconnect(void);
 extern int gprs_recv_data(const unsigned char **recv_data, int *recv_data_size);

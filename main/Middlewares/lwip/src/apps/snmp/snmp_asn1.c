@@ -1,17 +1,14 @@
 /**
  * @file
  * Abstract Syntax Notation One (ISO 8824, 8825) encoding
- *
  * @todo not optimised (yet), favor correctness over speed, favor speed over size
  */
 
 /*
  * Copyright (c) 2006 Axon Digital Design B.V., The Netherlands.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -19,7 +16,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -30,7 +26,6 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * Author: Christiaan Simons <christiaan.simons@axon.tv>
  *         Martin Hentschel <info@cl-soft.de>
  */
@@ -48,7 +43,6 @@
 
 /**
  * Encodes a TLV into a pbuf stream.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param tlv TLV to encode
  * @return ERR_OK if successful, ERR_ARG if we can't (or won't) encode
@@ -123,7 +117,6 @@ snmp_ans1_enc_tlv(struct snmp_pbuf_stream *pbuf_stream, struct snmp_asn1_tlv *tl
 
 /**
  * Encodes raw data (octet string, opaque) into a pbuf chained ASN1 msg.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param raw_len raw data length
  * @param raw points raw data
@@ -139,12 +132,10 @@ snmp_asn1_enc_raw(struct snmp_pbuf_stream *pbuf_stream, const u8_t *raw, u16_t r
 
 /**
  * Encodes u32_t (counter, gauge, timeticks) into a pbuf chained ASN1 msg.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param octets_needed encoding length (from snmp_asn1_enc_u32t_cnt())
  * @param value is the host order u32_t value to be encoded
  * @return ERR_OK if successful, ERR_ARG if we can't (or won't) encode
- *
  * @see snmp_asn1_enc_u32t_cnt()
  */
 err_t
@@ -171,12 +162,10 @@ snmp_asn1_enc_u32t(struct snmp_pbuf_stream *pbuf_stream, u16_t octets_needed, u3
 }
 /**
  * Encodes s32_t integer into a pbuf chained ASN1 msg.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param octets_needed encoding length (from snmp_asn1_enc_s32t_cnt())
  * @param value is the host order s32_t value to be encoded
  * @return ERR_OK if successful, ERR_ARG if we can't (or won't) encode
- *
  * @see snmp_asn1_enc_s32t_cnt()
  */
 err_t
@@ -196,7 +185,6 @@ snmp_asn1_enc_s32t(struct snmp_pbuf_stream *pbuf_stream, u16_t octets_needed, s3
 
 /**
  * Encodes object identifier into a pbuf chained ASN1 msg.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param oid points to object identifier array
  * @param oid_len object identifier array length
@@ -245,7 +233,6 @@ snmp_asn1_enc_oid(struct snmp_pbuf_stream *pbuf_stream, const u32_t *oid, u16_t 
 
 /**
  * Returns octet count for length.
- *
  * @param length parameter length
  * @param octets_needed points to the return value
  */
@@ -263,10 +250,8 @@ snmp_asn1_enc_length_cnt(u16_t length, u8_t *octets_needed)
 
 /**
  * Returns octet count for an u32_t.
- *
  * @param value value to be encoded
  * @param octets_needed points to the return value
- *
  * @note ASN coded integers are _always_ signed. E.g. +0xFFFF is coded
  * as 0x00,0xFF,0xFF. Note the leading sign octet. A positive value
  * of 0xFFFFFFFF is preceded with 0x00 and the length is 5 octets!!
@@ -289,10 +274,8 @@ snmp_asn1_enc_u32t_cnt(u32_t value, u16_t *octets_needed)
 
 /**
  * Returns octet count for an s32_t.
- *
  * @param value value to be encoded
  * @param octets_needed points to the return value
- *
  * @note ASN coded integers are _always_ signed.
  */
 void
@@ -314,7 +297,6 @@ snmp_asn1_enc_s32t_cnt(s32_t value, u16_t *octets_needed)
 
 /**
  * Returns octet count for an object identifier.
- *
  * @param oid points to object identifier array
  * @param oid_len object identifier array length
  * @param octets_needed points to the return value
@@ -347,7 +329,6 @@ snmp_asn1_enc_oid_cnt(const u32_t *oid, u16_t oid_len, u16_t *octets_needed)
 
 /**
  * Decodes a TLV from a pbuf stream.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param tlv returns decoded TLV
  * @return ERR_OK if successful, ERR_VAL if we can't decode
@@ -407,12 +388,10 @@ snmp_asn1_dec_tlv(struct snmp_pbuf_stream *pbuf_stream, struct snmp_asn1_tlv *tl
 
 /**
  * Decodes positive integer (counter, gauge, timeticks) into u32_t.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param len length of the coded integer field
  * @param value return host order integer
  * @return ERR_OK if successful, ERR_ARG if we can't (or won't) decode
- *
  * @note ASN coded integers are _always_ signed. E.g. +0xFFFF is coded
  * as 0x00,0xFF,0xFF. Note the leading sign octet. A positive value
  * of 0xFFFFFFFF is preceded with 0x00 and the length is 5 octets!!
@@ -447,12 +426,10 @@ snmp_asn1_dec_u32t(struct snmp_pbuf_stream *pbuf_stream, u16_t len, u32_t *value
 
 /**
  * Decodes integer into s32_t.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param len length of the coded integer field
  * @param value return host order integer
  * @return ERR_OK if successful, ERR_ARG if we can't (or won't) decode
- *
  * @note ASN coded integers are _always_ signed!
  */
 err_t
@@ -486,7 +463,6 @@ snmp_asn1_dec_s32t(struct snmp_pbuf_stream *pbuf_stream, u16_t len, s32_t *value
 
 /**
  * Decodes object identifier from incoming message into array of u32_t.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param len length of the coded object identifier
  * @param oid return decoded object identifier
@@ -577,7 +553,6 @@ snmp_asn1_dec_oid(struct snmp_pbuf_stream *pbuf_stream, u16_t len, u32_t *oid, u
 /**
  * Decodes (copies) raw data (ip-addresses, octet strings, opaque encoding)
  * from incoming message into array.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param len length of the coded raw data (zero is valid, e.g. empty string!)
  * @param buf return raw bytes
@@ -606,10 +581,8 @@ snmp_asn1_dec_raw(struct snmp_pbuf_stream *pbuf_stream, u16_t len, u8_t *buf, u1
 #if LWIP_HAVE_INT64
 /**
  * Returns octet count for an u64_t.
- *
  * @param value value to be encoded
  * @param octets_needed points to the return value
- *
  * @note ASN coded integers are _always_ signed. E.g. +0xFFFF is coded
  * as 0x00,0xFF,0xFF. Note the leading sign octet. A positive value
  * of 0xFFFFFFFFFFFFFFFF is preceded with 0x00 and the length is 9 octets!!
@@ -630,12 +603,10 @@ snmp_asn1_enc_u64t_cnt(u64_t value, u16_t *octets_needed)
 
 /**
  * Decodes large positive integer (counter64) into 2x u32_t.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param len length of the coded integer field
  * @param value return 64 bit integer
  * @return ERR_OK if successful, ERR_ARG if we can't (or won't) decode
- *
  * @note ASN coded integers are _always_ signed. E.g. +0xFFFF is coded
  * as 0x00,0xFF,0xFF. Note the leading sign octet. A positive value
  * of 0xFFFFFFFFFFFFFFFF is preceded with 0x00 and the length is 9 octets!!
@@ -669,12 +640,10 @@ snmp_asn1_dec_u64t(struct snmp_pbuf_stream *pbuf_stream, u16_t len, u64_t *value
 
 /**
  * Encodes u64_t (counter64) into a pbuf chained ASN1 msg.
- *
  * @param pbuf_stream points to a pbuf stream
  * @param octets_needed encoding length (from snmp_asn1_enc_u32t_cnt())
  * @param value is the value to be encoded
  * @return ERR_OK if successful, ERR_ARG if we can't (or won't) encode
- *
  * @see snmp_asn1_enc_u64t_cnt()
  */
 err_t

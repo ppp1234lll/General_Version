@@ -1,14 +1,11 @@
 /**
  * @file
  * Internet checksum functions.
- *
  * These are some reference implementations of the checksum algorithm, with the
  * aim of being simple, correct and fully portable. Checksumming is the
  * first thing you would want to optimize for your platform. If you create
  * your own version, link it in and in your cc.h put:
- *
  * \#define LWIP_CHKSUM your_checksum_routine
- *
  * Or you can select from the implementations below by defining
  * LWIP_CHKSUM_ALGORITHM to 1, 2 or 3.
  */
@@ -16,10 +13,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -27,7 +22,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -38,11 +32,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 #include "lwip/opt.h"
@@ -68,11 +59,9 @@ u16_t lwip_standard_chksum(const void *dataptr, int len);
 #if (LWIP_CHKSUM_ALGORITHM == 1) /* Version #1 */
 /**
  * lwip checksum
- *
  * @param dataptr points to start of data to be summed at any boundary
  * @param len length of data to be summed
  * @return host order (!) lwip checksum (non-inverted Internet sum)
- *
  * @note accumulator size limits summable length to 64k
  * @note host endianness is irrelevant (p3 RFC1071)
  */
@@ -119,12 +108,10 @@ lwip_standard_chksum(const void *dataptr, int len)
  * Curt McDowell
  * Broadcom Corp.
  * csm@broadcom.com
- *
  * IP checksum two bytes at a time with support for
  * unaligned buffer.
  * Works for len up to and including 0x20000.
  * by Curt McDowell, Broadcom Corp. 12/08/2005
- *
  * @param dataptr points to start of data to be summed at any boundary
  * @param len length of data to be summed
  * @return host order (!) lwip checksum (non-inverted Internet sum)
@@ -178,11 +165,9 @@ lwip_standard_chksum(const void *dataptr, int len)
  * An optimized checksum routine. Basically, it uses loop-unrolling on
  * the checksum loop, treating the head and tail bytes specially, whereas
  * the inner loop acts on 8 bytes at a time.
- *
  * @arg start of buffer to be checksummed. May be an odd byte address.
  * @len number of bytes in the buffer to be checksummed.
  * @return host order (!) lwip checksum (non-inverted Internet sum)
- *
  * by Curt McDowell, Broadcom Corp. December 8th, 2005
  */
 u16_t
@@ -295,10 +280,8 @@ inet_cksum_pseudo_base(struct pbuf *p, u8_t proto, u16_t proto_len, u32_t acc)
 
 #if LWIP_IPV4
 /* inet_chksum_pseudo:
- *
  * Calculates the IPv4 pseudo Internet checksum used by TCP and UDP for a pbuf chain.
  * IP addresses are expected to be in network byte order.
- *
  * @param p chain of pbufs over that a checksum should be calculated (ip data part)
  * @param src source ip address (used for checksum of pseudo header)
  * @param dst destination ip address (used for checksum of pseudo header)
@@ -331,7 +314,6 @@ inet_chksum_pseudo(struct pbuf *p, u8_t proto, u16_t proto_len,
 /**
  * Calculates the checksum with IPv6 pseudo header used by TCP and UDP for a pbuf chain.
  * IPv6 addresses are expected to be in network byte order.
- *
  * @param p chain of pbufs over that a checksum should be calculated (ip data part)
  * @param proto ipv6 protocol/next header (used for checksum of pseudo header)
  * @param proto_len length of the ipv6 payload (used for checksum of pseudo header)
@@ -364,10 +346,8 @@ ip6_chksum_pseudo(struct pbuf *p, u8_t proto, u16_t proto_len,
 #endif /* LWIP_IPV6 */
 
 /* ip_chksum_pseudo:
- *
  * Calculates the IPv4 or IPv6 pseudo Internet checksum used by TCP and UDP for a pbuf chain.
  * IP addresses are expected to be in network byte order.
- *
  * @param p chain of pbufs over that a checksum should be calculated (ip data part)
  * @param src source ip address (used for checksum of pseudo header)
  * @param dst destination ip address (used for checksum of pseudo header)
@@ -441,10 +421,8 @@ inet_cksum_pseudo_partial_base(struct pbuf *p, u8_t proto, u16_t proto_len,
 
 #if LWIP_IPV4
 /* inet_chksum_pseudo_partial:
- *
  * Calculates the IPv4 pseudo Internet checksum used by TCP and UDP for a pbuf chain.
  * IP addresses are expected to be in network byte order.
- *
  * @param p chain of pbufs over that a checksum should be calculated (ip data part)
  * @param src source ip address (used for checksum of pseudo header)
  * @param dst destination ip address (used for checksum of pseudo header)
@@ -478,7 +456,6 @@ inet_chksum_pseudo_partial(struct pbuf *p, u8_t proto, u16_t proto_len,
  * Calculates the checksum with IPv6 pseudo header used by TCP and UDP for a pbuf chain.
  * IPv6 addresses are expected to be in network byte order. Will only compute for a
  * portion of the payload.
- *
  * @param p chain of pbufs over that a checksum should be calculated (ip data part)
  * @param proto ipv6 protocol/next header (used for checksum of pseudo header)
  * @param proto_len length of the ipv6 payload (used for checksum of pseudo header)
@@ -512,9 +489,7 @@ ip6_chksum_pseudo_partial(struct pbuf *p, u8_t proto, u16_t proto_len,
 #endif /* LWIP_IPV6 */
 
 /* ip_chksum_pseudo_partial:
- *
  * Calculates the IPv4 or IPv6 pseudo Internet checksum used by TCP and UDP for a pbuf chain.
- *
  * @param p chain of pbufs over that a checksum should be calculated (ip data part)
  * @param src source ip address (used for checksum of pseudo header)
  * @param dst destination ip address (used for checksum of pseudo header)
@@ -542,10 +517,8 @@ ip_chksum_pseudo_partial(struct pbuf *p, u8_t proto, u16_t proto_len,
 }
 
 /* inet_chksum:
- *
  * Calculates the Internet checksum over a portion of memory. Used primarily for IP
  * and ICMP.
- *
  * @param dataptr start of the buffer to calculate the checksum (no alignment needed)
  * @param len length of the buffer to calculate the checksum
  * @return checksum (as u16_t) to be saved directly in the protocol header
@@ -560,7 +533,6 @@ inet_chksum(const void *dataptr, u16_t len)
 /**
  * Calculate a checksum over a chain of pbufs (without pseudo-header, much like
  * inet_chksum only pbufs are used).
- *
  * @param p pbuf chain over that the checksum should be calculated
  * @return checksum (as u16_t) to be saved directly in the protocol header
  */

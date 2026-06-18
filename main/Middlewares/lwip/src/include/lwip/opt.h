@@ -1,16 +1,13 @@
 /**
  * @file
- *
  * lwIP Options Configuration
  */
 
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -18,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -29,11 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 /*
@@ -54,16 +47,12 @@
 /**
  * @defgroup lwip_opts Options (lwipopts.h)
  * @ingroup lwip
- *
  * @defgroup lwip_opts_debug Debugging
  * @ingroup lwip_opts
- *
  * @defgroup lwip_opts_infrastructure Infrastructure
  * @ingroup lwip_opts
- *
  * @defgroup lwip_opts_callback Callback-style APIs
  * @ingroup lwip_opts
- *
  * @defgroup lwip_opts_threadsafe_apis Thread-safe APIs
  * @ingroup lwip_opts
  */
@@ -194,7 +183,6 @@
  * LWIP_TCPIP_CORE_LOCKING_INPUT: when LWIP_TCPIP_CORE_LOCKING is enabled,
  * this lets tcpip_input() grab the mutex for input packets as well,
  * instead of allocating a message and passing it to tcpip_thread.
- *
  * ATTENTION: this does not work when tcpip_input() is called from
  * interrupt context!
  */
@@ -385,11 +373,9 @@
  * If set to 1, mem_malloc will be protected by a semaphore and SYS_ARCH_PROTECT,
  * while mem_free will only use SYS_ARCH_PROTECT. mem_malloc SYS_ARCH_UNPROTECTs
  * with each loop so that mem_free can run.
- *
  * ATTENTION: As you can see from the above description, this leads to dis-/
  * enabling interrupts often, which can be slow! Also, on low memory, mem_malloc
  * can need longer.
- *
  * If you don't want that, at least for NO_SYS=0, you can still use the following
  * functions to enqueue a deallocation call which then runs in the tcpip_thread
  * context:
@@ -1197,7 +1183,6 @@
 /** DNS_LOCAL_HOSTLIST: Implements a local host-to-address list. If enabled, you have to define an initializer:
  *  \#define DNS_LOCAL_HOSTLIST_INIT {DNS_LOCAL_HOSTLIST_ELEM("host_ip4", IPADDR4_INIT_BYTES(1,2,3,4)), \
  *                                    DNS_LOCAL_HOSTLIST_ELEM("host_ip6", IPADDR6_INIT_HOST(123, 234, 345, 456)}
- *
  *  Instead, you can also use an external function:
  *  \#define DNS_LOOKUP_LOCAL_EXTERN(name, namelen, addr, dns_addrtype) my_lookup_function(name, namelen, addr, dns_addrtype)
  *  with function signature:
@@ -1476,7 +1461,6 @@
  * allocate ahead of time in an attempt to create shorter pbuf chains
  * for transmission. The meaningful range is 0 to TCP_MSS. Some
  * suggested values are:
- *
  * 0:         Disable oversized allocation. Each tcp_write() allocates a new
               pbuf (old behaviour).
  * 1:         Allocate size-aligned pbufs with minimal excess. Use this if your
@@ -1553,11 +1537,9 @@
  * tcp.h functions but provides the same functionality. It is used to e.g. add
  * SSL/TLS or proxy-connect support to an application written for the tcp callback
  * API without that application knowing the protocol details.
- *
  * With LWIP_ALTCP==0, applications written against the altcp API can still be
  * compiled but are directly linked against the tcp.h callback API and then
  * cannot use layered protocols.
- *
  * See @ref altcp_api
  */
 #if !defined LWIP_ALTCP || defined __DOXYGEN__
@@ -1731,7 +1713,6 @@
  * MACs that do not support scatter-gather.
  * Beware that this might involve CPU-memcpy before transmitting that would not
  * be needed without this flag! Use this only if you need to!
- *
  * ATTENTION: a driver should *NOT* rely on getting single pbufs but check TX
  * pbufs for being in one piece. If not, @ref pbuf_clone can be used to get
  * a single pbuf:
@@ -2887,7 +2868,6 @@
  * Return value:
  * - ERR_OK: continue input of this packet as normal
  * - != ERR_OK: drop this packet for input (don't continue input processing)
- *
  * ATTENTION: don't call any tcp api functions that might change tcp state (pcb
  * state or any pcb lists) from this callback!
  */
@@ -2909,7 +2889,6 @@
  * - internal_option_length: tcp option length used by the stack internally
  * Return value:
  * - a number of bytes to allocate for tcp options (internal_option_length <= ret <= 40)
- *
  * ATTENTION: don't call any tcp api functions that might change tcp state (pcb
  * state or any pcb lists) from this callback!
  */
@@ -2933,7 +2912,6 @@
  *         between the header and these)
  * Return value:
  * - pointer pointing directly after the inserted options
- *
  * ATTENTION: don't call any tcp api functions that might change tcp state (pcb
  * state or any pcb lists) from this callback!
  */
@@ -3026,7 +3004,6 @@
  * Return values:
  * - the IPv4 address of the gateway to handle the specified destination IPv4 address
  * - NULL, in which case the netif's default gateway is used
- *
  * The returned address MUST be directly reachable on the specified netif!
  * This function is meant to implement advanced IPv4 routing together with
  * LWIP_HOOK_IP4_ROUTE(). The actual routing/gateway table implementation is
@@ -3084,7 +3061,6 @@
  * Return values:
  * - the IPv6 address of the next hop to handle the specified destination IPv6 address
  * - NULL, in which case a NDP-discovered router is used instead
- *
  * The returned address MUST be directly reachable on the specified netif!
  * This function is meant to implement advanced IPv6 routing together with
  * LWIP_HOOK_IP6_ROUTE(). The actual routing/gateway table implementation is
@@ -3126,8 +3102,6 @@
  * - src: source eth address
  * - dst: destination eth address
  * - eth_type: ethernet type to packet to be sent<br>
- *
- *
  * Return values:
  * - &lt;0: Packet shall not contain VLAN header.
  * - 0 &lt;= return value &lt;= 0xFFFF: Packet shall contain VLAN header. Return value is prio_vid in host byte order.
@@ -3159,7 +3133,6 @@
  * Return values:
  * - ERR_OK if packet is accepted (hook function now owns the pbuf)
  * - any error code otherwise (pbuf is freed)
- *
  * Payload points to ethernet header!
  */
 #ifdef __DOXYGEN__
@@ -3183,7 +3156,6 @@
  * - msg_type: dhcp message type to be sent (u8_t)
  * - options_len_ptr: pointer to the current length of options in the dhcp_msg "msg"
  *                    (must be increased when options are added!)
- *
  * Options need to appended like this:
  *   LWIP_ASSERT("dhcp option overflow", *options_len_ptr + option_len + 2 <= DHCP_OPTIONS_LEN);
  *   msg->options[(*options_len_ptr)++] = &lt;option_number&gt;;
@@ -3214,7 +3186,6 @@
  * - len: option data length (u8_t)
  * - pbuf: pbuf where option data is contained
  * - option_value_offset: offset in pbuf where option data begins
- *
  * A nice way to get the option contents is pbuf_get_contiguous():
  *  u8_t buf[32];
  *  u8_t *ptr = (u8_t*)pbuf_get_contiguous(p, buf, sizeof(buf), LWIP_MIN(option_len, sizeof(buf)), offset);
@@ -3240,7 +3211,6 @@
  * - msg_type: dhcp6 message type to be sent (u8_t)
  * - options_len_ptr: pointer to the current length of options in the dhcp6_msg "msg"
  *                    (must be increased when options are added!)
- *
  * Options need to appended like this:
  *   u8_t *options = (u8_t *)(msg + 1);
  *   LWIP_ASSERT("dhcp option overflow", sizeof(struct dhcp6_msg) + *options_len_ptr + newoptlen <= max_len);
@@ -3312,7 +3282,6 @@
  * Return values:
  * - 0: Hook has not consumed hostname query, query continues into DNS module
  * - != 0: Hook has consumed the query
- *
  * err must also be checked to determine if the hook consumed the query, but
  * the query failed
  */

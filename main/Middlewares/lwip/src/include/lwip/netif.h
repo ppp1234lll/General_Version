@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,11 +25,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 #ifndef LWIP_HDR_NETIF_H
 #define LWIP_HDR_NETIF_H
@@ -165,13 +159,11 @@ enum netif_mac_filter_action {
 
 /** Function prototype for netif init functions. Set up flags and output/linkoutput
  * callback functions in this function.
- *
  * @param netif The netif to initialize
  */
 typedef err_t (*netif_init_fn)(struct netif *netif);
 /** Function prototype for netif->input functions. This function is saved as 'input'
  * callback function in the netif struct. Call it when a packet has been received.
- *
  * @param p The received packet, copied into a pbuf
  * @param inp The netif which received the packet
  * @return ERR_OK if the packet was handled
@@ -184,7 +176,6 @@ typedef err_t (*netif_input_fn)(struct pbuf *p, struct netif *inp);
 /** Function prototype for netif->output functions. Called by lwIP when a packet
  * shall be sent. For ethernet netif, set this to 'etharp_output' and set
  * 'linkoutput'.
- *
  * @param netif The netif which shall send a packet
  * @param p The packet to send (p->payload points to IP header)
  * @param ipaddr The IP address to which the packet shall be sent
@@ -197,7 +188,6 @@ typedef err_t (*netif_output_fn)(struct netif *netif, struct pbuf *p,
 /** Function prototype for netif->output_ip6 functions. Called by lwIP when a packet
  * shall be sent. For ethernet netif, set this to 'ethip6_output' and set
  * 'linkoutput'.
- *
  * @param netif The netif which shall send a packet
  * @param p The packet to send (p->payload points to IP header)
  * @param ipaddr The IPv6 address to which the packet shall be sent
@@ -208,7 +198,6 @@ typedef err_t (*netif_output_ip6_fn)(struct netif *netif, struct pbuf *p,
 
 /** Function prototype for netif->linkoutput functions. Only used for ethernet
  * netifs. This function is called by ARP when a packet shall be sent.
- *
  * @param netif The netif which shall send a packet
  * @param p The packet to send (raw ethernet packet)
  */

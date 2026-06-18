@@ -10,7 +10,6 @@ extern "C" {
 /**
  * @defgroup smtp_opts Options
  * @ingroup smtp
- *
  * @{
  */
 

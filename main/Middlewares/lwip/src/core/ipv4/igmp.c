@@ -1,7 +1,6 @@
 /**
  * @file
  * IGMP - Internet Group Management Protocol
- *
  * @defgroup igmp IGMP
  * @ingroup ip4
  * To be called from TCPIP thread
@@ -10,7 +9,6 @@
 /*
  * Copyright (c) 2002 CITEL Technologies Ltd.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -22,7 +20,6 @@
  * 3. Neither the name of CITEL Technologies Ltd nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY CITEL TECHNOLOGIES AND CONTRIBUTORS ``AS IS''
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,7 +31,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
  * This file is a contribution to the lwIP TCP/IP stack.
  * The Swedish Institute of Computer Science and Adam Dunkels
  * are specifically granted permission to redistribute this
@@ -121,7 +117,6 @@ igmp_init(void)
 
 /**
  * Start IGMP processing on interface
- *
  * @param netif network interface on which start IGMP processing
  */
 err_t
@@ -153,7 +148,6 @@ igmp_start(struct netif *netif)
 
 /**
  * Stop IGMP processing on interface
- *
  * @param netif network interface on which stop IGMP processing
  */
 err_t
@@ -185,7 +179,6 @@ igmp_stop(struct netif *netif)
 
 /**
  * Report IGMP memberships for this interface
- *
  * @param netif network interface on which report IGMP memberships
  */
 void
@@ -208,7 +201,6 @@ igmp_report_groups(struct netif *netif)
 
 /**
  * Search for a group in the netif's igmp group list
- *
  * @param ifp the network interface for which to look
  * @param addr the group ip address to search for
  * @return a struct igmp_group* if the group has been found,
@@ -234,7 +226,6 @@ igmp_lookfor_group(struct netif *ifp, const ip4_addr_t *addr)
 
 /**
  * Search for a specific igmp group and create a new one if not found-
- *
  * @param ifp the network interface for which to look
  * @param addr the group ip address to search
  * @return a struct igmp_group*,
@@ -287,7 +278,6 @@ igmp_lookup_group(struct netif *ifp, const ip4_addr_t *addr)
 
 /**
  * Remove a group from netif's igmp group list, but don't free it yet
- *
  * @param group the group to remove from the netif's igmp group list
  * @return ERR_OK if group was removed from the list, an err_t otherwise
  */
@@ -314,7 +304,6 @@ igmp_remove_group(struct netif *netif, struct igmp_group *group)
 
 /**
  * Called from ip_input() if a new IGMP packet is received.
- *
  * @param p received igmp packet, p->payload pointing to the igmp header
  * @param inp network interface on which the packet was received
  * @param dest destination ip address of the igmp packet
@@ -440,7 +429,6 @@ igmp_input(struct pbuf *p, struct netif *inp, const ip4_addr_t *dest)
 /**
  * @ingroup igmp
  * Join a group on one network interface.
- *
  * @param ifaddr ip address of the network interface which should join a new group
  * @param groupaddr the ip address of the group which to join
  * @return ERR_OK if group was joined on the netif(s), an err_t otherwise
@@ -476,7 +464,6 @@ igmp_joingroup(const ip4_addr_t *ifaddr, const ip4_addr_t *groupaddr)
 /**
  * @ingroup igmp
  * Join a group on one network interface.
- *
  * @param netif the network interface which should join a new group
  * @param groupaddr the ip address of the group which to join
  * @return ERR_OK if group was joined on the netif, an err_t otherwise
@@ -537,7 +524,6 @@ igmp_joingroup_netif(struct netif *netif, const ip4_addr_t *groupaddr)
 /**
  * @ingroup igmp
  * Leave a group on one network interface.
- *
  * @param ifaddr ip address of the network interface which should leave a group
  * @param groupaddr the ip address of the group which to leave
  * @return ERR_OK if group was left on the netif(s), an err_t otherwise
@@ -572,7 +558,6 @@ igmp_leavegroup(const ip4_addr_t *ifaddr, const ip4_addr_t *groupaddr)
 /**
  * @ingroup igmp
  * Leave a group on one network interface.
- *
  * @param netif the network interface which should leave a group
  * @param groupaddr the ip address of the group which to leave
  * @return ERR_OK if group was left on the netif, an err_t otherwise
@@ -660,7 +645,6 @@ igmp_tmr(void)
 /**
  * Called if a timeout for one group is reached.
  * Sends a report for this group.
- *
  * @param group an igmp_group for which a timeout is reached
  */
 static void
@@ -683,7 +667,6 @@ igmp_timeout(struct netif *netif, struct igmp_group *group)
 
 /**
  * Start a timer for an igmp group
- *
  * @param group the igmp_group for which to start a timer
  * @param max_time the time in multiples of IGMP_TMR_INTERVAL (decrease with
  *        every call to igmp_tmr())
@@ -705,7 +688,6 @@ igmp_start_timer(struct igmp_group *group, u8_t max_time)
 
 /**
  * Delaying membership report for a group if necessary
- *
  * @param group the igmp_group for which "delaying" membership report
  * @param maxresp query delay
  */
@@ -725,7 +707,6 @@ igmp_delaying_member(struct igmp_group *group, u8_t maxresp)
  * Sends an IP packet on a network interface. This function constructs the IP header
  * and calculates the IP header checksum. If the source IP address is NULL,
  * the IP address of the outgoing network interface is filled in as source address.
- *
  * @param p the packet to send (p->payload points to the data, e.g. next
             protocol header; if dest == LWIP_IP_HDRINCL, p already includes an
             IP header and p->payload points to that IP header)
@@ -750,7 +731,6 @@ igmp_ip_output_if(struct pbuf *p, const ip4_addr_t *src, const ip4_addr_t *dest,
 
 /**
  * Send an igmp packet to a specific group.
- *
  * @param group the group to which to send the packet
  * @param type the type of igmp packet to send
  */

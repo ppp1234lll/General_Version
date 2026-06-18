@@ -1,18 +1,14 @@
 /**
  * @file
  * This is the IPv4 layer implementation for incoming and outgoing IP traffic.
- *
  * @see ip_frag.c
- *
  */
 
 /*
  * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -20,7 +16,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -31,11 +26,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Adam Dunkels <adam@sics.se>
- *
  */
 
 #include "lwip/opt.h"
@@ -144,7 +136,6 @@ ip4_route_src(const ip4_addr_t *src, const ip4_addr_t *dest)
  * searches the list of network interfaces linearly. A match is found
  * if the masked IP address of the network interface equals the masked
  * IP address given to the function.
- *
  * @param dest the destination IP address for which to find the route
  * @return the netif on which to send to reach dest
  */
@@ -272,7 +263,6 @@ ip4_canforward(struct pbuf *p)
  * Forwards an IP packet. It finds an appropriate route for the
  * packet, decrements the TTL value of the packet, adjusts the
  * checksum and outputs the packet on the appropriate interface.
- *
  * @param p the packet to forward (p->payload points to IP header)
  * @param iphdr the IP header of the input packet
  * @param inp the netif on which this packet was received
@@ -448,9 +438,7 @@ ip4_input_accept(struct netif *netif)
  * IP header such as packet size being at least larger than the header
  * size etc. If the packet was not destined for us, the packet is
  * forwarded (using ip_forward). The IP checksum is always checked.
- *
  * Finally, the packet is sent to the upper layer protocol input function.
- *
  * @param p the received IP packet (p->payload points to IP header)
  * @param inp the netif on which this packet was received
  * @return ERR_OK if the packet was processed (could return ERR_* if it wasn't
@@ -604,10 +592,8 @@ ip4_input(struct pbuf *p, struct netif *inp)
   /* Pass DHCP messages regardless of destination address. DHCP traffic is addressed
    * using link layer addressing (such as Ethernet MAC) so we must not filter on IP.
    * According to RFC 1542 section 3.1.1, referred by RFC 2131).
-   *
    * If you want to accept private broadcast communication while a netif is down,
    * define LWIP_IP_ACCEPT_UDP_PORT(dst_port), e.g.:
-   *
    * #define LWIP_IP_ACCEPT_UDP_PORT(dst_port) ((dst_port) == PP_NTOHS(12345))
    */
   if (netif == NULL) {
@@ -799,7 +785,6 @@ ip4_input(struct pbuf *p, struct netif *inp)
  * interface is filled in as source address.
  * If the destination IP address is LWIP_IP_HDRINCL, p is assumed to already
  * include an IP header and p->payload points to it instead of the data.
- *
  * @param p the packet to send (p->payload points to the data, e.g. next
             protocol header; if dest == LWIP_IP_HDRINCL, p already includes an
             IP header and p->payload points to that IP header)
@@ -813,7 +798,6 @@ ip4_input(struct pbuf *p, struct netif *inp)
  * @return ERR_OK if the packet was sent OK
  *         ERR_BUF if p doesn't have enough space for IP/LINK headers
  *         returns errors returned by netif->output
- *
  * @note ip_id: RFC791 "some host may be able to simply use
  *  unique identifiers independent of destination"
  */
@@ -828,7 +812,6 @@ ip4_output_if(struct pbuf *p, const ip4_addr_t *src, const ip4_addr_t *dest,
 
 /**
  * Same as ip_output_if() but with the possibility to include IP options:
- *
  * @ param ip_options pointer to the IP options, copied into the IP header
  * @ param optlen length of ip_options
  */
@@ -1044,7 +1027,6 @@ ip4_output_if_opt_src(struct pbuf *p, const ip4_addr_t *src, const ip4_addr_t *d
 /**
  * Simple interface to ip_output_if. It finds the outgoing network
  * interface and calls upon ip_output_if to do the actual work.
- *
  * @param p the packet to send (p->payload points to the data, e.g. next
             protocol header; if dest == LWIP_IP_HDRINCL, p already includes an
             IP header and p->payload points to that IP header)
@@ -1054,7 +1036,6 @@ ip4_output_if_opt_src(struct pbuf *p, const ip4_addr_t *src, const ip4_addr_t *d
  * @param ttl the TTL value to be set in the IP header
  * @param tos the TOS value to be set in the IP header
  * @param proto the PROTOCOL to be set in the IP header
- *
  * @return ERR_RTE if no route is found
  *         see ip_output_if() for more return values
  */
@@ -1079,7 +1060,6 @@ ip4_output(struct pbuf *p, const ip4_addr_t *src, const ip4_addr_t *dest,
 #if LWIP_NETIF_USE_HINTS
 /** Like ip_output, but takes and addr_hint pointer that is passed on to netif->addr_hint
  *  before calling ip_output_if.
- *
  * @param p the packet to send (p->payload points to the data, e.g. next
             protocol header; if dest == LWIP_IP_HDRINCL, p already includes an
             IP header and p->payload points to that IP header)
@@ -1091,7 +1071,6 @@ ip4_output(struct pbuf *p, const ip4_addr_t *src, const ip4_addr_t *dest,
  * @param proto the PROTOCOL to be set in the IP header
  * @param netif_hint netif output hint pointer set to netif->hint before
  *        calling ip_output_if()
- *
  * @return ERR_RTE if no route is found
  *         see ip_output_if() for more return values
  */

@@ -1,13 +1,11 @@
 /**
  * @file
  * Network Point to Point Protocol over Serial file.
- *
  */
 
 /*
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -15,7 +13,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -26,9 +23,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  */
 
 #include "netif/ppp/ppp_opts.h"
@@ -168,7 +163,6 @@ ppp_get_fcs(u8_t byte)
 
 /*
  * Create a new PPP connection using the given serial I/O device.
- *
  * Return 0 on success, an error code on failure.
  */
 ppp_pcb *pppos_create(struct netif *pppif, pppos_output_cb_fn output_cb,
@@ -414,9 +408,7 @@ pppos_destroy(ppp_pcb *ppp, void *ctx)
 
 #if !NO_SYS && !PPP_INPROC_IRQ_SAFE
 /** Pass received raw characters to PPPoS to be decoded through lwIP TCPIP thread.
- *
  * This is one of the only functions that may be called outside of the TCPIP thread!
- *
  * @param ppp PPP descriptor index, returned by pppos_create()
  * @param s received data
  * @param l length of received data
@@ -471,7 +463,6 @@ PACK_STRUCT_END
 #endif /* PPP_INPROC_IRQ_SAFE */
 
 /** Pass received raw characters to PPPoS to be decoded.
- *
  * @param ppp PPP descriptor index, returned by pppos_create()
  * @param s received data
  * @param l length of received data

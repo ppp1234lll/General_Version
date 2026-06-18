@@ -6,10 +6,8 @@
 /*
  * Copyright (c) 2018 Simon Goldschmidt <goldsimon@gmx.de>
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -17,7 +15,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -28,9 +25,7 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: Simon Goldschmidt <goldsimon@gmx.de>
  */
 
@@ -626,7 +621,6 @@ httpc_init_connection_addr(httpc_state_t **connection, const httpc_connection_t 
 /**
  * @ingroup httpc
  * HTTP client API: get a file by passing server IP address
- *
  * @param server_addr IP address of the server to connect
  * @param port tcp port of the server
  * @param uri uri to get from the server, remember leading "/"!
@@ -671,7 +665,6 @@ httpc_get_file(const ip_addr_t* server_addr, u16_t port, const char* uri, const 
 /**
  * @ingroup httpc
  * HTTP client API: get a file by passing server name as string (DNS name or IP address string)
- *
  * @param server_name server name as string (DNS name or IP address string)
  * @param port tcp port of the server
  * @param uri uri to get from the server, remember leading "/"!
@@ -818,7 +811,6 @@ httpc_fs_tcp_recv(void *arg, struct altcp_pcb *pcb, struct pbuf *p, err_t err)
 /**
  * @ingroup httpc
  * HTTP client API: get a file to disk by passing server IP address
- *
  * @param server_addr IP address of the server to connect
  * @param port tcp port of the server
  * @param uri uri to get from the server, remember leading "/"!
@@ -870,7 +862,6 @@ httpc_get_file_to_disk(const ip_addr_t* server_addr, u16_t port, const char* uri
 /**
  * @ingroup httpc
  * HTTP client API: get a file to disk by passing server name as string (DNS name or IP address string)
- *
  * @param server_name server name as string (DNS name or IP address string)
  * @param port tcp port of the server
  * @param uri uri to get from the server, remember leading "/"!

@@ -1,8 +1,6 @@
 /**
  * @file
- *
  * IPv6 address scopes, zones, and scoping policy.
- *
  * This header provides the means to implement support for IPv6 address scopes,
  * as per RFC 4007. An address scope can be either global or more constrained.
  * In lwIP, we say that an address "has a scope" or "is scoped" when its scope
@@ -16,7 +14,6 @@
  * decisions on which scopes are constrained and the mapping between zones and
  * interfaces is together what we refer to as the "scoping policy" - more on
  * this in a bit.
- *
  * In lwIP, each IPv6 address has an associated zone index. This zone index may
  * be set to "no zone" (IP6_NO_ZONE, 0) or an actual zone. We say that an
  * address "has a zone" or "is zoned" when its zone index is *not* set to "no
@@ -26,7 +23,6 @@
  * Even though one could argue that there is always one zone even for global
  * scopes, this rule exists for implementation simplicity. Violation of the
  * rule will trigger assertions or otherwise result in undesired behavior.
- *
  * Backward compatibility prevents us from requiring that applications always
  * provide properly zoned addresses. We do enforce the rule that the in the
  * lwIP link layer (everything below netif->output_ip6() and in particular ND6)
@@ -35,7 +31,6 @@
  * Some of them are best-effort for efficiency (e.g. the PCB bind and connect
  * API calls' attempts to add missing zones); ultimately the IPv6 output
  * handler (@ref ip6_output_if_src) will set a zone if necessary.
- *
  * Aside from dealing with scoped addresses lacking a zone, a proper IPv6
  * implementation must also ensure that a packet with a scoped source and/or
  * destination address does not leave its zone. This is currently implemented
@@ -43,7 +38,6 @@
  * deliberately omitted in order to keep the implementation lightweight. The
  * routing algorithm in @ref ip6_route will take decisions such that it will
  * not cause zone violations unless the application sets bad addresses, though.
- *
  * In terms of scoping policy, lwIP implements the default policy from RFC 4007
  * using macros in this file. This policy considers link-local unicast
  * addresses and (only) interface-local and link-local multicast addresses as
@@ -54,10 +48,8 @@
 /*
  * Copyright (c) 2017 The MINIX 3 Project.
  * All rights reserved.
- *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright notice,
@@ -65,7 +57,6 @@
  *    and/or other materials provided with the distribution.
  * 3. The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
- *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
@@ -76,11 +67,8 @@
  * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
- *
  * This file is part of the lwIP TCP/IP stack.
- *
  * Author: David van Moolenbroek <david@minix3.org>
- *
  */
 #ifndef LWIP_HDR_IP6_ZONE_H
 #define LWIP_HDR_IP6_ZONE_H
@@ -164,14 +152,11 @@ enum lwip_ipv6_scope_type
  * meaningful only if accompanied by a zone index to identify the scope's zone.
  * The given address type may be used to eliminate at compile time certain
  * checks that will evaluate to false at run time anyway.
- *
  * This default implementation follows the default model of RFC 4007, where
  * only interface-local and link-local scopes are defined.
- *
  * Even though the unicast loopback address does have an implied link-local
  * scope, in this implementation it does not have an explicitly assigned zone
  * index. As such it should not be tested for in this macro.
- *
  * @param ip6addr the IPv6 address (const); only its address part is examined.
  * @param type address type; see @ref lwip_ipv6_scope_type.
  * @return 1 if the address has a constrained scope, 0 if it does not.
@@ -185,13 +170,11 @@ enum lwip_ipv6_scope_type
  * Assign a zone index to an IPv6 address, based on a network interface. If the
  * given address has a scope, the assigned zone index is that scope's zone of
  * the given netif; otherwise, the assigned zone index is "no zone".
- *
  * This default implementation follows the default model of RFC 4007, where
  * only interface-local and link-local scopes are defined, and the zone index
  * of both of those scopes always equals the index of the network interface.
  * As such, this default implementation need not distinguish between different
  * constrained scopes when assigning the zone.
- *
  * @param ip6addr the IPv6 address; its address part is examined, and its zone
  *                index is assigned.
  * @param type address type; see @ref lwip_ipv6_scope_type.
@@ -208,14 +191,12 @@ enum lwip_ipv6_scope_type
  * given address is either scoped or zoned, and thus, it need not test this.
  * If an address is scoped but not zoned, or zoned and not scoped, it is
  * considered not zone-compatible with any netif.
- *
  * This default implementation follows the default model of RFC 4007, where
  * only interface-local and link-local scopes are defined, and the zone index
  * of both of those scopes always equals the index of the network interface.
  * As such, there is always only one matching netif for a specific zone index,
  * but all call sites of this macro currently support multiple matching netifs
  * as well (at no additional expense in the common case).
- *
  * @param ip6addr the IPv6 address (const).
  * @param netif the network interface (const).
  * @return 1 if the address is scope-compatible with the netif, 0 if not.
@@ -236,15 +217,12 @@ enum lwip_ipv6_scope_type
  * this (relatively expensive) selection for every individual packet route
  * operation and 2) to allow the application to obtain the selected zone from
  * the PCB as is customary for e.g. getsockname/getpeername BSD socket calls.
- *
  * Ideally, callers would always supply a properly zoned address, in which case
  * this function would not be needed. It exists both for compatibility with the
  * BSD socket API (which accepts zoneless destination addresses) and for
  * backward compatibility with pre-scoping lwIP code.
- *
  * It may be impossible to select a zone, e.g. if there are no netifs.  In that
  * case, the address's zone field will be left as is.
- *
  * @param dest the IPv6 address for which to select and set a zone.
  * @param src source IPv6 address (const); may be equal to dest.
  */
