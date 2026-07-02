@@ -214,8 +214,8 @@ void start_task(void *pvParameters)
     save_init_function();    
     com_recevie_function_init();        // 初始化接收缓冲区
     app_get_storage_param_function();    // 获取本地存储的数据
-    update_status_init();               // 更新检测
     
+    log_init_function();
     enet_system_setup();
     while (lwip_comm_init() != 0)
     {

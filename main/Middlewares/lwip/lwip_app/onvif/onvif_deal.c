@@ -1,14 +1,7 @@
-#include "onvif_agree.h"
-#include "onvif_digest.h"
-#include "./MALLOC/malloc.h"
-#include "onvif_deal.h"
-#include <lwip/sockets.h>
-#include "lwip/opt.h"
-#include "onvif.h"
-#include "onvif_tcp.h"
-#include "onvif_prefixlen.h"
+#include "./onvif/onvif_deal.h"
+#include "main.h"
 
-#define ONVIF_DEBUG 1
+#define ONVIF_DEBUG 0
 
 __attribute__((section (".RAM_D1")))    char onvif_tcp_recv_buff[TCP_RX_BUFSIZE] = {0};
 

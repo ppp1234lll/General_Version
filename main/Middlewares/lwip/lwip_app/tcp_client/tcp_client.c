@@ -36,8 +36,9 @@ static void tcp_client_task(void *pvParameters)
             tcp_clientconn = netconn_new(NETCONN_TCP);                          // 创建一个TCP链接
             if(tcp_clientconn == NULL)
             {
-                eth_set_network_reset();
-                break;
+                g_lwipdev.tcp_status = LWIP_TCP_NO_CONNECT;
+                vTaskDelay(100);
+                continue;
             }
             err = netconn_connect(tcp_clientconn,&server_ipaddr,server_port);    // 连接服务器
             if(err != ERR_OK)                                                      // 连接失败
@@ -73,6 +74,7 @@ static void tcp_client_task(void *pvParameters)
                 tcp_clientconn->recv_timeout = 10;
                 netconn_getaddr(tcp_clientconn,&loca_ipaddr,&loca_port,1);         // 获取本地IP主机IP地址和端口号
                 app_send_once_heart_infor();                                      // 发送一次心跳
+                update_status_detection();  // 更新状态检测
             }
         }
         else if(g_lwipdev.tcp_status == LWIP_TCP_CONNECT) // TCP连接成功
@@ -114,7 +116,6 @@ static void tcp_client_task(void *pvParameters)
             }
         }
         
-        
         /* 停止tcp */
         if(g_lwipdev.tcp_reset == 1)                      // 重启tcp连接
         {
@@ -137,11 +138,11 @@ int tcp_client_init(void)
     taskENTER_CRITICAL();    /*进入临界区*/
     
     xTaskCreate((TaskFunction_t )tcp_client_task,
-                            (const char *   )"tcp_client_task",
-                            (uint16_t       )TCPCLIENT_STK_SIZE,
-                            (void *         )NULL,
-                            (UBaseType_t    )TCPCLIENT_TASK_PRIO,
-                            (TaskHandle_t * )&TcpClient_Task_Handler);
+                    (const char *   )"tcp_client_task",
+                (uint16_t   )TCPCLIENT_STK_SIZE,
+                (void *   )NULL,
+                (UBaseType_t    )TCPCLIENT_TASK_PRIO,
+                (TaskHandle_t * )&TcpClient_Task_Handler);
 
     taskEXIT_CRITICAL();    /*退出临界区*/
     

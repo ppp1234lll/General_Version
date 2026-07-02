@@ -443,10 +443,15 @@
               <FileType>1</FileType>
               <FilePath>..\..\APP\USER\src\com.c</FilePath>
             </File>
+            <File>
+              <FileName>log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\APP\User\src\log.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>APP/TASK</GroupName>
+          <GroupName>APP/Task</GroupName>
           <Files>
             <File>
               <FileName>alarm.c</FileName>
@@ -478,10 +483,15 @@
               <FileType>1</FileType>
               <FilePath>..\..\APP\TASK\src\print.c</FilePath>
             </File>
+            <File>
+              <FileName>gprs_rx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\APP\TASK\src\gprs_rx.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>APP/UPDATE</GroupName>
+          <GroupName>APP/Update</GroupName>
           <Files>
             <File>
               <FileName>update.c</FileName>
@@ -506,7 +516,32 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>APP/DRIVER</GroupName>
+          <GroupName>App/Upload</GroupName>
+          <Files>
+            <File>
+              <FileName>upload.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\APP\Upload\src\upload.c</FilePath>
+            </File>
+            <File>
+              <FileName>upload_gsm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\APP\Upload\src\upload_gsm.c</FilePath>
+            </File>
+            <File>
+              <FileName>upload_http.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\APP\Upload\src\upload_http.c</FilePath>
+            </File>
+            <File>
+              <FileName>upload_lwip.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\APP\Upload\src\upload_lwip.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>APP/Driver</GroupName>
           <Files>
             <File>
               <FileName>ATGM336H.c</FileName>
@@ -1252,6 +1287,11 @@
               <FileName>lwip_ping_multi.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Middlewares\lwip\lwip_app\ping\lwip_ping_multi.c</FilePath>
+            </File>
+            <File>
+              <FileName>lwip_ping_remote.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Middlewares\lwip\lwip_app\ping\lwip_ping_remote.c</FilePath>
             </File>
           </Files>
         </Group>

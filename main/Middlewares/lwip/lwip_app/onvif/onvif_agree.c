@@ -1,8 +1,4 @@
-#include "onvif_agree.h"
-#include "onvif_digest.h"
-#include "./MALLOC/malloc.h"
-#include "onvif_tcp.h"
-#include "onvif_deal.h"
+#include "./onvif/onvif_agree.h"
 #include "main.h"
 
 

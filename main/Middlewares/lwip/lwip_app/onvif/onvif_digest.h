@@ -1,7 +1,7 @@
 #ifndef __ONVIF_DIGEST_H
 #define __ONVIF_DIGEST_H
 
-#include "bsp.h"
+#include "./SYSTEM/sys/sys.h"
 
 #define NONCE_LENGTH          22      // 定义nonce字节长度
 #define NONCE_B64_LENGTH  (((NONCE_LENGTH + 2) / 3) * 4 + 1)

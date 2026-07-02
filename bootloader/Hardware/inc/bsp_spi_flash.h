@@ -17,10 +17,15 @@
 /* ∂®“Â¥Æ––Flash ID */
 enum
 {
-    SST25VF016B_ID = 0xBF2541,
-    MX25L1606E_ID  = 0xC22015,
-    W25Q64BV_ID    = 0xEF4017, /* BV, JV, FV */
-    W25Q128_ID     = 0xEF4018
+    SST25VF016B_ID  = 0xBF2541,
+    MX25L1606E_ID   = 0xC22015,
+    W25Q32_ID       = 0xEF4016,
+    W25Q64BV_ID     = 0xEF4017, /* BV, JV, FV */
+    W25Q128_ID      = 0xEF4018,
+    BY25Q64_ID      = 0X6816,          /* BY25Q64  –æ∆¨ID */
+    BY25Q128_ID     = 0X6817,          /* BY25Q128 –æ∆¨ID */
+    NM25Q64_ID      = 0X5216,          /* NM25Q64  –æ∆¨ID */
+    NM25Q128_ID     = 0X5217          /* NM25Q128 –æ∆¨ID */
 };
 
 typedef struct

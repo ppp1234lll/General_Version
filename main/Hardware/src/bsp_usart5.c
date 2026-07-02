@@ -1,11 +1,12 @@
-/*
-*********************************************************************************************************
-*    函 数 名: 串口5
-*    功能说明: 串口5
-*    形    参: ZHLE
-*    返 回 值: 
-*********************************************************************************************************
-*/
+/********************************************************************************
+* @File name  : 串口5
+* @Description: 串口5
+* @Author     : ZHLE
+*  Version Date        Modification Description
+    12、串口5，波特率115200，引脚分配为：   
+        USART5_TXD    PC6
+        USART5_RXD    PC7
+********************************************************************************/
 #include "bsp_usart5.h"
 #include "bsp.h"
 
@@ -85,7 +86,7 @@ void bsp_InitUsart5(uint32_t baudrate)
 /*
 *********************************************************************************************************
 *    函 数 名: bsp_InitUsart5
-*    功能说明: 初始化串口硬件
+*    功能说明: 初始化串口硬件 
 *    形    参: 无
 *    返 回 值: 无
 *********************************************************************************************************
@@ -112,7 +113,7 @@ void bsp_InitUsart5_GPIO(void)
 /*
 *********************************************************************************************************
 *    函 数 名: bsp_InitUsart5_Config
-*    功能说明: 初始化串口硬件
+*    功能说明: 初始化串口硬件 
 *    形    参: 无
 *    返 回 值: 无
 *********************************************************************************************************
@@ -137,14 +138,14 @@ void bsp_InitUsart5_Config(uint32_t baudrate)
         usart_interrupt_flag_clear(USART5, USART_INT_FLAG_RBNE);
         usart_interrupt_flag_clear(USART5, USART_INT_FLAG_TC);
         usart_interrupt_enable(USART5, USART_INT_RBNE);
-        nvic_irq_enable(USART5_IRQn, 7, 0); 
+        nvic_irq_enable(USART5_IRQn, 5, 0); // 注意：FreeRTOS受管中断的优先级必须 >= configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY(通常为5)
     }
     #endif
 
     #ifdef USE_USART5_IDEL
     {
         usart_interrupt_enable(USART5, USART_INT_IDLE);
-        nvic_irq_enable(USART5_IRQn, 7, 0); 
+        nvic_irq_enable(USART5_IRQn, 5, 0); // 注意：FreeRTOS受管中断的优先级必须 >= configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY(5)
     }
     #endif
 
@@ -156,7 +157,7 @@ void bsp_InitUsart5_Config(uint32_t baudrate)
         usart_receiver_timeout_threshold_config(USART5, 39);
         usart_receiver_timeout_enable(USART5);
         usart_interrupt_enable(USART5, USART_INT_RT);
-        nvic_irq_enable(USART5_IRQn, 7, 0); 
+        nvic_irq_enable(USART5_IRQn, 5, 0); // 注意：FreeRTOS受管中断的优先级必须 >= configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY(5)
     }
     #endif
 }
@@ -164,7 +165,7 @@ void bsp_InitUsart5_Config(uint32_t baudrate)
 /*
 *********************************************************************************************************
 *    函 数 名: bsp_InitUsart5_DMA
-*    功能说明: 初始化串口DMA硬件
+*    功能说明: 初始化串口DMA硬件 
 *    形    参: 无
 *    返 回 值: 无
 *********************************************************************************************************
@@ -243,7 +244,7 @@ void bsp_InitUsart5_DMA(void)
 *    函 数 名: usart5_send_char
 *    功能说明: 向串口5发送1个字节。
 *    形    参: 
-*    返 回 值: 待发送的字节数据
+*    @ch            : 待发送的字节数据
 *    返 回 值: 无
 *********************************************************************************************************
 */
@@ -257,8 +258,8 @@ void usart5_send_char(uint8_t ch)
 *********************************************************************************************************
 *    函 数 名: usart5_send_str
 *    功能说明: 向串口5发送字符串。
-*    形    参: 
-*    返 回 值: 字符串指针
+*    形    参:  
+*    @buff        : 字符串指针
 *    @len        : 发送数据长度
 *    返 回 值: 无
 *********************************************************************************************************
@@ -314,8 +315,8 @@ void USART5_DMA_TX_IRQHandler(void)
 *********************************************************************************************************
 *    函 数 名: usart5_dma_rx_enable
 *    功能说明: 使能USART5接收DMA。
-*    形    参: 
-*    返 回 值: 接收缓冲区指针
+*    形    参:  
+*    @buff        : 接收缓冲区指针
 *    @len        : 接收数据长度
 *    返 回 值: 无
 *********************************************************************************************************
@@ -383,6 +384,9 @@ void USART5_IRQHandler(void)
             g_usart5_Len = USART5_BUFF_SIZE - (dma_transfer_number_get(USART5_DMAx, USART5_RX_DMA_CHANNEL));
             g_usart5_TransferState = TRANSFER_RX_COMPLETE;
             
+
+            dma_transfer_number_config(USART5_DMAx, USART5_RX_DMA_CHANNEL, USART5_BUFF_SIZE);
+            dma_channel_enable(USART5_DMAx, USART5_RX_DMA_CHANNEL);
         }
     }
     #endif
@@ -401,6 +405,11 @@ void USART5_IRQHandler(void)
             g_usart5_Len = USART5_BUFF_SIZE - (dma_transfer_number_get(USART5_DMAx, USART5_RX_DMA_CHANNEL));
             g_usart5_TransferState = TRANSFER_RX_COMPLETE;
             
+            /* disable DMA and reconfigure */
+            dma_channel_disable(USART5_DMAx, USART5_RX_DMA_CHANNEL);
+            dma_flag_clear(USART5_DMAx, USART5_RX_DMA_CHANNEL, DMA_FLAG_FTF);
+            dma_transfer_number_config(USART5_DMAx, USART5_RX_DMA_CHANNEL, USART5_BUFF_SIZE);
+            dma_channel_enable(USART5_DMAx, USART5_RX_DMA_CHANNEL);
         }
     }
     #endif

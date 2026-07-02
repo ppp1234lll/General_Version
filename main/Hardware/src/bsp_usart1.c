@@ -9,6 +9,9 @@
 #include "bsp_usart1.h"
 #include "bsp.h"
 #include "./Driver/inc/GPRS.h"
+#include "./Task/inc/gprs_rx.h"
+#include "FreeRTOS.h"
+#include "stream_buffer.h"
 
 /*
 *********************************************************************************************************
@@ -260,7 +263,7 @@ void usart1_send_char(uint8_t ch)
 *    返 回 值: 无
 *********************************************************************************************************
 */
-void usart1_send_str(uint8_t *buff, uint16_t len)
+void usart1_send_str(uint8_t *buff, uint32_t len)
 {
     g_usart1_TransferState = TRANSFER_WAIT;
     #ifdef USE_USART1_INT
@@ -388,6 +391,8 @@ void USART1_IRQHandler(void)
     {
         if(RESET != usart_interrupt_flag_get(USART1, USART_INT_FLAG_RT))
         {
+            BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
             usart_interrupt_flag_clear(USART1, USART_INT_FLAG_RT);
 
             /* disable DMA and reconfigure */
@@ -397,9 +402,18 @@ void USART1_IRQHandler(void)
             /* number of data received */
             g_usart1_Len = USART1_BUFF_SIZE - (dma_transfer_number_get(USART1_DMAx, USART1_RX_DMA_CHANNEL));
             g_usart1_TransferState = TRANSFER_RX_COMPLETE;
-            gprs_get_receive_data_function(g_usart1_rx_buff,g_usart1_Len);
+
+            /* 通过 StreamBuffer 将数据从 ISR 传递给任务上下文, 不在中断中处理 */
+            if (g_gprs_rx_streambuf != NULL && g_usart1_Len > 0U)
+            {
+                xStreamBufferSendFromISR(g_gprs_rx_streambuf,
+                    g_usart1_rx_buff, g_usart1_Len,
+                    &xHigherPriorityTaskWoken);
+            }
 
             usart1_dma_rx_enable();
+
+            portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
         }
     }
     #endif
@@ -446,7 +460,6 @@ uint8_t *usart1_rx_get_frame(void)
 */
 void usart1_test(void)
 {
-    uint8_t usart1_rx_test[] = "Hello, World!\n";
     while(1)
     {
         #if defined(USE_USART1_INT)
@@ -461,7 +474,7 @@ void usart1_test(void)
         }
         #else
         {
-            usart1_send_str(usart1_rx_test,sizeof(usart1_rx_test));
+            usart1_send_str("Hello, World!\n",strlen("Hello, World!\n"));
             // printf("串口1测试\n");
             // delay_ms(1000);    
             dwt_delay_ms(1000);

@@ -8,39 +8,64 @@
 #define UPDATE_MODE_GPRS 2
 
 #define UPDATE_NETWORK_CNT (6) // 网络连接次数
-////
+
+
+// 升级状态
+typedef enum
+{
+    UPDATE_NONE = 0,
+    UPDATE_SUCCESS = 1,
+    UPDATE_FAILED = 2,
+} update_status_t;
+
+// 开机升级参数
+struct BOOT_UPDATE_PARAM
+{
+    unsigned int is_update;     // true:需要升级, false:无需升级
+    unsigned int section_size;  // 每包的实际数据(去掉校验2字节)大小
+    unsigned int section_count; // 总包数
+    unsigned int update_status; // 升级状态
+};
 
 /* 20201103 */
 typedef struct
 {
     uint8_t mode;            // 0-不更新 1-通过LWIP更新 2-通过GPRS更新
-    
     uint8_t ip[4];             // 更新地址
     uint32_t port;             // 更新端口
     struct {
         uint8_t state;         // 状态
         uint8_t connect;     // 连接
     } tcp_t;
+
     struct {
         uint8_t connect;
     } gprs_t;
 } update_param_t;
+
 ////
 
-void update_status_init(void);
+void update_status_detection(void); 
 void update_set_update_mode(uint8_t mode);
 uint8_t update_get_mode_function(void);
 void *update_get_infor_data_function(void);
 
-// 无线更新
-int8_t update_mobile_task_function(void);
-int8_t update_gsm_recevie_data_function(uint8_t *buff, uint16_t len);
-
-// 有线更新
+/* 有线 OTA 后台任务 */
 int8_t update_lwip_task_function(void);
-int8_t update_tcp_send_function(uint8_t *buff, uint16_t len);
+void update_lwip_poll(void);
+uint8_t update_lwip_is_running(void);
+
+/* 无线 OTA 后台任务 */
+int8_t update_gsm_task_function(void);
+void update_gsm_poll(void);
+uint8_t update_gsm_is_running(void);
 
 uint8_t *update_addr_ip(void);
 uint32_t update_addr_port(void);
 
+void update_read_boot_param(struct BOOT_UPDATE_PARAM *boot_update_param);
+void update_write_boot_param(struct BOOT_UPDATE_PARAM *boot_update_param);
+
 #endif
+
+

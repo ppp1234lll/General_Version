@@ -1,13 +1,14 @@
 #ifndef _LWIP_PING_MULTI_H_
 #define _LWIP_PING_MULTI_H_
 
-#include "bsp.h"
+#include "./SYSTEM/sys/sys.h"
 
 #define LWIP_MULTI_PING_CAMERA_NUM          (6U)
 #define LWIP_MULTI_PING_PACKET_NUM          (4U)
 #define LWIP_MULTI_PING_SEND_INTERVAL_MS    (1000UL)
 #define LWIP_MULTI_PING_PACKET_TIMEOUT_MS   (5000UL)
 #define LWIP_MULTI_PING_ROUND_INTERVAL_MS   (20000UL)
+#define LWIP_MULTI_PING_DEVICE_STAGGER_MS   (300UL)
 #define LWIP_MULTI_PING_DEVICE_NUM          (2U + LWIP_MULTI_PING_CAMERA_NUM)
 
 typedef enum

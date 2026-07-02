@@ -1,9 +1,10 @@
 /*
 *********************************************************************************************************
-*    函 数 名: SPI总线驱动
-*    功能说明: bsp_hspi0.c
-*    形    参: V1.3
-*    返 回 值: SPI总线底层驱动。提供SPI配置、收发数据、多设备共享SPI功能.
+*
+*    模块名称 : SPI总线驱动
+*    文件名称 : bsp_hspi0.c
+*    版    本 : V1.3
+*    说    明 : SPI总线底层驱动。提供SPI配置、收发数据、多设备共享SPI功能.
 *    修改记录 :
 *        版本号  日期        作者    说明
 *       v1.0    2014-10-24 armfly   首版。将串行FLASH、TSC2046、VS1053、AD7705、ADS1256等SPI设备的配置
@@ -11,7 +12,9 @@
 *        V1.1    2015-02-25 armfly   硬件SPI时，没有开启GPIOB时钟，已解决。
 *        V1.2    2015-07-23 armfly   修改 bsp_SPI_Init() 函数，增加开关SPI时钟的语句。规范硬件SPI和软件SPI的宏定义。
 *        V1.3    2020-03-14 Eric2013 适配STM32H7。
+*
 *    Copyright (C), 2020-2030, 安富莱电子 www.armfly.com
+*
 *********************************************************************************************************
 */
 
@@ -107,6 +110,23 @@ void bsp_InitHSPI0(void)
 *    函 数 名: bsp_InitHSPI0_Param
 *    功能说明: 配置SPI总线参数，时钟分频，时钟相位和时钟极性。
 *    形    参: _BaudRatePrescaler  SPI总线时钟分频设置，支持的参数如下：
+*                                 SPI_BAUDRATEPRESCALER_2    2分频
+*                                 SPI_BAUDRATEPRESCALER_4    4分频
+*                                 SPI_BAUDRATEPRESCALER_8    8分频
+*                                 SPI_BAUDRATEPRESCALER_16   16分频
+*                                 SPI_BAUDRATEPRESCALER_32   32分频
+*                                 SPI_BAUDRATEPRESCALER_64   64分频
+*                                 SPI_BAUDRATEPRESCALER_128  128分频
+*                                 SPI_BAUDRATEPRESCALER_256  256分频
+*                                                        
+*             _CLKPhase           时钟相位，支持的参数如下：
+*                                 SPI_PHASE_1EDGE     SCK引脚的第1个边沿捕获传输的第1个数据
+*                                 SPI_PHASE_2EDGE     SCK引脚的第2个边沿捕获传输的第1个数据
+*                                 
+*             _CLKPolarity        时钟极性，支持的参数如下：
+*                                 SPI_POLARITY_LOW    SCK引脚在空闲状态处于低电平
+*                                 SPI_POLARITY_HIGH   SCK引脚在空闲状态处于高电平
+*
 *    返 回 值: 无
 *********************************************************************************************************
 */

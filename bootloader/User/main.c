@@ -110,9 +110,11 @@ static void update_check_function(void)
     read_boot_update_param(&boot_update_param);
 
     // 判断升级标志,直接跳转
-    if( boot_update_param.is_update != 1 )
+    if( boot_update_param.is_update != true )
     {
         printf("\n无需升级，直接执行 main 模块 ...\n");
+        boot_update_param.update_status = UPDATE_NONE;
+        write_boot_update_param(&boot_update_param); // 保存升级参数
         FeedFwdgt();
         iap_load_app(MAIN_APP_ADDR); // 执行FLASH APP代码
         return;

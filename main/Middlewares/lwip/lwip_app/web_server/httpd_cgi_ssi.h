@@ -50,10 +50,6 @@ void http_ssi_update_addr_function(char *pcInsert);               // 更新地址
 
 
 void Get_Total_Energy_Handler(char *pcInsert, uint8_t num);
-void lighting_protector_detection(char *pcInsert); // 防雷开关检测
-void open_door_status_Handler(char *pcInsert); // 箱门状态
-void cabinet_posture_Handler(char *pcInsert);  // 箱体姿态
-void device_parameter_handler(char *pcInsert,uint8_t num);
-void local_network_Handler(char *pcInsert, uint8_t mode);
-void camera_ip_get_Handler(char *pcInsert, uint8_t num);
+void Get_Output_Energy_Handler(char *pcInsert, uint8_t channel, uint8_t num); // 输出电能界面更新
+
 #endif

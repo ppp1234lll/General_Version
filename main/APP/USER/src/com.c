@@ -182,8 +182,8 @@ void com_report_normally_function(uint8_t *data, uint16_t *len, uint8_t cmd,uint
     uint16_t        size    = 0;
     uint8_t         crc     = 0;
     uint8_t         str[64] ={0};
+    uint8_t         str_buff[16] ={0};
     uint8_t         *p      = 0;
-    uint16_t        buff[4] ={0};
     fp32            temp    = 0;
     
     /* 数据头 */
@@ -218,10 +218,14 @@ void com_report_normally_function(uint8_t *data, uint16_t *len, uint8_t cmd,uint
     memset(str,0,sizeof(str));
     sprintf((char*)str,"VER=%02x;",COM_DATA_VERSION);
     strcat((char*)data,(char*)str);
+//    strcat((char*)data,"VER=11;");
+#if (configUSE_DEVICE_TYPE == 1)
+    /** 设备类型 **/
     memset(str,0,sizeof(str));
     sprintf((char*)str,"TYPE=%04x;",DEVICE_TYPE);
     strcat((char*)data,(char*)str);
-//    strcat((char*)data,"VER=11;");
+#endif
+
     /* 指令参数CP */
     strcat((char*)data,"CP=&&");
     
@@ -247,50 +251,94 @@ void com_report_normally_function(uint8_t *data, uint16_t *len, uint8_t cmd,uint
     strcat((char*)data,(char*)str);
     /** 电压、电流 **/
     memset(str,0,sizeof(str));
-    temp = det_get_total_energy_handler(0);
-    buff[0] = (uint16_t)temp;
-    buff[1] = temp*100-buff[0]*100;
-    temp = det_get_total_energy_handler(1);
-    buff[2] = (uint16_t)temp;
-    buff[3] = temp*100-buff[2]*100;
-    sprintf((char*)str,"V=%d.%02d;A=%d.%02d;",buff[0],buff[1],buff[2],buff[3]);
+    Get_Total_Energy_Handler((char*)str_buff,0);
+    sprintf((char*)str,"V=%s;",str_buff);
     strcat((char*)data,(char*)str);
-    /** 湿度、温度 **/
+
     memset(str,0,sizeof(str));
-    temp = det_get_inside_humi();
-    buff[0] = (uint16_t)temp;
-    buff[1] = temp*100-buff[0]*100;
-    temp = det_get_inside_temp();
-    if(temp < 0) {
-        temp = 0 - temp;
-        buff[2] = (uint16_t)temp;
-        buff[3] = temp*100-buff[2]*100;
-        sprintf((char*)str,"H=%d.%02d;T=-%d.%02d;",buff[0],buff[1],buff[2],buff[3]);
-    } else {
-        buff[2] = (uint16_t)temp;
-        buff[3] = temp*100-buff[2]*100;
-        sprintf((char*)str,"H=%d.%02d;T=%d.%02d;",buff[0],buff[1],buff[2],buff[3]);
-    }    
+    Get_Total_Energy_Handler((char*)str_buff,1);
+    sprintf((char*)str,"A=%s;",str_buff);
     strcat((char*)data,(char*)str);
 
     /** 总功率 总用电量 **/
     memset(str,0,sizeof(str));
-    temp = det_get_total_energy_handler(2);
-    buff[0] = (uint16_t)temp;
-    buff[1] = temp*100-buff[0]*100;
-    temp = det_get_total_energy_handler(3);
-    buff[2] = (uint16_t)temp;
-    buff[3] = temp*100-buff[2]*100;
-    sprintf((char*)str,"APOWER=%d.%02d;AKW=%d.%02d;",buff[0],buff[1],buff[2],buff[3]);
-    strcat((char*)data,(char*)str);
-    
-    /** 继电器状态 **/
-    memset(str,0,sizeof(str));
-    sprintf((char*)str,"RELAY=%01d,%01d,%01d;",
-                        relay_get_status(RELAY_1),relay_get_status(RELAY_2),
-                        relay_get_status(RELAY_3));
+    Get_Total_Energy_Handler((char*)str_buff,2);
+    sprintf((char*)str,"APOWER=%s;",str_buff);
     strcat((char*)data,(char*)str);
 
+    memset(str,0,sizeof(str));
+    Get_Total_Energy_Handler((char*)str_buff,3);
+    sprintf((char*)str,"AKW=%s;",str_buff);
+    strcat((char*)data,(char*)str);
+
+    /** 湿度、温度 **/
+    memset(str,0,sizeof(str));
+    temp = det_get_inside_humi();
+    float_to_str(temp, 2,(uint8_t*)str_buff,sizeof(str_buff));    
+    sprintf((char*)str,"H=%s;",str_buff);
+    strcat((char*)data,(char*)str);
+
+    memset(str,0,sizeof(str));
+    temp = det_get_inside_temp();
+    float_to_str(temp, 2,(uint8_t*)str_buff,sizeof(str_buff)); 
+    sprintf((char*)str,"T=%s;",str_buff);
+    strcat((char*)data,(char*)str);
+
+    /** 箱体姿态 **/
+    memset(str,0,sizeof(str));
+    sprintf((char*)str,"P=%d;",det_get_cabinet_posture());
+    strcat((char*)data,(char*)str);    
+
+	/** 继电器状态 **/
+    strcat((char*)data, "RELAY=");
+    for (uint8_t i = 0; i < RELAY_NUM; i++)
+    {
+        memset(str_buff, 0, sizeof(str_buff));
+        sprintf((char*)str_buff, "%01d", relay_get_status((RELAY_DEV)i));
+        strcat((char*)data, (char*)str_buff);
+        strcat((char*)data, (i < (RELAY_NUM - 1)) ? "," : ";");
+    }
+
+	/** 支路电压 **/
+    strcat((char*)data, "CHV=");
+    for (uint8_t i = 0; i < RELAY_NUM; i++)
+    {
+        memset(str_buff, 0, sizeof(str_buff));
+        Get_Output_Energy_Handler((char*)str_buff, i, ENERGY_VOLTAGE);
+        strcat((char*)data, (char*)str_buff);
+        strcat((char*)data, (i < (RELAY_NUM - 1)) ? "," : ";");
+    }
+	
+	/** 支路电流 **/
+    strcat((char*)data, "CHA=");
+    for (uint8_t i = 0; i < RELAY_NUM; i++)
+    {
+        memset(str_buff, 0, sizeof(str_buff));
+        Get_Output_Energy_Handler((char*)str_buff, i, ENERGY_CURRENT);
+        strcat((char*)data, (char*)str_buff);
+        strcat((char*)data, (i < (RELAY_NUM - 1)) ? "," : ";");
+    }
+	
+	/** 功率 **/
+    strcat((char*)data, "POWER=");
+    for (uint8_t i = 0; i < RELAY_NUM; i++)
+    {
+        memset(str_buff, 0, sizeof(str_buff));
+        Get_Output_Energy_Handler((char*)str_buff, i, ENERGY_POWER);
+        strcat((char*)data, (char*)str_buff);
+        strcat((char*)data, (i < (RELAY_NUM - 1)) ? "," : ";");
+    }
+
+	/** 用电量 **/
+    strcat((char*)data, "ELEC=");
+    for (uint8_t i = 0; i < RELAY_NUM; i++)
+    {
+        memset(str_buff, 0, sizeof(str_buff));
+        Get_Output_Energy_Handler((char*)str_buff, 1 + i, ENERGY_ENERGY);
+        strcat((char*)data, (char*)str_buff);
+        strcat((char*)data, (i < (RELAY_NUM - 1)) ? "," : ";");
+    }
+    
     /** 信号强度 **/
     memset(str,0,sizeof(str));
     sprintf((char*)str,"CSQ=%d;",gprs_get_csq_function());
@@ -303,11 +351,6 @@ void com_report_normally_function(uint8_t *data, uint16_t *len, uint8_t cmd,uint
                         fabs(gnss_data->latitude),fabs(gnss_data->longitude));
     strcat((char*)data,(char*)str);
 #endif
-    
-    // 是否存储
-    memset(str,0,sizeof(str));
-    sprintf((char*)str,"SAVE=%d;",isave);
-    strcat((char*)data,(char*)str);    
     
 	uint8_t error_buf_str[512] = {0};	
 	Error_Get_Codesbuf(error_buf_str, sizeof(error_buf_str));	
@@ -361,8 +404,12 @@ void com_query_configuration_function(uint8_t *pdata, uint16_t *len)
     uint8_t index       = 0;
     
     /* 生成校验码 */
-    sprintf(crc_buff,"%x%dE1",0x10,device->id.i);
-    crc = calc_crc8((uint8_t*)crc_buff,strlen(crc_buff)-1);
+#if (configUSE_DEVICE_TYPE == 1)
+    sprintf(crc_buff, "%02x%04x%dE1", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
+#else
+    sprintf(crc_buff, "%02x%dE1", COM_DATA_VERSION, device->id.i);
+#endif
+    crc = calc_crc8((uint8_t *)crc_buff, strlen(crc_buff));
     
     my_cjson_create_function(pdata,0); // 开始
     my_cjson_join_int_function(pdata,(uint8_t *)"code",0,1);
@@ -372,9 +419,12 @@ void com_query_configuration_function(uint8_t *pdata, uint16_t *len)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%02x",COM_DATA_VERSION);
     my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)temp,1);
+#if (configUSE_DEVICE_TYPE == 1)
+    /* 设备类型 */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%04x",DEVICE_TYPE);
     my_cjson_join_string_function(pdata,(uint8_t *)"TYPE",(uint8_t *)temp,1);
+#endif
 //    my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)"11",1);
     /* 添加QN */
     memset(temp,0,sizeof(temp));
@@ -469,11 +519,11 @@ void com_query_configuration_function(uint8_t *pdata, uint16_t *len)
 
     /* 网络延时时间设置  20220308*/  
     memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d",comparam->network_time);
+    sprintf(temp,"%d",threshol->net_delay_time);
     my_cjson_join_string_function(pdata,(uint8_t*)"pt",(uint8_t*)temp,1);
 
     /* 摄像机IP */
-    for(index=0;index<10;index++)
+    for(index=0;index<6;index++)
     {
         memset(temp,0,sizeof(temp));
         sprintf(temp,"%d.%d.%d.%d", ipc->ip[index][0],ipc->ip[index][1],\
@@ -511,16 +561,6 @@ void com_query_configuration_function(uint8_t *pdata, uint16_t *len)
     sprintf(temp,"%d,%d,%d,%d,%d",threshol->volt_max,threshol->volt_min,threshol->current,threshol->angle,threshol->miu);
     my_cjson_join_string_function(pdata,(uint8_t*)"opovc",(uint8_t*)temp,1);
 
-    /* 搜索协议模式  20220908*/  
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d",local->search_mode);
-    my_cjson_join_string_function(pdata,(uint8_t*)"sm",(uint8_t*)temp,1);
-    
-    /* 搜索协议时间设置  20220908*/  
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d",comparam->onvif_time);
-    my_cjson_join_string_function(pdata,(uint8_t*)"smt",(uint8_t*)temp,1);
-
     /* 重启次数  20220908*/  
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%d",threshol->net_reload);
@@ -530,11 +570,6 @@ void com_query_configuration_function(uint8_t *pdata, uint16_t *len)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%d",threshol->net_retime);
     my_cjson_join_string_function(pdata,(uint8_t*)"lantime",(uint8_t*)temp,1);
-    
-    /* 更新结果 */  
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d",threshol->angle);
-    my_cjson_join_string_function(pdata,(uint8_t*)"ur",(uint8_t*)temp,1);
     
     /* 签名校验 */
     memset(temp,0,sizeof(temp));
@@ -568,9 +603,11 @@ void com_heart_pack_function(uint8_t *data, uint16_t *len)
     /* 数据版本 */
     data[index++] = COM_DATA_VERSION;
 
+#if (configUSE_DEVICE_TYPE == 1)
     // 设备类型
     data[index++] = (DEVICE_TYPE>>8)&0xff;
     data[index++] = DEVICE_TYPE&0xff;
+#endif
 
     /* 设备ID */
     data[index++] = (device->id.i>>16)&0xff;
@@ -627,9 +664,11 @@ void com_ack_function(uint8_t *data, uint16_t *len, uint8_t ack, uint8_t error)
     /* 数据版本 */
     data[index++] = COM_DATA_VERSION;
 
+#if (configUSE_DEVICE_TYPE == 1)
     // 设备类型
     data[index++] = (DEVICE_TYPE>>8)&0xff;
     data[index++] = DEVICE_TYPE&0xff;
+#endif
 
     /* 设备ID */
     data[index++] = (device->id.i>>16)&0xff;
@@ -686,8 +725,12 @@ void com_version_information(uint8_t *pdata, uint16_t *size)
     uint8_t crc         = 0;
 
     /* 获取crc校验结果 */
-    sprintf(crc_buff,"%x%dE3",0x10,device->id.i);
-    crc = calc_crc8((uint8_t*)crc_buff,strlen(crc_buff)-1);
+#if (configUSE_DEVICE_TYPE == 1)
+    sprintf(crc_buff, "%02x%04x%dE3", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
+#else
+    sprintf(crc_buff, "%02x%dE3", COM_DATA_VERSION, device->id.i);
+#endif
+    crc = calc_crc8((uint8_t *)crc_buff, strlen(crc_buff));
     
     my_cjson_create_function(pdata,0); // 开始
     my_cjson_join_int_function(pdata,(uint8_t *)"code",0,1);
@@ -705,9 +748,12 @@ void com_version_information(uint8_t *pdata, uint16_t *size)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%02x",COM_DATA_VERSION);
     my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)temp,1);
+#if (configUSE_DEVICE_TYPE == 1)
+    /* 设备类型 */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%04x",DEVICE_TYPE);
     my_cjson_join_string_function(pdata,(uint8_t *)"TYPE",(uint8_t *)temp,1);
+#endif
 
     /* ID */
     memset(temp,0,sizeof(temp));
@@ -766,8 +812,12 @@ int com_ipc_device_information(uint8_t *pdata, uint16_t *size)
     uint8_t crc            = 0;
 
     /* 生成校验码 */
-    sprintf(crc_buff,"%x%xE4",0x10,device->id.i);
-    crc = calc_crc8((uint8_t*)crc_buff,strlen(crc_buff)-1);    
+#if (configUSE_DEVICE_TYPE == 1)
+    sprintf(crc_buff, "%02x%04x%dE4", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
+#else
+    sprintf(crc_buff, "%02x%dE4", COM_DATA_VERSION, device->id.i);
+#endif
+    crc = calc_crc8((uint8_t *)crc_buff, strlen(crc_buff));
     
     my_cjson_create_function(pdata,0); // 开始
     my_cjson_join_int_function(pdata,(uint8_t *)"code",0,1);
@@ -786,9 +836,12 @@ int com_ipc_device_information(uint8_t *pdata, uint16_t *size)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%02x",COM_DATA_VERSION);
     my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)temp,1);
+#if (configUSE_DEVICE_TYPE == 1)
+    /* 设备类型 */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%04x",DEVICE_TYPE);
     my_cjson_join_string_function(pdata,(uint8_t *)"TYPE",(uint8_t *)temp,1);
+#endif
     
     /* ID */
     memset(temp,0,sizeof(temp));
@@ -872,8 +925,12 @@ int com_device_snmp_information(uint8_t *pdata, uint16_t *size)
     uint8_t crc            = 0;
 
     /* 生成校验码 */
-    sprintf(crc_buff,"%x%xE7",0x10,device->id.i);
-    crc = calc_crc8((uint8_t*)crc_buff,strlen(crc_buff)-1);    
+#if (configUSE_DEVICE_TYPE == 1)
+    sprintf(crc_buff, "%02x%04x%dE7", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
+#else
+    sprintf(crc_buff, "%02x%dE7", COM_DATA_VERSION, device->id.i);
+#endif
+    crc = calc_crc8((uint8_t *)crc_buff, strlen(crc_buff));
     
     my_cjson_create_function(pdata,0); // 开始
     my_cjson_join_int_function(pdata,(uint8_t *)"code",0,1);
@@ -1016,18 +1073,93 @@ int com_device_snmp_information(uint8_t *pdata, uint16_t *size)
     return 0;
 } 
 
+
 /*
 *********************************************************************************************************
-*    函 数 名: com_gprs_lbs_information
-*    功能说明: 上传基站定位信息
+*    函 数 名: com_device_ping_information
+*    功能说明: 上传ping信息
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
-void com_gprs_lbs_information(uint8_t *pdata, uint16_t *size)
+int com_device_ping_information(uint8_t *pdata, uint16_t *size)
 {
+    struct device_param     *device   = app_get_device_param_function();
+    eth_ping_t *ping_info = eth_get_ping_info();
+        
+    char  temp[128]     = {0};
+    char  crc_buff[20]    = {0};
+    uint8_t crc            = 0;
+    uint8_t index          = 0;
+    uint8_t name[5]        = {0};
+    uint16_t ping_time     = 0;
 
-}
+    /* 生成校验码 */
+#if (configUSE_DEVICE_TYPE == 1)
+    sprintf(crc_buff, "%02x%04x%dE8", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
+#else
+    sprintf(crc_buff, "%02x%dE8", COM_DATA_VERSION, device->id.i);
+#endif
+    crc = calc_crc8((uint8_t *)crc_buff, strlen(crc_buff));
+    
+    my_cjson_create_function(pdata,0); // 开始
+    my_cjson_join_int_function(pdata,(uint8_t *)"code",0,1);
+    
+    my_cjson_data_create_function(pdata,0); // 开始
+    
+    /* 添加QN */ 
+    memset(temp,0,sizeof(temp));
+    sprintf(temp,"%08d%09d",sg_comqn_t.qn1,sg_comqn_t.qn2);
+    my_cjson_join_string_function(pdata,(uint8_t *)"qn",(uint8_t *)temp,1);
+    sg_comqn_t.qn1 = 0;
+    sg_comqn_t.qn2 = 0;
+    sg_comqn_t.flag = 0;
+    
+    /* 版本号 */
+    memset(temp,0,sizeof(temp));
+    sprintf(temp,"%02x",COM_DATA_VERSION);
+    my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)temp,1);
+    memset(temp,0,sizeof(temp));
+    sprintf(temp,"%04x",DEVICE_TYPE);
+    my_cjson_join_string_function(pdata,(uint8_t *)"TYPE",(uint8_t *)temp,1);
+    
+    /* ID */
+    memset(temp,0,sizeof(temp));
+    sprintf(temp,"%x",device->id.i);
+    my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+    /* 通信命令 */
+    my_cjson_join_string_function(pdata,(uint8_t *)"cmd",(uint8_t *)"E8",1);
+
+    /* ping信息: st1/dt1 ~ st4/dt4 */
+    if (ping_info != NULL)
+    {
+        for (index = 0; index < 4; index++)
+        {
+            memset(name, 0, sizeof(name));
+            sprintf((char *)name, "st%d", index + 1);
+            my_cjson_join_int_function(pdata, name, ping_info->status[index], 1);
+
+            ping_time = (ping_info->status[index] != 0U) ? ping_info->times[index] : 0U;
+            memset(name, 0, sizeof(name));
+            sprintf((char *)name, "dt%d", index + 1);
+            my_cjson_join_int_function(pdata, name, ping_time, 1);
+        }
+    }
+
+    /* 签名校验 */
+    memset(temp,0,sizeof(temp));
+    sprintf(temp,"%x",crc);
+    my_cjson_join_string_function(pdata,(uint8_t*)"crc",(uint8_t*)temp,0);
+    
+    my_cjson_data_create_function(pdata,1); // 结束
+    my_cjson_create_function(pdata,1); // 结束
+    
+    // printf("data:%s\n",pdata);
+
+    *size = strlen((char*)pdata);
+    return 0;
+} 
+
 
 /*
 *********************************************************************************************************
@@ -1144,30 +1276,26 @@ void com_deal_configure_server_mode(com_rec_data_t *buff)
 */
 void com_deal_update_system_function(com_rec_data_t *buff)
 {
-    /* 设置回传 */
-    if( update_get_mode_function() != UPDATE_MODE_NULL) 
+    /* 更新与上传互斥，任一进行中则拒绝 */
+    if((update_get_mode_function() != UPDATE_MODE_NULL) || (upload_get_mode_function() != UPLOAD_MODE_NULL))
     {
-        app_set_reply_parameters_function(buff->cmd,0x77);  // 错误，正在更新
-    } 
-    else 
+        app_set_reply_parameters_function(buff->cmd,0x77);  // 错误，正在更新或上传
+    }
+    else
     {
         app_set_reply_parameters_function(buff->cmd,0x01);
-        vTaskDelay(200); 
-//        if(app_get_network_mode() == SERVER_MODE_GPRS)
-//            update_set_update_mode(UPDATE_MODE_GPRS); 
-//        else
-//            update_set_update_mode(UPDATE_MODE_LWIP);
+        vTaskDelay(1000);
 
         if(gsm_get_network_connect_status_function() != 0)
-            update_set_update_mode(UPDATE_MODE_GPRS); 
+            update_set_update_mode(UPDATE_MODE_GPRS);
         else
             printf("gsm is not connect!!!\n");
-        
+
         if(eth_get_tcp_status() == 2)
             update_set_update_mode(UPDATE_MODE_LWIP);
         else
             printf("eth is not connect!!!\n");
-    }    
+    }
 }
 
 /*
@@ -1187,19 +1315,6 @@ void com_set_now_time_function(com_rec_data_t *buff)
     time = (time<<8)|buff->buff[3];
     
     TimeBySecond(time);
-}
-
-/*
-*********************************************************************************************************
-*    函 数 名: com_set_ipc_time_function
-*    功能说明: 设置摄像机时间
-*    形    参: 
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void com_set_ipc_time_function(com_rec_data_t *buff)
-{
-
 }
 
 /*
@@ -1495,71 +1610,25 @@ void com_set_threshold_params_function(com_rec_data_t *buff)
 
 /*
 *********************************************************************************************************
-*    函 数 名: com_set_onvif_time_function
-*    功能说明: 设置配置搜索协议时间
+*    函 数 名: com_set_carema_search_mode_function
+*    功能说明: 设置搜索模式
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
-void com_set_onvif_time_function(com_rec_data_t *buff)
-{    
-    uint8_t  time  = buff->buff[0];
+void com_set_carema_search_mode_function(com_rec_data_t *buff)
+{	
+	uint8_t  mode  = buff->buff[0];
 
-    if(time < 5)
-    {
-        app_set_reply_parameters_function(buff->cmd,0x74);        /* 设置回传 */
-    }
-    else
-    {
-        app_set_onvif_reload_time(time,0);
-        app_set_reply_parameters_function(buff->cmd,0x01);        /* 设置回传 */
-    }
-}
-
-/*
-*********************************************************************************************************
-*    函 数 名: com_set_device_reload_time_function
-*    功能说明: 设置重启时间
-*    形    参: 
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void com_set_device_reload_time_function(com_rec_data_t *buff)
-{    
-    uint8_t  time  = buff->buff[0];
-
-    if((time < 24) &&( time > 168))
-    {
-        app_set_reply_parameters_function(buff->cmd,0x74);        /* 设置回传 */
-    }
-    else
-    {
-        app_set_onvif_reload_time(time,1);
-        app_set_reply_parameters_function(buff->cmd,0x01);        /* 设置回传 */
-    }
-}
-
-/*
-*********************************************************************************************************
-*    函 数 名: com_set_onvif_mode_function
-*    功能说明: 设置配置搜索协议模式
-*    形    参: 
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void com_set_onvif_mode_function(com_rec_data_t *buff)
-{    
-    uint8_t  mode  = buff->buff[0];
-
-    if((mode==0)||(mode > 3))
-    {
-        app_set_reply_parameters_function(buff->cmd,0x74);        /* 设置回传 */
-    }
-    else
-    {
-        app_set_carema_search_mode_function(mode,1);
-        app_set_reply_parameters_function(buff->cmd,0x01);        /* 设置回传 */
-    }
+	if((mode==0)||(mode > 3))
+	{
+		app_set_reply_parameters_function(buff->cmd,0x74);		/* 设置回传 */
+	}
+	else
+	{
+		app_set_carema_search_mode_function(mode,1);
+		app_set_reply_parameters_function(buff->cmd,0x01);		/* 设置回传 */
+	}
 }
 /*
 *********************************************************************************************************
@@ -1689,7 +1758,7 @@ void com_set_network_delay_time(com_rec_data_t *buff)
 */
 void com_set_device_password(com_rec_data_t *buff)
 {
-  struct device_param     *device = app_get_device_param_function();
+    struct device_param  *device = app_get_device_param_function();
     memset(device->password,0,sizeof(device->name));
     sprintf((char*)device->password,DEFALUT_PASSWORD);
     device->default_password = 1; // 默认开机需要修改密码
@@ -1836,39 +1905,48 @@ void com_deal_configure_snmp_oid(com_rec_data_t *buff,uint8_t len)
 	}
 	app_set_save_infor_function(SAVE_SNMP_OID);
 }
-/************************************************************
-*
-* Function name	: com_deal_ack_parameter
-* Description	: 处理回复数据
-* Parameter		: 
-* Return		: 
-*	
-************************************************************/
-void com_deal_ack_parameter(com_rec_data_t *buff)
+
+/*
+*********************************************************************************************************
+*    函 数 名: com_deal_upload_file_function
+*    功能说明: 文件上传
+*    形    参: 
+*    返 回 值: 
+*********************************************************************************************************
+*/
+void com_deal_upload_file_function(com_rec_data_t *buff)
 {
-    uint8_t error = buff->buff[0];
-    
-    if(error == 0x01)
+    /* 更新与上传互斥，任一进行中则拒绝 */
+    if((upload_get_mode_function() != UPLOAD_MODE_NULL) || (update_get_mode_function() != UPDATE_MODE_NULL))
     {
-        app_set_send_result_function(SR_OK);
+        app_set_reply_parameters_function(buff->cmd,0x77);  // 错误，正在上传或更新
     }
     else
     {
-        app_set_send_result_function(SR_ERROR);
+        app_set_reply_parameters_function(buff->cmd,0x01);
+        vTaskDelay(1000);
+
+        upload_set_upload_mode(UPLOAD_MODE_LWIP);
+        printf("lwip upload!!!!!!\n");
     }
 }
 
 /*
 *********************************************************************************************************
-*    函 数 名: com_query_processing_function
-*    功能说明: 查询处理函数
+*    函 数 名: com_deal_ack_parameter
+*    功能说明: 处理回复数据
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
-void com_query_processing_function(uint8_t query, uint8_t data)
+void com_deal_ack_parameter(com_rec_data_t *buff)
 {
-    app_set_com_send_flag_function(query,data);
+    uint8_t error = buff->buff[0];
+    
+    if(error == 0x01)
+        app_set_send_result_function(SR_OK);
+    else
+        app_set_send_result_function(SR_ERROR);
 }
 
 /*
@@ -1894,13 +1972,16 @@ void com_recevie_function_init(void)
 */
 int8_t com_deal_main_function(void)
 {
-    struct device_param *device          = app_get_device_param_function();
-    com_rec_data_t      recdata_t        = {0};
-    uint32_t             temp                     = 0;
+    struct device_param *device     = app_get_device_param_function();
+    com_rec_data_t      recdata_t   = {0};
+    uint32_t             temp       = 0;
+#if (configUSE_DEVICE_TYPE == 1)
+    uint16_t            device_type = 0;
+#endif
     uint8_t             rec_buff[100] = {0};
-    uint8_t             size                     = 0;
-    uint8_t             crc                         = 0;
-    uint8_t             ret                         = 0;
+    uint8_t             size        = 0;
+    uint8_t             crc         = 0;
+    uint8_t             ret         = 0;
     
     size = com_queue_find_msg(rec_buff,100);
     if(size != 0)
@@ -1919,8 +2000,6 @@ int8_t com_deal_main_function(void)
         
         /* 获取版本 */
         recdata_t.version = rec_buff[2];
-        /* 获取ID */
-        recdata_t.id      = (rec_buff[3]<<16)|(rec_buff[4]<<8)|(rec_buff[5]<<0);
         
         /* 数据版本 */
         if(recdata_t.version != COM_DATA_VERSION)
@@ -1930,9 +2009,22 @@ int8_t com_deal_main_function(void)
             goto __ERROR;
         }
         
+#if (configUSE_DEVICE_TYPE == 1)
+        /* 获取设备类型 */
+        device_type = (rec_buff[3] << 8) | rec_buff[4];
+        /* 获取ID */
+        recdata_t.id = (rec_buff[5] << 16) | (rec_buff[6] << 8) | (rec_buff[7] << 0);
         /* 获取指令类型 */
-        recdata_t.cmd     = rec_buff[6];
-        
+        recdata_t.cmd = rec_buff[8];
+
+        /* 设备类型验证 */
+        if(device_type != DEVICE_TYPE)
+        {
+            ret = CR_DEVICE_NUMBER_ERROR;
+            app_set_reply_parameters_function(recdata_t.cmd,ret);
+            goto __ERROR;
+        }
+
         /* ID验证 */
         if(recdata_t.id != device->id.i && recdata_t.cmd != CONFIGURE_NOW_TIME)
         {
@@ -1941,7 +2033,37 @@ int8_t com_deal_main_function(void)
             app_set_reply_parameters_function(recdata_t.cmd,ret);
             goto __ERROR;
         }
-        
+
+        /* 获取请求标识码 */
+        temp = rec_buff[9];
+        temp = (temp<<8)|rec_buff[10];
+        temp = (temp<<8)|rec_buff[11];
+        temp = (temp<<8)|rec_buff[12];
+        sg_comqn_t.qn1 = temp;
+        temp = rec_buff[13];
+        temp = (temp<<8)|rec_buff[14];
+        temp = (temp<<8)|rec_buff[15];
+        temp = (temp<<8)|rec_buff[16];
+        sg_comqn_t.qn2 = temp;
+        /* 获取长度 */
+        recdata_t.size = rec_buff[17];
+        /* 获取内容 */
+        recdata_t.buff = &rec_buff[18];
+#else
+        /* 获取ID */
+        recdata_t.id = (rec_buff[3] << 16) | (rec_buff[4] << 8) | (rec_buff[5] << 0);
+        /* 获取指令类型 */
+        recdata_t.cmd = rec_buff[6];
+
+        /* ID验证 */
+        if(recdata_t.id != device->id.i && recdata_t.cmd != CONFIGURE_NOW_TIME)
+        {
+            /* ID错误 */
+            ret = CR_DEVICE_NUMBER_ERROR;
+            app_set_reply_parameters_function(recdata_t.cmd,ret);
+            goto __ERROR;
+        }
+
         /* 获取请求标识码 */
         temp = rec_buff[7];
         temp = (temp<<8)|rec_buff[8];
@@ -1954,9 +2076,10 @@ int8_t com_deal_main_function(void)
         temp = (temp<<8)|rec_buff[14];
         sg_comqn_t.qn2 = temp;
         /* 获取长度 */
-        recdata_t.size    = rec_buff[15];
+        recdata_t.size = rec_buff[15];
         /* 获取内容 */
-        recdata_t.buff    = &rec_buff[16];
+        recdata_t.buff = &rec_buff[16];
+#endif
         
         /* 根据命令解析数据 */
         switch(recdata_t.cmd)
@@ -1992,7 +2115,7 @@ int8_t com_deal_main_function(void)
             case CONFIGURE_FAN_HUMI:            // 设置风扇湿度
                 com_deal_fan_humi_param(&recdata_t);
                 break;
-            case CONFIGURE_SERVER_MODE:            // 配置网络连接模式
+            case CONFIGURE_SERVER_MODE:         // 配置网络连接模式
                 com_deal_configure_server_mode(&recdata_t);
                 break;
             case CONFIGURE_UPDATE_SYSTEM:        // 启用系统更新
@@ -2001,20 +2124,14 @@ int8_t com_deal_main_function(void)
             case CONFIGURE_NOW_TIME:                 // 配置当前时间
                 com_set_now_time_function(&recdata_t);
                 break;
-            case CONFIGURE_IPC_TIME_SYNC:            // 配置摄像机时间  20220329
-                com_set_ipc_time_function(&recdata_t);
-                break;
-            case CONFIGURE_DEVICE_NAME:                // 设置设备名称  20220416
+            case CONFIGURE_DEVICE_NAME:                // 设置设备名称
                 com_set_device_name_function(&recdata_t);
                 break;
-            case CONFIGURE_THRESHOLD_PARAMS:    // 配置阈值  20230721
+            case CONFIGURE_THRESHOLD_PARAMS:    // 配置阈值 
                 com_set_threshold_params_function(&recdata_t);
                 break;
-            case CONFIGURE_ONVIF_TIME:                // 配置搜索协议时间  20230721
-                com_set_onvif_time_function(&recdata_t);
-                break;
-            case CONFIGURE_SEARCH_MODE:                // 配置搜索协议模式  20230721
-                com_set_onvif_mode_function(&recdata_t);
+            case CONFIGURE_SEARCH_MODE:          // 配置搜索模式
+                com_set_carema_search_mode_function(&recdata_t);
                 break;
             case CONFIGURE_DEVICE_PASSWORD:        // 密码恢复出厂
                 com_set_device_password(&recdata_t);
@@ -2024,9 +2141,6 @@ int8_t com_deal_main_function(void)
                 break;
             case CONFIGURE_ONVIF_CAREMA:          // 搜索协议配置摄像机IP  20240201
                 com_deal_configure_onvif_carema(&recdata_t);
-                break;
-            case CONFIGURE_RELOAD_TIME:          // 设备重启
-                com_set_onvif_time_function(&recdata_t);
                 break;
             case CONFIGURE_FILL_LIGHT_TIME:        // 设置补光灯时间
                 com_set_work_time(&recdata_t,1);
@@ -2040,20 +2154,20 @@ int8_t com_deal_main_function(void)
             case CONFIGURE_SNMP_OID:  // 配置SNMP OID
                 com_deal_configure_snmp_oid(&recdata_t,recdata_t.size);
                 break;            
-            // case CONFIGURE_SNMP_DEV_TYPE:  // 查询SNMP参数
-            //     com_deal_configure_snmp_dev_type(&recdata_t,recdata_t.size);
-            //     break;                
+            case CONFIGURE_UPLOAD_FILE:        // 文件上传
+                com_deal_upload_file_function(&recdata_t);
+                break;
             
             /* 查询指令 */
-            case CR_QUERY_CONFIG:             // 查询设备当前参数设置 - 对应上传查询配置
-            case CR_QUERY_INFO:               // 立即上报设备状态        - 正常上报
-            case CR_QUERY_SOFTWARE_VERSION: // 查询设备软件版本号
+            case CR_QUERY_CONFIG:               // 查询设备当前参数设置 - 对应上传查询配置
+            case CR_QUERY_INFO:                 // 立即上报设备状态        - 正常上报
+            case CR_QUERY_SOFTWARE_VERSION:     // 查询设备软件版本号
             case CR_QUERY_IPC_IP:               // 查询摄像机IP地址    20220329
-            case CR_QUERY_IPC_INFO:                    // 查询摄像机相关参数  20220329
-            case CR_QUERY_LBS_INFO:                    // 查询基站定位信息
-            case CR_QUERY_SNMP_INFO:                
+            case CR_QUERY_IPC_INFO:             // 查询摄像机相关参数  20220329
+            case CR_QUERY_SNMP_INFO:
+            case CR_QUERY_PING_INFO:                
                 sg_comqn_t.flag = 1;
-                com_query_processing_function(recdata_t.cmd,recdata_t.buff[0]);
+                app_set_com_send_flag_function(recdata_t.cmd,recdata_t.buff[0]);
                 break;
             
             /* 操作指令 */
@@ -2111,14 +2225,10 @@ void com_cache_initialization(uint16_t size)
 
 /*
 *********************************************************************************************************
-*    函 数 名: 
-com_queue_init
-*    功能说明: 
-
+*    函 数 名: com_queue_init
+*    功能说明: 初始化队列
 *    形    参: 
-
 *    返 回 值: 
-
 *********************************************************************************************************
 */
 void com_queue_init(com_queue_t *queue)
@@ -2129,14 +2239,10 @@ void com_queue_init(com_queue_t *queue)
 
 /*
 *********************************************************************************************************
-*    函 数 名: 
-com_is_queue_empty
-*    功能说明: 
-
+*    函 数 名: com_is_queue_empty
+*    功能说明: 判断队列是否为空
 *    形    参: 
-
 *    返 回 值: 
-
 *********************************************************************************************************
 */
 uint8_t com_is_queue_empty(com_queue_t queue)
@@ -2170,16 +2276,13 @@ uint8_t com_en_queue(com_queue_t *queue,uint8_t data)
     }    
 }
 
+
 /*
 *********************************************************************************************************
-*    函 数 名: 
-com_de_queue
-*    功能说明: 
-
+*    函 数 名: com_de_queue
+*    功能说明: 从队列出队
 *    形    参: 
-
 *    返 回 值: 
-
 *********************************************************************************************************
 */
 uint8_t com_de_queue(com_queue_t *queue,uint8_t *data)

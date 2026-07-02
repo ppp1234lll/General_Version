@@ -1,7 +1,7 @@
 #include "./cjson/mycJSON.h"
 #include "string.h"
 #include "stdio.h"
-
+#include "appconfig.h"
 /*
 *********************************************************************************************************
 *    º¯ Êý Ãû: my_cjson_create_function
@@ -15,16 +15,26 @@ int8_t my_cjson_create_function(uint8_t *buff, uint8_t mode)
 	uint16_t size = strlen((char*)buff); 
 	
 	if(mode == 0) {
+#if (configUSE_DEVICE_TYPE == 1)		
         buff[0] = '#';
         buff[1] = '#';
 		buff[2] = '{';
 		buff[3] = '\0';
+#else
+		buff[0] = '{';
+		buff[1] = '\0';
+#endif
 	} 
     else {
+#if (configUSE_DEVICE_TYPE == 1)		
 		buff[size] = '}';
-        buff[size+1] = '&';
-        buff[size+2] = '&';
+        buff[size+1] = '#';
+        buff[size+2] = '#';
 		buff[size+3] = '\0';
+#else
+		buff[size] = '}';
+		buff[size+1] = '\0';
+#endif
 	}
 	
 	return 0;

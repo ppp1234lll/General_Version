@@ -254,10 +254,9 @@ void TIMER2_IRQHandler(void)
         timer_interrupt_flag_clear(TIMER2,TIMER_INT_FLAG_UP);  // 清除中断标志位 
 
         lwip_ping_multi_timer_1ms();
+        lwip_ping_remote_timer_1ms();
         app_com_time_function();
-        app_sys_operate_timer_function();
         led_flicker_control_timer_function();
-    // bl0906_run_timer_function();
         device_reboot_timer_function();
         com_queue_time_function();
         bl0939_run_timer_function();

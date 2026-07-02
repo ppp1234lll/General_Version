@@ -32,6 +32,7 @@ static void lwip_ping_multi_update_target(uint8_t device_id, uint8_t enable, con
 static void lwip_ping_multi_start_round(lwip_multi_ping_device_t *device);
 static int8_t lwip_ping_multi_send_packet(lwip_multi_ping_device_t *device, lwip_multi_ping_packet_t *packet);
 static void lwip_ping_multi_process_device(lwip_multi_ping_device_t *device);
+static void lwip_ping_multi_finish_round_device(lwip_multi_ping_device_t *device);
 static void lwip_ping_multi_process_timeout(lwip_multi_ping_device_t *device);
 static uint8_t lwip_ping_multi_packet_finished(const lwip_multi_ping_packet_t *packet);
 static uint8_t lwip_ping_multi_round_finished(const lwip_multi_ping_device_t *device);
@@ -41,6 +42,14 @@ static uint8_t lwip_ping_multi_ip_is_zero(const uint8_t ip[4]);
 static uint8_t lwip_ping_multi_time_reached(uint32_t target_ms);
 static void lwip_ping_multi_get_source_ip(const ip_addr_t *addr, uint8_t ip[4]);
 
+/*
+*********************************************************************************************************
+*    函 数 名: lwip_ping_multi_init
+*    功能说明: 初始化多目标 Ping 模块，创建 ICMP RAW PCB 并绑定接收回调
+*    形    参: 无
+*    返 回 值: 0:成功 1:失败
+*********************************************************************************************************
+*/
 uint8_t lwip_ping_multi_init(void)
 {
     if (sg_ping_multi_t.init != 0U)
@@ -66,6 +75,14 @@ uint8_t lwip_ping_multi_init(void)
     return 0;
 }
 
+/*
+*********************************************************************************************************
+*    函 数 名: lwip_ping_multi_deinit
+*    功能说明: 反初始化多目标 Ping 模块，释放 RAW PCB 资源
+*    形    参: 无
+*    返 回 值: 无
+*********************************************************************************************************
+*/
 void lwip_ping_multi_deinit(void)
 {
     if (sg_ping_multi_t.pcb != NULL)
@@ -76,11 +93,27 @@ void lwip_ping_multi_deinit(void)
     memset(&sg_ping_multi_t, 0, sizeof(sg_ping_multi_t));
 }
 
+/*
+*********************************************************************************************************
+*    函 数 名: lwip_ping_multi_timer_1ms
+*    功能说明: 1ms 定时器回调，递增内部滴答计数器用于超时判断
+*    形    参: 无
+*    返 回 值: 无
+*********************************************************************************************************
+*/
 void lwip_ping_multi_timer_1ms(void)
 {
     sg_ping_multi_t.tick_ms++;
 }
 
+/*
+*********************************************************************************************************
+*    函 数 名: lwip_ping_multi_refresh_targets
+*    功能说明: 从 App 配置中刷新所有 Ping 目标 IP（主网络、备网络、摄像头）
+*    形    参: 无
+*    返 回 值: 无
+*********************************************************************************************************
+*/
 void lwip_ping_multi_refresh_targets(void)
 {
     uint8_t ip[4] = {0};
@@ -112,6 +145,14 @@ void lwip_ping_multi_refresh_targets(void)
     }
 }
 
+/*
+*********************************************************************************************************
+*    函 数 名: lwip_ping_multi_poll
+*    功能说明: 主轮询函数，更新目标 IP 并依次处理所有设备的 Ping 流程
+*    形    参: 无
+*    返 回 值: 无
+*********************************************************************************************************
+*/
 void lwip_ping_multi_poll(void)
 {
     uint8_t device_id = 0;
@@ -141,6 +182,14 @@ void lwip_ping_multi_poll(void)
     }
 }
 
+/*
+*********************************************************************************************************
+*    函 数 名: lwip_ping_multi_get_device
+*    功能说明: 获取指定设备 ID 的 Ping 设备信息指针
+*    形    参: device_id: 设备 ID（参考 lwip_multi_ping_device_id_t）
+*    返 回 值: 设备指针，失败返回 NULL
+*********************************************************************************************************
+*/
 const lwip_multi_ping_device_t *lwip_ping_multi_get_device(uint8_t device_id)
 {
     if (device_id >= LWIP_MULTI_PING_DEVICE_NUM)
@@ -258,7 +307,7 @@ static uint8_t lwip_ping_multi_raw_recv(void *arg, struct raw_pcb *pcb, struct p
 
                 if (device->reply_count >= LWIP_MULTI_PING_PACKET_NUM)
                 {
-                    lwip_ping_multi_finish_round(device_id);
+                    lwip_ping_multi_finish_round_device(device);
                 }
                 return 0U;
             }
@@ -288,6 +337,7 @@ static void lwip_ping_multi_reset_device(lwip_multi_ping_device_t *device)
 static void lwip_ping_multi_update_target(uint8_t device_id, uint8_t enable, const uint8_t ip[4], uint8_t clear_status_on_disable)
 {
     lwip_multi_ping_device_t *device = NULL;
+    uint8_t ip_changed = 0U;
 
     if (device_id >= LWIP_MULTI_PING_DEVICE_NUM)
     {
@@ -296,8 +346,16 @@ static void lwip_ping_multi_update_target(uint8_t device_id, uint8_t enable, con
 
     device = &sg_ping_multi_t.device[device_id];
 
+    if (ip != NULL)
+    {
+        ip_changed = (uint8_t)(memcmp(device->ip, ip, 4U) != 0);
+    }
+
     device->enable = enable;
-    memcpy(device->ip, ip, sizeof(device->ip));
+    if (ip != NULL)
+    {
+        memcpy(device->ip, ip, sizeof(device->ip));
+    }
 
     if (enable == 0U)
     {
@@ -320,19 +378,40 @@ static void lwip_ping_multi_update_target(uint8_t device_id, uint8_t enable, con
     {
         return;
     }
+
+    if (ip_changed != 0U)
+    {
+        device->finalised = 0U;
+        device->result = LWIP_MULTI_PING_RESULT_NONE;
+        device->last_round_start_ms = 0U;
+        device->reply_count = 0U;
+        device->send_count = 0U;
+        memset(device->packet, 0, sizeof(device->packet));
+    }
 }
 
 static void lwip_ping_multi_start_round(lwip_multi_ping_device_t *device)
 {
+    uint8_t device_id = 0;
+    uint32_t stagger_ms = 0U;
+
     if (device == NULL)
     {
         return;
     }
 
+    device_id = (uint8_t)(device - &sg_ping_multi_t.device[0]);
+    if (device_id >= LWIP_MULTI_PING_DEVICE_NUM)
+    {
+        device_id = 0U;
+    }
+
+    stagger_ms = (uint32_t)device_id * LWIP_MULTI_PING_DEVICE_STAGGER_MS;
+
     lwip_ping_multi_reset_device(device);
     device->round_active = 1U;
-    device->round_start_ms = sg_ping_multi_t.tick_ms;
-    device->last_round_start_ms = sg_ping_multi_t.tick_ms;
+    device->round_start_ms = sg_ping_multi_t.tick_ms + stagger_ms;
+    device->last_round_start_ms = device->round_start_ms;
 }
 
 static int8_t lwip_ping_multi_send_packet(lwip_multi_ping_device_t *device, lwip_multi_ping_packet_t *packet)
@@ -412,8 +491,7 @@ static void lwip_ping_multi_process_device(lwip_multi_ping_device_t *device)
 
     if ((device->round_active == 0U) && (device->enable != 0U))
     {
-        if (((device->last_round_start_ms == 0U) && (device->finalised == 0U) &&
-             (device->result == LWIP_MULTI_PING_RESULT_NONE)) ||
+        if ((device->last_round_start_ms == 0U) ||
             ((uint32_t)(sg_ping_multi_t.tick_ms - device->last_round_start_ms) >= LWIP_MULTI_PING_ROUND_INTERVAL_MS))
         {
             lwip_ping_multi_start_round(device);
@@ -443,13 +521,13 @@ static void lwip_ping_multi_process_device(lwip_multi_ping_device_t *device)
 
     if (device->reply_count >= LWIP_MULTI_PING_PACKET_NUM)
     {
-        lwip_ping_multi_finish_round((uint8_t)(device - &sg_ping_multi_t.device[0]));
+        lwip_ping_multi_finish_round_device(device);
         return;
     }
 
     if ((device->send_count >= LWIP_MULTI_PING_PACKET_NUM) && (lwip_ping_multi_round_finished(device) != 0U))
     {
-        lwip_ping_multi_finish_round((uint8_t)(device - &sg_ping_multi_t.device[0]));
+        lwip_ping_multi_finish_round_device(device);
     }
 }
 
@@ -501,14 +579,23 @@ static uint8_t lwip_ping_multi_round_finished(const lwip_multi_ping_device_t *de
 
 static void lwip_ping_multi_finish_round(uint8_t device_id)
 {
-    lwip_multi_ping_device_t *device = NULL;
-
     if (device_id >= LWIP_MULTI_PING_DEVICE_NUM)
     {
         return;
     }
 
-    device = &sg_ping_multi_t.device[device_id];
+    lwip_ping_multi_finish_round_device(&sg_ping_multi_t.device[device_id]);
+}
+
+static void lwip_ping_multi_finish_round_device(lwip_multi_ping_device_t *device)
+{
+    uint8_t device_id = 0;
+
+    if (device == NULL)
+    {
+        return;
+    }
+
     if ((device->round_active == 0U) || (device->finalised != 0U))
     {
         return;
@@ -529,8 +616,13 @@ static void lwip_ping_multi_finish_round(uint8_t device_id)
 
     device->finalised = 1U;
     device->round_active = 0U;
-    lwip_ping_multi_apply_result(device_id, device->result);
-    det_set_ping_status(1);
+
+    device_id = (uint8_t)(device - &sg_ping_multi_t.device[0]);
+    if (device_id < LWIP_MULTI_PING_DEVICE_NUM)
+    {
+        lwip_ping_multi_apply_result(device_id, device->result);
+        det_set_ping_status(1);
+    }
 }
 
 static void lwip_ping_multi_apply_result(uint8_t device_id, lwip_multi_ping_result_t result)

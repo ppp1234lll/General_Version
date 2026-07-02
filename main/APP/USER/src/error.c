@@ -17,6 +17,21 @@ ErrorFault_t sg_err_status = {0};
 */
 void Error_Set(uint32_t item_idx)
 {
+    if (item_idx == ELEC_MAIN_AC)
+    {
+        sg_err_status.fault_index[0] = ELEC_MAIN_AC;
+        sg_err_status.fault_count = 1;
+        return;
+    }
+
+    for (uint8_t i = 0; i < sg_err_status.fault_count; i++)
+    {
+        if (sg_err_status.fault_index[i] == ELEC_MAIN_AC)
+        {
+            return;
+        }
+    }
+
     // 检查错误是否已存在
     for (uint8_t i = 0; i < sg_err_status.fault_count; i++)
     {

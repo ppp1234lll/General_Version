@@ -231,3 +231,60 @@ int8_t float_to_str(float value, uint8_t precision, uint8_t *data, uint16_t len)
     }
     return 0;
 }
+
+static const char g_base64_chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+/*
+*********************************************************************************************************
+*    函 数 名: base64_encode
+*    功能说明: Base64 编码
+*    形    参: input      : 输入数据
+*              input_len  : 输入长度
+*              output     : 输出缓冲区
+*              output_size: 输出缓冲区大小
+*    返 回 值: 编码后长度，失败返回 -1
+*********************************************************************************************************
+*/
+int base64_encode_http(const uint8_t *input, uint32_t input_len, char *output, uint32_t output_size)
+{
+    uint32_t i, j;
+    uint32_t output_len;
+
+    if ((input == NULL) || (input_len == 0U) || (output == NULL) || (output_size == 0U))
+    {
+        return -1;
+    }
+
+    output_len = ((input_len + 2U) / 3U) * 4U;
+
+    if ((output_len + 1U) > output_size)
+    {
+        return -1;
+    }
+
+    for (i = 0U, j = 0U; i < input_len; )
+    {
+        uint32_t a = input[i++];
+        uint32_t b = (i < input_len) ? input[i++] : 0U;
+        uint32_t c = (i < input_len) ? input[i++] : 0U;
+        uint32_t triple = (a << 16U) | (b << 8U) | c;
+
+        output[j++] = g_base64_chars[(triple >> 18U) & 0x3FU];
+        output[j++] = g_base64_chars[(triple >> 12U) & 0x3FU];
+        output[j++] = g_base64_chars[(triple >> 6U) & 0x3FU];
+        output[j++] = g_base64_chars[triple & 0x3FU];
+    }
+
+    if ((input_len % 3U) == 1U)
+    {
+        output[output_len - 2U] = '=';
+        output[output_len - 1U] = '=';
+    }
+    else if ((input_len % 3U) == 2U)
+    {
+        output[output_len - 1U] = '=';
+    }
+
+    output[output_len] = '\0';
+    return (int)output_len;
+}

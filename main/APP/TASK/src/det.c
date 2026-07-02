@@ -21,7 +21,8 @@ void det_task_function(void)
         det_get_key_status_function();     // 按键检测函数
         det_get_temphumi_function();          // 获取温湿度
         det_get_attitude_state_value();  // 获取姿态数据
-        bl0939_work_process_function();
+		bl0910_work_process_function();	 // 数据获取函数
+		bl0939_work_process_function();
         atgm336h_decode_nmea_xxgga();             // 获取GPS数据
         
         FeedFwdgt();                                // 喂狗            

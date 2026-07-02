@@ -36,14 +36,14 @@ typedef struct {
 
 typedef struct
 {
-    float temp_inside;          // 内部温度值
-    float humi_inside;          // 内部湿度值
-    uint16_t attitude_acc;     // 加速度
+    float temp_inside;            // 内部温度值
+    float humi_inside;            // 内部湿度值
+    uint16_t attitude_acc;        // 加速度
     uint8_t key_s[KEYS_COUNT];    // 按键数量定义
     
-    uint8_t camera[6];     // 摄像机状态x3：0；离线 1：在线，2：延时严重
-    uint8_t main_ip;       // 主网络状态：0：离线 1：在线，2：延时严重
-    uint8_t main_sub_ip;   // 主网络状态sub: 0：离线 1：在线，2：延时严重
+    uint8_t camera[6];       // 摄像机状态x3：0；离线 1：在线，2：延时严重
+    uint8_t main_ip;         // 主网络状态：0：离线 1：在线，2：延时严重
+    uint8_t main_sub_ip;     // 主网络状态sub: 0：离线 1：在线，2：延时严重
     uint8_t ping_status;     // ping结束标志位
     
     uint8_t residual_c;    // 剩余电流

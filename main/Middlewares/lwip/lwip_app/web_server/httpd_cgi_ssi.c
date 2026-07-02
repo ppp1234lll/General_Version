@@ -9,10 +9,10 @@
 const char* INDEX_CGI_Handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]);
 const char* SETTING_CGI_Handler(int iIndex,int iNumParams,char *pcParam[],char *pcValue[]);
 
-uint8_t g_return_t[300] =  {0};
+uint8_t g_return_t[1024] =  {0};
 uint16_t g_return_flag  = 0;
 
-#define PPCTAGS_SIZE (51)
+#define PPCTAGS_SIZE (53)
 static const char *ppcTAGs[PPCTAGS_SIZE]=  //SSI的Tag
 {
     "a", // 同步时间
@@ -64,6 +64,8 @@ static const char *ppcTAGs[PPCTAGS_SIZE]=  //SSI的Tag
     "bd", // 重启时间
     "be", // OID
     "bf", // 交换机IP
+    "bg", // 上传url
+    "bh", // 上传端口
 
     "Y",
     "Z",
@@ -298,5 +300,4 @@ void httpd_cgi_init(void)
   //配置CGI句柄LEDs control CGI) */
   http_set_cgi_handlers(ppcURLs, NUM_CONFIG_CGI_URIS);
 }
-
 

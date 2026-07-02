@@ -33,7 +33,7 @@
 #define ADDR_FMC_SECTOR_11    ((uint32_t)0x080E0000) /*!< base address of sector 11, 128 kbytes */
 
 
-#define FLASH_IS_EQU        0   /* Flash内容和待写入的数据相等，不需要擦除和写操作 */
+#define FLASH_IS_EQU           0   /* Flash内容和待写入的数据相等，不需要擦除和写操作 */
 #define FLASH_REQ_WRITE        1    /* Flash不需要擦除，直接写 */
 #define FLASH_REQ_ERASE        2    /* Flash需要先擦除,再写 */
 #define FLASH_PARAM_ERR        3    /* 函数参数错误 */

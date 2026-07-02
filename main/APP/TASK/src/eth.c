@@ -8,12 +8,26 @@
 */
 #include "./Task/inc/eth.h"
 #include "main.h"
+#include "./ping/lwip_ping_remote.h"
 
 struct ip4_addr DNS_Addr;
 
 uint8_t eth_carema_start = 0;
+eth_ping_t sg_ping_info_t = {0};
 
 static void dns_serverFound(const char *name, const ip_addr_t *ipaddr, void *arg);
+
+typedef enum
+{
+    ETH_CONNECT_TCP = 0,
+    ETH_CONNECT_UDP_MULTICAST,
+    ETH_CONNECT_ONVIF_UDP,
+    ETH_CONNECT_ONVIF_TCP,
+    ETH_CONNECT_SNMP,
+} eth_connect_t;
+
+static void eth_connect_control_function(eth_connect_t connect);
+static void eth_connect_reset(eth_connect_t connect);
 /*
 *********************************************************************************************************
 *    函 数 名: eth_network_line_status_detection_function
@@ -27,8 +41,8 @@ void eth_task_function(void)
     while(1)
     {
         eth_network_reset_function();     // 网络复位函数
-        eth_udp_connect_control_function();  // 组播UDP连接  
-        eth_snmp_connect_control_function();      
+        eth_connect_control_function(ETH_CONNECT_UDP_MULTICAST); // 组播UDP连接  
+        eth_connect_control_function(ETH_CONNECT_SNMP); // SNMP连接  
         eth_carema_search_function();  // 摄像机搜索、查询函数
         
         #ifdef WIRELESS_PRIORITY_CONNECTION
@@ -36,8 +50,9 @@ void eth_task_function(void)
             eth_set_tcp_cmd(1);
         }
         #endif
-        // eth_ping_detection_function();           /* PING协议 */     
+
         lwip_ping_multi_poll();                  /* PING协议 */
+        eth_ping_remote_ip_function();           /* 远程指定IP ping */
         if( app_get_carema_search_mode() == 1 ) // 判断摄像机搜索协议
         {
             rtsp_thread_stop();
@@ -51,17 +66,15 @@ void eth_task_function(void)
         {
             rtsp_thread_start();
         }    
-
         
         if( app_get_network_mode() != SERVER_MODE_GPRS) 
         { 
-            /* 网络状态检测 */
             eth_tcp_connect_control_function();
         } 
         else 
         {
             if (g_lwipdev.tcp_status != LWIP_TCP_NO_CONNECT) {
-                eth_set_tcp_connect_reset();
+                eth_connect_reset(ETH_CONNECT_TCP);
                 vTaskDelay(100);
             }
             #ifdef WIRED_PRIORITY_CONNECTION
@@ -76,18 +89,16 @@ void eth_task_function(void)
                 led_control_function(LD_LAN_EXT,LD_FLICKER);
         }
             
-    
-        /* 更新检测 */
+        /* OTA / 日志上传: 由后台任务执行,不阻塞 eth 主循环 */
         if( g_lwipdev.netif_state == 1) 
         {
-            if( update_get_mode_function() == UPDATE_MODE_LWIP ) {
-                /* 断开连接 */
-                if (g_lwipdev.tcp_status != LWIP_TCP_NO_CONNECT) {
-                    eth_set_tcp_connect_reset();
-                    vTaskDelay(200);
-                }
-                /* 更新 */
-                update_lwip_task_function();
+            if( update_get_mode_function() == UPDATE_MODE_LWIP ) 
+            {
+                update_lwip_poll();
+            }
+            else if( upload_get_mode_function() == UPLOAD_MODE_LWIP )
+            {
+                upload_lwip_poll();
             }
         }
         vTaskDelay(20);  // 延时20ms
@@ -115,31 +126,39 @@ void eth_network_reset_function(void)
 #endif 
         if (g_lwipdev.tcp_status != LWIP_TCP_NO_CONNECT) 
         {
-            eth_set_tcp_connect_reset();
+            eth_connect_reset(ETH_CONNECT_TCP);
         }
         
         if (g_lwipdev.udp_multicast_status != LWIP_UDP_NO_CONNECT)   // 重启UDP连接
         {
-            eth_set_udp_connect_reset();
+            eth_connect_reset(ETH_CONNECT_UDP_MULTICAST);
         }
         
         if (g_lwipdev.udp_status != LWIP_UDP_NO_CONNECT)   // 重启ONVIF连接
         {
-            eth_set_onvif_udp_connect_reset();
+            eth_connect_reset(ETH_CONNECT_ONVIF_UDP);
         }
         
         if (g_lwipdev.onvif_tcp_status != LWIP_TCP_NO_CONNECT)   // 重启ONVIF连接
         {
-            eth_set_onvif_tcp_connect_reset();
+            eth_connect_reset(ETH_CONNECT_ONVIF_TCP);
         }
         
         if (g_lwipdev.snmp_status != LWIP_UDP_NO_CONNECT)   // 重启UDP连接
         {
-            eth_snmp_connect_reset();
+            eth_connect_reset(ETH_CONNECT_SNMP);
+        }
+
+        lwip_stop_function();
+        vTaskDelay(100);
+        /* 网线仍连接时主动恢复网口,避免仅依赖 link 线程导致长时间不可达 */
+        if (g_lwipdev.link_status == LWIP_LINK_ON)
+        {
+            lwip_start_function();
         }
     }
 }
-   
+
 
 struct eth_ping
 {
@@ -205,7 +224,7 @@ void eth_ping_detection_function(void)
     uint8_t delay_time = app_get_network_delay_time(); // 网络延时时间  20220308
     
     if( app_get_carema_search_mode() == 1 ) // 判断摄像机搜索协议
-       ping_dev_num = PING_IP_MAX_NUM;
+        ping_dev_num = PING_IP_MAX_NUM;
     else
         ping_dev_num = 2;
     
@@ -369,90 +388,120 @@ static void dns_serverFound(const char *name, const ip_addr_t *ipaddr, void *arg
     else
     {
     }
-
 }
 
 /*
 *********************************************************************************************************
 *    函 数 名: eth_tcp_connect_control_function
 *    功能说明: tcp连接控制函数
-*    形    参: 
-*    返 回 值: 
+*    形    参: 无
+*    返 回 值: 无
 *********************************************************************************************************
 */
 void eth_tcp_connect_control_function(void)
 {
-    struct remote_ip *remote = app_get_remote_network_function();
-    
-    /* 检测网口状态 */
-    if(g_lwipdev.netif_state == 0)
-    {
-        return;
-    }
-    #ifdef WIRELESS_PRIORITY_CONNECTION
-    /* 是否允许连接网络 */
-    if(g_lwipdev.tcp_cmd == 0) {
-        if (g_lwipdev.tcp_status != LWIP_TCP_NO_CONNECT) {
-            eth_set_tcp_connect_reset();
-            vTaskDelay(100);
-        }
-        return;
-    }
-    #endif
-    
-    /* 通过dns获取域名对应的IP */
-    /* 测试域名：abc.fnwlw.net */
-    if(g_lwipdev.netif_state == 1 && g_lwipdev.domename == 0 && g_lwipdev.iporname == 1)
-    {
-        IP4_ADDR(&DNS_Addr, g_lwipdev.dns[0],g_lwipdev.dns[1], g_lwipdev.dns[2],g_lwipdev.dns[3]);
-        dns_gethostbyname((char *)remote->inside_iporname,&DNS_Addr,dns_serverFound,NULL);
-    }    
-    
-    if(g_lwipdev.tcp_status == LWIP_TCP_NO_CONNECT) // 检测到tcp还未连接
-    {
-        if(g_lwipdev.iporname == 0)                  // 直接使用IP
-        {
-            /* 更新远端地址 */
-            lwip_updata_remote_network_infor(&g_lwipdev);
-            tcp_client_start_function();
-            g_lwipdev.tcp_status = LWIP_TCP_INIT_CONNECT;
-        }
-        else                                      // 需要通过域名获取IP
-        {
-            if(g_lwipdev.domename == 1)
-            {
-                /* 更新远端地址 */
-                lwip_updata_remote_network_infor(&g_lwipdev);
-                tcp_client_start_function();
-                g_lwipdev.tcp_status = LWIP_TCP_INIT_CONNECT;
-            }
-        }
-        
-    }
+	struct remote_ip *remote = app_get_remote_network_function();
+	
+	/* 检测网口状态 */
+	if(g_lwipdev.netif_state == 0)
+	{
+		return;
+	}
+	#ifdef WIRELESS_PRIORITY_CONNECTION
+	/* 是否允许连接网络 */
+	if(g_lwipdev.tcp_cmd == 0) {
+		if (g_lwipdev.tcp_status != LWIP_TCP_NO_CONNECT) {
+			eth_set_tcp_connect_reset();
+			vTaskDelay(pdMS_TO_TICKS(100));
+		}
+		return;
+	}
+	#endif
+	
+	/* 通过dns获取域名对应的IP */
+	/* 测试域名：abc.fnwlw.net */
+	if(g_lwipdev.netif_state == 1 && g_lwipdev.domename == 0 && g_lwipdev.iporname == 1)
+	{
+		IP4_ADDR(&DNS_Addr, g_lwipdev.dns[0],g_lwipdev.dns[1], g_lwipdev.dns[2],g_lwipdev.dns[3]);
+		dns_gethostbyname((char *)remote->inside_iporname,&DNS_Addr,dns_serverFound,NULL);
+	}	
+	
+	if(g_lwipdev.tcp_status == LWIP_TCP_NO_CONNECT) // 检测到tcp还未连接
+	{
+		if(g_lwipdev.iporname == 0)				  // 直接使用IP
+		{
+			/* 更新远端地址 */
+			lwip_updata_remote_network_infor(&g_lwipdev);
+			tcp_client_start_function();
+			g_lwipdev.tcp_status = LWIP_TCP_INIT_CONNECT;
+		}
+		else									  // 需要通过域名获取IP
+		{
+			if(g_lwipdev.domename == 1)
+			{
+				/* 更新远端地址 */
+				lwip_updata_remote_network_infor(&g_lwipdev);
+				tcp_client_start_function();
+				g_lwipdev.tcp_status = LWIP_TCP_INIT_CONNECT;
+			}
+		}
+		
+	}
 }
-
 /*
 *********************************************************************************************************
-*    函 数 名: eth_udp_connect_control_function
-*    功能说明: 组播udp连接控制函数
-*    形    参: 
-*    返 回 值: 
+*    函 数 名: eth_connect_control_function
+*    功能说明: 连接控制函数
+*    形    参: connect 连接类型
+*    返 回 值: 无
 *********************************************************************************************************
 */
-void eth_udp_connect_control_function(void)
+static void eth_connect_control_function(eth_connect_t connect)
 {
     if(g_lwipdev.netif_state == 0)    /* 检测网口状态 */
     {
         return;
     }
 
-    if(g_lwipdev.udp_multicast_status == LWIP_UDP_NO_CONNECT) // 检测到UDP还未连接
+    switch(connect)
     {
-        udp_multicast_start_function();  // 创建UDP服务器
-        g_lwipdev.udp_multicast_status = LWIP_UDP_INIT_CONNECT;
+        case ETH_CONNECT_UDP_MULTICAST:
+            if(g_lwipdev.udp_multicast_status == LWIP_UDP_NO_CONNECT) // 检测到UDP还未连接
+            {
+                udp_multicast_start_function();  // 创建UDP服务器
+                g_lwipdev.udp_multicast_status = LWIP_UDP_INIT_CONNECT;
+            }
+            break;
+
+        case ETH_CONNECT_ONVIF_UDP:
+            if(g_lwipdev.udp_status == LWIP_UDP_NO_CONNECT) // 检测到UDP还未连接
+            {
+                onvif_udp_start();  // 创建UDP函数
+                g_lwipdev.udp_status = LWIP_UDP_INIT_CONNECT;
+            }
+            break;
+
+        case ETH_CONNECT_ONVIF_TCP:
+            if(g_lwipdev.onvif_tcp_status == LWIP_TCP_NO_CONNECT) // 检测到TCP还未连接
+            {
+                onvif_tcp_client_init();  // 创建TCP客户端
+                g_lwipdev.onvif_tcp_status = LWIP_TCP_INIT_CONNECT;
+            }
+            break;
+
+        case ETH_CONNECT_SNMP:
+            if(g_lwipdev.snmp_status == LWIP_UDP_NO_CONNECT) // 检测到UDP还未连接
+            {
+                snmp_start_function();  // 创建UDP服务器
+                g_lwipdev.snmp_status = LWIP_UDP_INIT_CONNECT;
+            }
+            break;
+
+        default:
+            break;
     }
-    
 }
+
 /*
 *********************************************************************************************************
 *    函 数 名: eth_carema_search_function
@@ -487,15 +536,11 @@ int8_t eth_carema_search_function(void)
                     g_lwipdev.udp_status = LWIP_UDP_NO_CONNECT;
             } 
             
-            if(g_lwipdev.udp_status == LWIP_UDP_NO_CONNECT) // 检测到UDP还未连接
-            {
-                onvif_udp_start();  // 创建UDP函数
-                g_lwipdev.udp_status = LWIP_UDP_INIT_CONNECT;
-            }
+            eth_connect_control_function(ETH_CONNECT_ONVIF_UDP);
 
             if(HAL_GetTick() - carema_start_time >= 5000) // 5s后没有搜索到摄像机
             {
-                eth_set_onvif_udp_connect_reset();
+                eth_connect_reset(ETH_CONNECT_ONVIF_UDP);
                 eth_carema_start = ETH_ONVIF_OSD;
                 carema_start_time = 0;
                 return -2;
@@ -504,7 +549,7 @@ int8_t eth_carema_search_function(void)
             {
                 if((ipc_t->search_flag & ONVIF_END) == ONVIF_END) // 搜索结束
                 {
-                    eth_set_onvif_udp_connect_reset();
+                    eth_connect_reset(ETH_CONNECT_ONVIF_UDP);
                     eth_carema_start = ETH_ONVIF_OSD;
                     carema_osd_time = 0;
                     carema_start_time = 0;
@@ -524,15 +569,11 @@ int8_t eth_carema_search_function(void)
             if(carema_osd_time == 0)
                 carema_osd_time = HAL_GetTick();
             
-            if(g_lwipdev.onvif_tcp_status == LWIP_TCP_NO_CONNECT) // 检测到TCP还未连接
-            {
-                onvif_tcp_client_init();  // 创建TCP客户端
-                g_lwipdev.onvif_tcp_status = LWIP_TCP_INIT_CONNECT;
-            }
+            eth_connect_control_function(ETH_CONNECT_ONVIF_TCP);
 
             if(HAL_GetTick() - carema_osd_time >= 5000) // 5s后没有搜索到摄像机
             {
-                eth_set_onvif_tcp_connect_reset();
+                eth_connect_reset(ETH_CONNECT_ONVIF_TCP);
                 eth_carema_start = ETH_ONVIF_END;
                 carema_osd_time = 0;
                 carema_start_time = 0;
@@ -542,13 +583,12 @@ int8_t eth_carema_search_function(void)
             {
                 if(onvif_tcp_get_ipc_read_status() == 2) // 搜索结束
                 {
-                    eth_set_onvif_tcp_connect_reset();
+                    eth_connect_reset(ETH_CONNECT_ONVIF_TCP);
                     eth_carema_start = ETH_ONVIF_END;
                     carema_osd_time = 0;
                     carema_start_time = 0;
                 }                
             }
-
             break;
         default:
             break;
@@ -558,56 +598,102 @@ int8_t eth_carema_search_function(void)
 }
 /*
 *********************************************************************************************************
-*    函 数 名: eth_set_udp_connect_reset
-*    功能说明: 重启组播
-*    形    参: 
-*    返 回 值: 
+*    函 数 名: eth_ping_remote_ip_function
+*    功能说明: 远程ping指定IP，结果写入sg_ping_info_t
+*    形    参: 无
+*    返 回 值: -1-无网络 0-进行中/空闲 1-完成
 *********************************************************************************************************
 */
-void eth_set_udp_connect_reset(void)
+int8_t eth_ping_remote_ip_function(void)
 {
-    g_lwipdev.udp_multicast_reset = 1;
+    int8_t ret = 0;
+    uint8_t i = 0;
+    lwip_remote_ping_report_t report = {0};
+
+    if(g_lwipdev.netif_state == 0)    /* 检测网口状态 */
+    {
+        sg_ping_info_t.start = 0;
+        lwip_ping_remote_cancel();
+        return -1;
+    }
+
+    if(sg_ping_info_t.start == 0)
+    {
+        lwip_ping_remote_cancel();
+        return 0;
+    }
+
+    ret = lwip_ping_remote_task(sg_ping_info_t.ip, 1U, &report);
+    if(ret == 0)
+    {
+        sg_ping_info_t.start = 0;
+        return 0;
+    }
+
+    if(ret < 0)
+    {
+        sg_ping_info_t.start = 0;
+        return -1;
+    }
+
+    for(i = 0; i < ETH_REMOTE_PING_NUM; i++)
+    {
+        sg_ping_info_t.status[i] = report.status[i];
+        sg_ping_info_t.times[i] = report.times[i];
+    }
+    sg_ping_info_t.start = 0;
+    return 1;
 }
 
 /*
 *********************************************************************************************************
-*    函 数 名: eth_set_onvif_udp_connect_reset
-*    功能说明: 重启ONVIF组播
-*    形    参: 
-*    返 回 值: 
+*    函 数 名: eth_connect_reset
+*    功能说明: 重启连接
+*    形    参: connect 连接类型
+*    返 回 值: 无
 *********************************************************************************************************
 */
-void eth_set_onvif_udp_connect_reset(void)
+static void eth_connect_reset(eth_connect_t connect)
 {
-    g_lwipdev.udp_reset = 1;
-}
+    switch(connect)
+    {
+        case ETH_CONNECT_TCP:
+            app_set_send_result_function(SR_OK);
+            lwip_updata_remote_network_infor(&g_lwipdev);
+            g_lwipdev.tcp_reset = 1;
+            break;
 
-/*
-*********************************************************************************************************
-*    函 数 名: eth_set_onvif_tcp_connect_reset
-*    功能说明: 重启ONVIF TCP连接
-*    形    参: 
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void eth_set_onvif_tcp_connect_reset(void)
-{
-    g_lwipdev.onvif_tcp_reset = 1;
-}
+        case ETH_CONNECT_UDP_MULTICAST:
+            g_lwipdev.udp_multicast_reset = 1;
+            break;
 
+        case ETH_CONNECT_ONVIF_UDP:
+            g_lwipdev.udp_reset = 1;
+            break;
+
+        case ETH_CONNECT_ONVIF_TCP:
+            g_lwipdev.onvif_tcp_reset = 1;
+            break;
+
+        case ETH_CONNECT_SNMP:
+            g_lwipdev.snmp_reset = 1;
+            break;
+
+        default:
+            break;
+    }
+}
 /*
 *********************************************************************************************************
 *    函 数 名: eth_set_tcp_connect_reset
-*    功能说明: 重启TCP连接
-*    形    参: 
-*    返 回 值: 
+*    功能说明: 重启 TCP 连接
+*    形    参: 无
+*    返 回 值: 无
 *********************************************************************************************************
 */
 void eth_set_tcp_connect_reset(void)
 {
-    app_set_send_result_function(SR_OK);
-    lwip_updata_remote_network_infor(&g_lwipdev);
-    g_lwipdev.tcp_reset = 1;
+    eth_connect_reset(ETH_CONNECT_TCP);
 }
 
 #ifdef WIRELESS_PRIORITY_CONNECTION
@@ -676,7 +762,6 @@ uint8_t eth_get_udp_status(void)
     return g_lwipdev.udp_multicast_status;
 }
 
-
 /*
 *********************************************************************************************************
 *    函 数 名: eth_set_udp_onvif_flag
@@ -689,7 +774,14 @@ void eth_set_onvif_flag(uint8_t data)
 {
     eth_carema_start = data;
 }
-
+/*
+*********************************************************************************************************
+*    函 数 名: eth_get_onvif_flag
+*    功能说明: 获取ONVIF状态
+*    形    参: 
+*    返 回 值: 
+*********************************************************************************************************
+*/
 uint8_t eth_get_onvif_flag(void)
 {
     return eth_carema_start;
@@ -703,8 +795,6 @@ uint8_t eth_get_onvif_flag(void)
 *    返 回 值: 
 *********************************************************************************************************
 */
-
-// 保存 设备 IP 及 编号 
 void eth_save_ipc_info(char *ip,uint8_t id)  // 保存设备信息
 {
     uint8_t addr[4] = {0};
@@ -713,60 +803,57 @@ void eth_save_ipc_info(char *ip,uint8_t id)  // 保存设备信息
 
     app_set_camera_num_function(addr, id);
 }
+
 /*
 *********************************************************************************************************
-*    函 数 名: eth_snmp_connect_control_function
-*    功能说明: SNMP连接控制函数
+*    函 数 名: eth_get_ping_status
+*    功能说明: 获取远程 ping 检测状态
 *    形    参: 无
-*    返 回 值: 无
+*    返 回 值: 0-空闲/完成  1-进行中
 *********************************************************************************************************
 */
-void eth_snmp_connect_control_function(void)
+uint8_t eth_get_ping_status(void)
 {
-    if(g_lwipdev.netif_state == 0)    /* 检测网口状态 */
-    {
-        return;
-    }
-
-    if(g_lwipdev.snmp_status == LWIP_UDP_NO_CONNECT) // 检测到UDP还未连接
-    {
-        snmp_start_function();  // 创建UDP服务器
-        g_lwipdev.snmp_status = LWIP_UDP_INIT_CONNECT;
-    }
+    return sg_ping_info_t.start;
 }
 
 /*
 *********************************************************************************************************
-*    函 数 名: eth_snmp_connect_reset
-*    功能说明: 重启SNMP
-*    形    参: 无
+*    函 数 名: eth_set_ping_status
+*    功能说明: 设置远程 ping 检测状态
+*    形    参: data 0-停止/完成  1-开始检测
 *    返 回 值: 无
 *********************************************************************************************************
 */
-void eth_snmp_connect_reset(void)
+void eth_set_ping_status(uint8_t data)
 {
-    g_lwipdev.snmp_reset = 1;
+    sg_ping_info_t.start = data;
 }
-
 
 /*
 *********************************************************************************************************
-*    函 数 名: eth_onvif_connect_control_function
-*    功能说明: ONVIF连接控制函数
+*    函 数 名: eth_set_ping_ip_address
+*    功能说明: 设置Ping IP地址
 *    形    参: 无
 *    返 回 值: 无
 *********************************************************************************************************
 */
-void eth_onvif_connect_control_function(void)
+void eth_set_ping_ip_address(uint8_t *ip)
 {
-    if(g_lwipdev.netif_state == 0)    /* 检测网口状态 */
-    {
-        return;
-    }
-
-    if(g_lwipdev.udp_status == LWIP_UDP_NO_CONNECT) // 检测到UDP还未连接
-    {
-        onvif_udp_start();  // 创建UDP函数
-        g_lwipdev.udp_status = LWIP_UDP_INIT_CONNECT;
-    }
+    sg_ping_info_t.ip[0] = ip[0];
+    sg_ping_info_t.ip[1] = ip[1];
+    sg_ping_info_t.ip[2] = ip[2];
+    sg_ping_info_t.ip[3] = ip[3];
+}
+/*
+*********************************************************************************************************
+*    函 数 名: eth_get_ping_info
+*    功能说明: 获取远程 ping 结果信息
+*    形    参: 无
+*    返 回 值: 指向 sg_ping_info_t 的指针
+*********************************************************************************************************
+*/
+void *eth_get_ping_info(void)
+{
+    return &sg_ping_info_t;
 }

@@ -9,5 +9,6 @@ uint32_t complement_to_original(uint32_t data);
 int8_t hex_to_dec(char c);
 uint8_t str_to_hex(uint8_t *buff);
 int8_t float_to_str(float value,uint8_t precision,uint8_t *data,uint16_t len);
+int base64_encode_http(const uint8_t *input, uint32_t input_len, char *output, uint32_t output_size);
 
 #endif

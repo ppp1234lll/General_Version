@@ -1,6 +1,7 @@
 #ifndef _LWIP_PING_
 #define _LWIP_PING_
-#include "bsp.h"
+
+#include "./SYSTEM/sys/sys.h"
 
 
 /* ²ÎÊý */

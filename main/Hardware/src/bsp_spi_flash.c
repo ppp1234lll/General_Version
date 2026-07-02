@@ -677,6 +677,12 @@ void sf_ReadInfo(void)
                 g_tSF.SectorSize = 4 * 1024;        /* 扇区大小 = 4K */
                 break;
 
+            case W25Q32_ID:
+                strcpy(g_tSF.ChipName, "W25Q32");
+                g_tSF.TotalSize = 4 * 1024 * 1024;    /* 总容量 = 4M */
+                g_tSF.SectorSize = 4 * 1024;        /* 扇区大小 = 4K */
+                break;
+
             case W25Q64BV_ID:
                 strcpy(g_tSF.ChipName, "W25Q64");
                 g_tSF.TotalSize = 8 * 1024 * 1024;    /* 总容量 = 8M */
@@ -786,5 +792,20 @@ static void sf_WaitForWriteEnd(void)
         }        
     }    
 }
+
+
+/*
+*********************************************************************************************************
+*    函 数 名: bsp_GetSFlashInfo
+*    功能说明: 获取器件参数
+*    形    参: 无
+*    返 回 值: 无
+*********************************************************************************************************
+*/
+void *bsp_GetSFlashInfo(void)
+{
+    return &g_tSF;
+}
+
 
 /***************************** 安富莱电子 www.armfly.com (END OF FILE) *********************************/

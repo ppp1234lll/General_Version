@@ -55,9 +55,11 @@ SYS_LIGHTWEIGHT_PROT==1:如果您确实需要任务间保护
 /* MEMP_NUM_UDP_PCB: UDP协议控制块的数量. */
 #define MEMP_NUM_UDP_PCB                4
 /* MEMP_NUM_TCP_PCB: TCP的数量. */
-#define MEMP_NUM_TCP_PCB                4
+#define MEMP_NUM_TCP_PCB                6
 /* MEMP_NUM_TCP_PCB_LISTEN: 监听TCP的数量. */
 #define MEMP_NUM_TCP_PCB_LISTEN         2
+/* MEMP_NUM_NETCONN: netconn 数量(httpd/tcp_client/onvif/上传等共用) */
+#define MEMP_NUM_NETCONN                8
 /* MEMP_NUM_TCP_SEG: 同时排队的TCP的数量段. */
 #define MEMP_NUM_TCP_SEG                150
 /* MEMP_NUM_SYS_TIMEOUT: 超时模拟活动的数量. */

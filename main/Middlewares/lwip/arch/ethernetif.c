@@ -206,10 +206,9 @@ static err_t low_level_output(struct netif *netif, struct pbuf *p)
     
     if(SUCCESS == reval){
         return ERR_OK;
-    }else{
-        while(1){
-        }
     }
+
+    return ERR_BUF;
     
 }
 

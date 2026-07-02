@@ -51,7 +51,7 @@ static int lfs_deskio_sync(const struct lfs_config *c)
 }
  
 // configuration of the filesystem is provided by this struct
-const struct lfs_config cfg = 
+struct lfs_config cfg =
 {
     // block device operations
     .read  = lfs_deskio_read,
@@ -60,17 +60,14 @@ const struct lfs_config cfg =
     .sync  = lfs_deskio_sync,
 
     // block device configuration
-        .read_size = 256,           // 最小读取单元大小
-        .prog_size = 256,           // 最小编程单元大小,
-        .block_size = 4096,         // 擦除块的大小, 必须等于 W25Q128 的最小擦除单元
-        .block_count = 512,         // 块设备的块数量,块设备的块数量
-                                    // 25Q16 共计 16Mbit，即2MB, 4K一个扇区，共计 2*1024*1024/4096 = 512 个扇区 */
-                                    // 25Q128 共计 128Mbit，即16MB, 4K一个扇区，共计 16*1024*1024/4096 = 4096 个扇区 */
+    .read_size = 256,           // 最小读取单元大小
+    .prog_size = 256,           // 最小编程单元大小,
+    .block_size = 4096,         // 擦除块的大小, 初始化时按实际 Flash 参数更新
+    .block_count = 512,         // 块设备的块数量, 初始化时按实际 Flash 参数更新
 
-        .cache_size = 256,
-        .lookahead_size = 256,  // lookahead 缓冲区的大小,必须是 8 的倍数
-        .block_cycles = 500,    
-
+    .cache_size = 256,
+    .lookahead_size = 256,  // lookahead 缓冲区的大小,必须是 8 的倍数
+    .block_cycles = 500,    // 每次擦除块的次数,默认值为 500
 };
 
 // variables used by the filesystem
@@ -79,7 +76,23 @@ lfs_t         g_lfs_t;
 // entry point
 int lfs_init_function(void) 
 {
+    SFLASH_T *flash_info = (SFLASH_T *)bsp_GetSFlashInfo();
     lfs_file_t  lfs_file;
+
+    if ((flash_info != NULL) &&
+        (flash_info->SectorSize != 0) &&
+        (flash_info->TotalSize >= flash_info->SectorSize))
+    {
+        cfg.block_size  = flash_info->SectorSize;
+        cfg.block_count = (flash_info->TotalSize-1024*1024) / flash_info->SectorSize; // 预留1M空间
+    }
+    else
+    {
+        cfg.block_size = 4096;
+        cfg.block_count = 512;
+        return -1;
+    }
+
     /* 挂载设备 */
     int err = lfs_mount(&g_lfs_t, &cfg);
 

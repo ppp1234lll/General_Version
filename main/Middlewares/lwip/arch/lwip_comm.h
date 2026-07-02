@@ -90,4 +90,5 @@ uint8_t *lwip_get_mac_addr(void);
 void lwip_stop_function(void);
 void lwip_updata_remote_network_infor(__lwip_dev *lwipx);
 int8_t lwip_start_function(void);
+void lwip_stop_function(void);
 #endif

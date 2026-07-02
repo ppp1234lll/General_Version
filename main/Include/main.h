@@ -18,7 +18,7 @@
 *                                        程序版本号
 *********************************************************************************************************
 */
-#define SOFT_NO_STR    "1.0.3.20260501" // 软件版本号
+#define SOFT_NO_STR    "1.0.1.20260501" // 软件版本号
 #define HARD_NO_STR    "FN-ZJTY-PY"     // 硬件名称
 
 /*
@@ -118,27 +118,33 @@
 *                                         LWIP网络
 *********************************************************************************************************
 */
-#include "lwip_comm.h"
-
+// ping相关
 #include "./ping/lwip_ping.h"
 #include "./ping/lwip_ping_multi.h"
-
+#include "./ping/lwip_ping_remote.h"
+// tcp相关
 #include "./tcp_client/tcp_client.h"
-
+// web服务器相关
 #include "./web_server/httpd.h"
 #include "./web_server/httpd_cgi_ssi.h"
-
+// onvif相关
 #include "./onvif/onvif.h"
 #include "./onvif/onvif_tcp.h"
-
+#include "./onvif/onvif_agree.h"
+#include "./onvif/onvif_deal.h"
+#include "./onvif/onvif_digest.h"
+#include "./onvif/onvif_prefixlen.h"
+// 端口扫描相关
 #include "./port_scan/port_scan.h"
-
+// rtsp相关
 #include "./rtsp_client/rtsp_task.h"
-
+// snmp相关
 #include "./snmp_udp/snmp_udp.h"
-
+// udp多播相关
 #include "./udp_multicast/udp_multicast.h"
 
+// 通用头文件
+#include "lwip_comm.h"
 #include "ethernetif.h"
 #include "lwipopts.h"
 
@@ -164,6 +170,13 @@
 */
 #include "./Update/inc/update.h"
 #include "./Update/inc/update_http.h"
+/*
+*********************************************************************************************************
+*                                         文件上传
+*********************************************************************************************************
+*/
+#include "./Upload/inc/upload.h"
+#include "./Upload/inc/upload_http.h"
 
 /*
 *********************************************************************************************************
@@ -183,6 +196,8 @@
 #include "./User/inc/com.h"
 #include "./User/inc/save.h"
 #include "./User/inc/error.h"
+#include "./User/inc/log.h"
+
 /*
 *********************************************************************************************************
 *                                          文件系统
@@ -209,10 +224,23 @@
 *                                          FLASH存储位置
 *********************************************************************************************************
 */
-#define DEVICE_FLASH_STORE        0x08004000
-#define DEVICE_ID_ADDR          DEVICE_FLASH_STORE
-#define DEVICE_MAC_ADDR         DEVICE_FLASH_STORE + 64
-#define DEVICE_ELECTRICITY_ADDR 0x08008000
-#endif
+#define DEVICE_FLASH_STORE        ADDR_FMC_SECTOR_2
+#define DEVICE_ID_ADDR            DEVICE_FLASH_STORE
+#define DEVICE_MAC_ADDR           DEVICE_FLASH_STORE + 16
+#define DEVICE_ELECTRICITY_ADDR   DEVICE_FLASH_STORE + 32
 
+
+/*
+*********************************************************************************************************
+*                                           OTA升级参数
+*********************************************************************************************************
+*/
+
+#define EXTERNAL_FLASH_SIZE        (g_tSF.TotalSize)
+#define UPDATE_CHUNK_SIZE          (1024 + 2)
+#define UPDATA_SPIFLASH_ADDR       (EXTERNAL_FLASH_SIZE - (1 * 1024 * 1024))  // 芯片最后1M空间作为升级文件存储地址
+#define UPDATA_PARAM_ADDR          (EXTERNAL_FLASH_SIZE - (1 * 1024))          // 芯片最后1K空间作为升级参数存储地址
+
+
+#endif
 /*****************************************  (END OF FILE) *********************************************/

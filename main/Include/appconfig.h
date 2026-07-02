@@ -18,6 +18,8 @@
 *                                       功能选择
 *********************************************************************************************************
 */
+#define configUSE_DEVICE_TYPE           0 // 设备类型
+
 #define configUSE_EXT_LED               1 // 外接指示灯
 #define configUSE_EXT_FAN               1 // 外接风扇
 #define configUSE_EXT_GPS               1 // 北斗定位
@@ -30,8 +32,9 @@
 
 #define configUSE_AHT20                 1 // 温湿度检测
 #define configUSE_TILT                  1 // 倾斜度检测
-#define configUSE_CHIP_ORIENTATION      1 // 芯片放置方向(0：水平，1：垂直)
+#define configUSE_CHIP_ORIENTATION      0 // 芯片放置方向(0：水平，1：垂直)
 
+#define configUSE_EXT_SIM               0 // 使用SIM卡检测
 /*
 *********************************************************************************************************
 *                                       DEBUG调试

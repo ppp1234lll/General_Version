@@ -64,12 +64,21 @@
 *                                        Variable definition
 *********************************************************************************************************
 */
+// 升级状态
+typedef enum
+{
+    UPDATE_NONE = 0,
+    UPDATE_SUCCESS = 1,
+    UPDATE_FAILED = 2,
+} update_status_t;
+
 // 升级参数
 struct BOOT_UPDATE_PARAM
 {
     unsigned int is_update;     // true:需要升级, false:无需升级
     unsigned int section_size;  // 每包的实际数据(去掉校验2字节)大小
     unsigned int section_count; // 总包数
+    unsigned int update_status; // 升级状态
 };
 /*
 *********************************************************************************************************
@@ -80,11 +89,12 @@ struct BOOT_UPDATE_PARAM
 #define __FIRMWARE_VERSION_DEFINE 
 
 // 升级参数存储地址
-#define UPDATA_SPIFLASH_ADDR        (3*1024*1024) // W25Q128升级文件存储地址
-#define UPDATA_PARAM_ADDR           (UPDATA_SPIFLASH_ADDR + (1*1024*1024) - (1*1024)) // 系统升级参数存储地址
+#define EXTERNAL_FLASH_SIZE         (g_tSF.TotalSize)
+#define UPDATA_SPIFLASH_ADDR        (EXTERNAL_FLASH_SIZE - (1 * 1024 * 1024)) // 外部Flash最后1M空间作为升级文件存储地址
+#define UPDATA_PARAM_ADDR           (EXTERNAL_FLASH_SIZE - (1 * 1024))         // 外部Flash最后1K空间作为系统升级参数存储地址
 
 // APP程序入口地址
-#define MAIN_APP_ADDR               0x08010000  
+#define MAIN_APP_ADDR               ADDR_FMC_SECTOR_4  
 
 
 #endif

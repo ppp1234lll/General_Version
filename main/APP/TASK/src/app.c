@@ -29,64 +29,57 @@ typedef struct
         uint8_t save_local_network;      // 保存本地网络参数
         uint8_t save_remote_network;     // 保存远端网络参数
         uint8_t save_update_addr;        // 保存更新地址
-        uint8_t com_parameter;                 // 通信相关参数
-        uint8_t save_carema;               // 摄像头参数 20230712
-        uint8_t save_threshold;       // 阈值
-        uint8_t save_reset;                     // 恢复出厂化
-        uint8_t save_snmp_oid;               // 保存SNMP OID参数
+        uint8_t com_parameter;          // 通信相关参数
+        uint8_t save_carema;            // 摄像头参数 20230712
+        uint8_t save_threshold;         // 阈值
+        uint8_t save_reset;             // 恢复出厂化
+        uint8_t save_snmp_oid;          // 保存SNMP OID参数
+        uint8_t save_upload_addr;       // 保存文件上传地址
     } save_flag;
     struct
     {
-        uint8_t report_normally;       // 正常上报
-        uint8_t query_configuration; // 查询配置上传
-        uint8_t heart_pack;                 // 心跳包
-        uint8_t version;                   // 版本信息
-        uint8_t config_return;           // 配置回复
-        uint8_t lbs_info;                       // 参数查询   20220329
-        uint8_t ipc_info;                       // 查询摄像机信息
-        uint8_t snmp_param;                       // 查询snmp参数
+        uint8_t report_normally;        // 正常上报
+        uint8_t query_configuration;    // 查询配置上传
+        uint8_t heart_pack;             // 心跳包
+        uint8_t version;                // 版本信息
+        uint8_t config_return;          // 配置回复
+        uint8_t ipc_info;               // 查询摄像机信息
+        uint8_t snmp_param;             // 查询snmp参数
+        uint8_t ping_info;              // 查询ping信息
     } com_flag;
     struct
     {
-        uint8_t caramer_num;      // 摄像机编号  20220329
-        uint8_t adapter_num;          // 适配器 - 编号
-        uint8_t snmp_dev_type;    // SNMP设备类型：摄像机0/1、ONV、交换机
+        uint8_t caramer_num;            // 摄像机编号  20220329
+        uint8_t snmp_dev_type;          // SNMP设备类型：摄像机0/1、ONV、交换机
     } sys;
     struct
     {
-        uint8_t lwip_reset;         // 网络重启标志
-        uint8_t adapter_reset;          // 适配器-重启标志
-        uint8_t relay_reset[RELAY_NUM];    
+        uint8_t lwip_reset;             // 网络重启标志
+        uint8_t relay_reset[RELAY_NUM];     // 继电器-标志位
 
         uint8_t net_reload_id[RELAY_NUM];        // 网络设备重启
         uint8_t net_reload_num[RELAY_NUM];        // 网络设备重启次数    
         uint8_t net_reload_times[RELAY_NUM];    // 网络设备重启计时    
     } sys_flag;
-    struct
-    {
-        uint8_t status;         // 更新结果
-    } update;
+    uint8_t memory;             // 内存利用率
 }sys_operate_t;
 
 /* 参数定义 */
-__attribute__((section (".RAM_D1"))) sys_backups_t sg_backups_t       = {0}; // 备份信息 20231022
+__attribute__((section (".RAM_D1"))) sys_backups_t sg_backups_t  ; // 备份信息 20231022
 __attribute__((section (".RAM_D1"))) sys_operate_t sg_sysoperate_t; // 系统操作参数：包括通信、存储、计时
-__attribute__((section (".RAM_D1"))) sys_param_t   sg_sysparam_t   = {0}; // 系统参数：本地、远端、设备、上报相关参数
-__attribute__((section (".RAM_D1"))) carema_t      sg_carema_param_t;   //onvif 摄像头信息
-__attribute__((section (".RAM_D1"))) com_param_t   sg_comparam_t           = {
+__attribute__((section (".RAM_D1"))) sys_param_t   sg_sysparam_t   ; // 系统参数：本地、远端、设备、上报相关参数
+__attribute__((section (".RAM_D1"))) carema_t      sg_carema_param_t;   // 摄像头信息
+__attribute__((section (".RAM_D1"))) com_param_t   sg_comparam_t    = {
     90000,
     60000,
     60000,
     60000,
-    200,    // 网络延时时间  20220308
-    120,    // ONVIF搜索时间  20230811
 };                 // 通信参数：心跳、上报、ping间隔时间
 __attribute__((section (".RAM_D1"))) uint8_t     sg_send_buff[2048] = {0}; // 发送缓存区
 __attribute__((section (".RAM_D1"))) uint16_t    sg_send_size =  0;     // 发送数据长度
 __attribute__((section (".RAM_D1"))) rtc_time_t  sg_rtctime_t = {0}; // rtc采集间隔时间
 __attribute__((section (".RAM_D1"))) snmp_oid_t sg_snmp_oid_t = {0}; // SNMP OID
 
-uint16_t sg_err_count = 0; // 错误数量
 /*    
 *********************************************************************************************************
 *    函 数 名: app_task_function
@@ -104,9 +97,9 @@ void app_task_function(void)
 
     for(;;)
     {
-        app_task_save_function();                   // 存储相关任务
-        com_deal_main_function();                     // 处理接收数据
-        app_com_send_function();                        // 通信发送
+        app_task_save_function();           // 存储相关任务
+        com_deal_main_function();           // 处理接收数据
+        app_com_send_function();            // 通信发送
         app_open_exec_task_function();        
         app_sys_net_operate_relay();
         app_sys_operate_relay();
@@ -118,7 +111,7 @@ void app_task_function(void)
             RTC_Get_Time(&sg_rtctime_t);        /* 时间获取 */
             
             /* 内存利用率 */
-            sg_sysparam_t.mem = my_mem_perused(SRAMIN);
+            sg_sysoperate_t.memory = my_mem_perused(SRAMIN);
         }
         FeedFwdgt();    
         vTaskDelay(10);              // 延时10ms
@@ -146,15 +139,16 @@ void app_set_com_send_flag_function(uint8_t cmd, uint8_t data)
         case CR_QUERY_SOFTWARE_VERSION:
             sg_sysoperate_t.com_flag.version = 1;
             break;
-        case CR_QUERY_LBS_INFO:          // 查询LBS信息
-            sg_sysoperate_t.com_flag.lbs_info = 1;
-            break;
         case CR_QUERY_IPC_IP:          // 查询IP地址
             sg_sysoperate_t.com_flag.ipc_info = 1;
             break;
         case CR_QUERY_SNMP_INFO:          // 查询SNMP参数
             sg_sysoperate_t.sys.snmp_dev_type = data;
             sg_sysoperate_t.com_flag.snmp_param = 1;
+            break;
+        case CR_QUERY_PING_INFO:          // 查询Ping信息
+            sg_sysoperate_t.sys.snmp_dev_type = data;
+            sg_sysoperate_t.com_flag.ping_info = 1;
             break;
     }
 }
@@ -190,10 +184,9 @@ void app_report_information_immediately(uint8_t if_save)
         sg_sysoperate_t.com_flag.report_normally = 2;
         if(if_save == 1)
         {
-            sg_err_count++;
             memset(sg_send_buff,0,sizeof(sg_send_buff));
             com_report_normally_function(sg_send_buff,&sg_send_size,CR_QUERY_INFO,if_save);
-            save_stroage_error_information(sg_send_buff,sg_send_size,sg_err_count);
+            log_device_write(sg_send_buff, sg_send_size);
         }
         return;
     }
@@ -202,8 +195,7 @@ void app_report_information_immediately(uint8_t if_save)
     com_report_normally_function(sg_send_buff,&sg_send_size,CR_QUERY_INFO,if_save);
     if(if_save == 1)
     {
-        sg_err_count++;
-        save_stroage_error_information(sg_send_buff,sg_send_size,sg_err_count);
+        log_device_write(sg_send_buff, sg_send_size);
     }
     /* 设置发送参数 */
     sg_sysoperate_t.com.send_cmd = CR_QUERY_INFO;
@@ -230,6 +222,7 @@ void app_deal_com_flag_function(void)
 {
     static uint32_t onvif_time = 0;
     static uint32_t snmp_time = 0;
+    static uint32_t ping_time = 0;
     
     /* 数据发送 */
     if(sg_sysoperate_t.com.send_cmd != 0)
@@ -300,11 +293,7 @@ void app_deal_com_flag_function(void)
                 onvif_time = 0;
                 sg_sysoperate_t.com_flag.ipc_info = 0;
                 com_ipc_device_information(sg_send_buff,&sg_send_size);
-                for(uint8_t i=0;i<5;i++)
-                {
-                    app_send_data_task_function();    
-                    vTaskDelay(1000);    
-                }
+                app_send_data_task_function();    
             }    
         }
     }
@@ -326,23 +315,43 @@ void app_deal_com_flag_function(void)
                 snmp_time = 0;
                 sg_sysoperate_t.com_flag.snmp_param = 0;
                 com_device_snmp_information(sg_send_buff,&sg_send_size);
-//                for(uint8_t i=0;i<3;i++)
-//                {
-                    app_send_data_task_function();    
-//                    OSTimeDlyHMSM(0,0,0,500);    
-//                }
+                app_send_data_task_function();    
             }    
         }
     }
-        
+    /* 查询PING  */
+    if(sg_sysoperate_t.com_flag.ping_info == 1)
+    {
+        if(ping_time == 0)
+        {
+            printf("..........start ping info............\n");
+            eth_set_ping_status(1); // 开始检测
+            memset(sg_send_buff,0,sizeof(sg_send_buff));
+            ping_time = HAL_GetTick();
+        }
+        else
+        {
+            if((eth_get_ping_status() == 0) || (HAL_GetTick()- ping_time > 10000))
+            {
+                printf(".........end ping info............\n");
+                ping_time = 0;
+                sg_sysoperate_t.com_flag.ping_info = 0;
+                com_device_ping_information(sg_send_buff,&sg_send_size);
+                app_send_data_task_function();    
+            }    
+        }
+    }        
     /* 回传信号 */
     if(sg_sysoperate_t.com_flag.config_return == 1)
     {
         sg_sysoperate_t.com_flag.config_return = 0;
-        /* 数据回传 */
         com_ack_function(sg_send_buff,&sg_send_size,sg_sysoperate_t.com.return_cmd,sg_sysoperate_t.com.return_error);
-        
         app_send_data_task_function();
+
+        if(sg_sysoperate_t.com.return_cmd == CONFIGURE_UPDATE_SYSTEM)
+        {
+            printf("return update system\n");
+        }
     }
 }
 
@@ -736,57 +745,6 @@ REPEAT4:
 
 /*
 *********************************************************************************************************
-*    函 数 名: app_sys_operate_timer_function
-*    功能说明: 操作命令的时间处理函数
-*    形    参: 
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void app_sys_operate_timer_function(void)
-{
-    static uint16_t time = 0;
-        
-    /* 重启指定适配器 */
-    if(sg_sysoperate_t.sys_flag.adapter_reset == 1)
-    {
-        /* 关闭指的适配器 */
-        if(sg_sysoperate_t.sys.adapter_num <= RELAY_NUM)
-        {
-            switch(sg_sysoperate_t.sys.adapter_num)
-            {
-                case 1:    relay_control(RELAY_1,RELAY_OFF);    break;
-                case 2:    relay_control(RELAY_2,RELAY_OFF);    break;
-                case 3:    relay_control(RELAY_3,RELAY_OFF);    break;
-                default:    break;
-
-            }
-            sg_sysoperate_t.sys_flag.adapter_reset = 2;
-            time = 15*1000; // 15s重启
-        }
-        else
-        {
-            sg_sysoperate_t.sys_flag.adapter_reset = 0;
-        }
-    }    
-    else if(sg_sysoperate_t.sys_flag.adapter_reset == 2)
-    {
-        time--;
-        if(time == 0)
-        {
-            switch(sg_sysoperate_t.sys.adapter_num)
-            {
-                case 1:    relay_control(RELAY_1,RELAY_ON);    break;
-                case 2:    relay_control(RELAY_2,RELAY_ON);    break;
-                case 3:    relay_control(RELAY_3,RELAY_ON);    break;
-                default:
-                    break;
-            }
-            sg_sysoperate_t.sys_flag.adapter_reset = 0;
-        }
-    }
-}
-/*
-*********************************************************************************************************
 *    函 数 名: app_set_net_operate_relay_id
 *    功能说明: 根据网络重启设置继电器重启
 *    形    参: 
@@ -921,17 +879,17 @@ void app_sys_net_relay_reload_num_times(void)
 */
 void app_get_storage_param_function(void)
 {
-    save_read_local_network(&sg_sysparam_t.local);
-    save_read_remote_ip_function(&sg_sysparam_t.remote);
-    save_read_device_paramter_function(&sg_sysparam_t.device);
-    save_read_com_param_function(&sg_comparam_t);
-    save_read_carema_parameter(&sg_carema_param_t);   //20230712
-    save_read_threshold_parameter(&sg_sysparam_t.threshold); // 20230720
-    save_read_http_ota_function(&sg_sysparam_t.ota);
-    save_read_backups_function(&sg_backups_t); // 20231022
-    save_read_snmp_oid_parameter(&sg_snmp_oid_t); // 20231022
-    // 读取用电量参数
-    save_read_electricity_function(&sg_datacollec_t.electricity_all);
+    save_read_local_network(&sg_sysparam_t.local);  // 读取本地网络参数
+    save_read_remote_ip_function(&sg_sysparam_t.remote);  // 读取远程网络参数
+    save_read_device_paramter_function(&sg_sysparam_t.device);  // 读取设备参数
+    save_read_com_param_function(&sg_comparam_t);  // 读取通信相关参数
+    save_read_carema_parameter(&sg_carema_param_t);  // 读取摄像头参数
+    save_read_threshold_parameter(&sg_sysparam_t.threshold); // 读取阈值参数
+    save_read_http_ota_function(&sg_sysparam_t.ota);  // 读取OTA参数
+    save_read_backups_function(&sg_backups_t);  // 读取备份参数
+    save_read_snmp_oid_parameter(&sg_snmp_oid_t); // 读取OID参数
+    save_read_http_upload_function(&sg_sysparam_t.upload); // 读取上传参数
+    save_read_electricity_function(&sg_datacollec_t.electricity_all);// 读取用电量参数
 }
 
 /*
@@ -947,14 +905,12 @@ void app_task_save_function(void)
     if(sg_sysoperate_t.save_flag.save_device_param == 1)
     {
         sg_sysoperate_t.save_flag.save_device_param = 0;
-        /* 存储设备参数信息 */
         save_storage_device_parameter_function(&sg_sysparam_t.device);
     }    
     
     if(sg_sysoperate_t.save_flag.save_local_network == 1)
     {
         sg_sysoperate_t.save_flag.save_local_network = 0;
-        /* 存储本地网络参数信息 */
         save_stroage_local_network(&sg_sysparam_t.local);
         vTaskDelay(100);
         eth_set_network_reset();
@@ -963,12 +919,10 @@ void app_task_save_function(void)
     if(sg_sysoperate_t.save_flag.save_remote_network == 1)
     {
         sg_sysoperate_t.save_flag.save_remote_network = 0;
-        /* 存储本地网络参数信息 */
         save_stroage_remote_ip_function(&sg_sysparam_t.remote);
-        
         vTaskDelay(100);
-        app_system_softreset();
-//        set_reboot_time_function(1000); // 配置服务器后系统重启，防止设备未传到新平台
+        eth_set_network_reset();              // 重启网络
+        gsm_set_module_reset_function();     // 重启GPRS
     }
     /* 存储摄像头参数 */    
     if(sg_sysoperate_t.save_flag.save_carema == 1)
@@ -993,7 +947,15 @@ void app_task_save_function(void)
     {
         sg_sysoperate_t.save_flag.save_snmp_oid = 0;
         save_stroage_snmp_oid_parameter(&sg_snmp_oid_t);
-    }    
+    }
+    
+    /* 存储文件上传地址 */    
+    if(sg_sysoperate_t.save_flag.save_upload_addr == 1)
+    {
+        sg_sysoperate_t.save_flag.save_upload_addr = 0;
+        save_stroage_http_upload_function(&sg_sysparam_t.upload);
+    }   
+    
     /* 恢复出厂化：产品序列号不变 */
     if(sg_sysoperate_t.save_flag.save_reset == 1)
     {
@@ -1042,6 +1004,9 @@ void app_set_save_infor_function(uint8_t mode)
         case SAVE_SNMP_OID:
             sg_sysoperate_t.save_flag.save_snmp_oid = 1;
             break;
+        case SAVE_UPLOAD:
+            sg_sysoperate_t.save_flag.save_upload_addr = 1;
+            break;
         default:
             break;
     }
@@ -1063,49 +1028,36 @@ void *app_get_local_network_function(void)
 /*
 *********************************************************************************************************
 *    函 数 名: app_set_local_network_function
-*    功能说明: 设置本地网络参数
+*    功能说明: 存储部分网络参数
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
 void app_set_local_network_function(struct local_ip_t param)
 {
-    uint8_t mac[6] = {0};
-    uint8_t main_ip[4] = {0};
-    
-    memcpy(mac,sg_sysparam_t.local.mac,6);             // 备份
-    memcpy(main_ip,sg_sysparam_t.local.ping_ip,4);     // 备份
-    memset((uint8_t*)&sg_sysparam_t.local,0,sizeof(struct local_ip_t));
-    memcpy((uint8_t*)&sg_sysparam_t.local,&param,sizeof(struct local_ip_t));
-    memcpy(sg_sysparam_t.local.mac,mac,6);             // 还原
-    memcpy(sg_sysparam_t.local.ping_ip,main_ip,4);     // 还原
-    /* 保存 */
-    app_set_save_infor_function(SAVE_LOCAL_NETWORK);
-}
-
-/*
-*********************************************************************************************************
-*    函 数 名: app_set_local_network_function_two
-*    功能说明: 存储部分网络参数
-*    形    参: 
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void app_set_local_network_function_two(struct local_ip_t param)
-{
     memcpy(sg_sysparam_t.local.ip,param.ip,4);
     memcpy(sg_sysparam_t.local.gateway,param.gateway,4);
     memcpy(sg_sysparam_t.local.netmask,param.netmask,4);
     memcpy(sg_sysparam_t.local.dns,param.dns,4);
+    {
+        uint8_t mac_zero = 1;
+        uint8_t mac_diff = 0;
+        for (uint8_t j = 0; j < 6; j++)
+        {
+            if (param.mac[j] != 0) mac_zero = 0;
+            if (param.mac[j] != sg_sysparam_t.local.mac[j]) mac_diff = 1;
+        }
+        if (!mac_zero && mac_diff)
+        {
+            bsp_WriteCpuFlash_Save(DEVICE_FLASH_STORE, DEVICE_MAC_ADDR, (uint8_t *)param.mac, 6);
+        }
+    }
     memcpy(sg_sysparam_t.local.mac,param.mac,6);
     memcpy(sg_sysparam_t.local.ping_ip,param.ping_ip,4);
     memcpy(sg_sysparam_t.local.ping_sub_ip,param.ping_sub_ip,4);
     
     memcpy(sg_sysparam_t.local.multicast_ip,param.multicast_ip,4);
     sg_sysparam_t.local.multicast_port = param.multicast_port;
-
-//    STMFLASH_Write_SAVE(DEVICE_FLASH_STORE,DEVICE_MAC_ADDR,(uint32_t *)&sg_sysparam_t.local.mac,2);
-//    bsp_WriteCpuFlash_Save(DEVICE_FLASH_STORE,DEVICE_MAC_ADDR,(uint8_t *)&local.mac,6);
 
     app_set_save_infor_function(SAVE_LOCAL_NETWORK);
 }
@@ -1119,21 +1071,38 @@ void app_set_local_network_function_two(struct local_ip_t param)
 *    返 回 值: 
 *********************************************************************************************************
 */
-void app_set_transfer_mode_function(uint8_t mode) 
+int8_t app_set_transfer_mode_function(uint8_t mode) 
 {
-    switch(mode) {
+    int8_t ret = 0;
+    switch(mode) 
+    {
         case 0:
-            sg_sysparam_t.local.server_mode = SERVER_MODE_LWIP;
+            if(sg_sysparam_t.local.server_mode != SERVER_MODE_LWIP)
+            {
+                sg_sysparam_t.local.server_mode = SERVER_MODE_LWIP;
+                ret = 1;
+            }
             break;
         case 1:
-            sg_sysparam_t.local.server_mode = SERVER_MODE_GPRS;
+            if(sg_sysparam_t.local.server_mode != SERVER_MODE_GPRS)
+            {
+                sg_sysparam_t.local.server_mode = SERVER_MODE_GPRS;
+                ret = 1;
+            }
             break;
         case 2:
-            sg_sysparam_t.local.server_mode = SERVER_MODE_AUTO;
+            if(sg_sysparam_t.local.server_mode != SERVER_MODE_AUTO)
+            {
+                sg_sysparam_t.local.server_mode = SERVER_MODE_AUTO;
+                ret = 1;
+            }
             break;
     }
-    /* 保存 */
-    app_set_save_infor_function(SAVE_LOCAL_NETWORK);
+    if(ret)
+    {
+        app_set_save_infor_function(SAVE_LOCAL_NETWORK);
+    }
+    return ret;
 }
 /*
 *********************************************************************************************************
@@ -1192,9 +1161,7 @@ void *app_get_backups_function(void)
 void app_set_remote_network_function(struct remote_ip param)
 {
     app_save_backups_remote_param_function();  // 备份服务器信息
-    
     memcpy(&sg_sysparam_t.remote,&param,sizeof(struct remote_ip));
-    /* 存储 */
     app_set_save_infor_function(SAVE_REMOTE_IP);
 }
 
@@ -1635,10 +1602,7 @@ void app_set_device_param_function(struct device_param param)
     memset((uint8_t*)&sg_sysparam_t.device,0,sizeof(struct device_param));
     memcpy((uint8_t*)&sg_sysparam_t.device,&param,sizeof(struct device_param));
     
-//    STMFLASH_Write_SAVE(DEVICE_FLASH_STORE,DEVICE_ID_ADDR,(uint32_t*)param.id.c,1);
     bsp_WriteCpuFlash_Save(DEVICE_FLASH_STORE,DEVICE_ID_ADDR,(uint8_t*)param.id.c,4);
-    
-    /* 保存 */
     app_set_save_infor_function(SAVE_DEVICE_PARAM);
 }
 
@@ -1731,28 +1695,9 @@ void app_set_next_ping_time(uint16_t time, uint8_t time_dev)
 void app_set_network_delay_time(uint8_t time_dev)
 {
     /* 将时间单位转换为ms */
-    sg_comparam_t.network_time = time_dev;
-    app_set_save_infor_function(SAVE_COM_PARAMETER);
+    sg_sysparam_t.threshold.net_delay_time = time_dev;
+    app_set_save_infor_function(SAVE_THRESHOLD);
 }
-
-/*
-*********************************************************************************************************
-*    函 数 名: app_set_onvif_reload_time
-*    功能说明: 设置搜索协议时间、重启时间
-*    形    参: 
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void app_set_onvif_reload_time(uint8_t time_dev,uint8_t mode)
-{
-    switch(mode)
-    {
-        case 0: sg_comparam_t.onvif_time = time_dev; break;
-        default: break;
-    }
-    app_set_save_infor_function(SAVE_COM_PARAMETER);
-}
-
 
 /*
 *********************************************************************************************************
@@ -1905,7 +1850,7 @@ uint32_t app_get_report_time(void)
 */
 uint8_t app_get_network_delay_time(void) 
 {
-    return sg_comparam_t.network_time;
+    return sg_sysparam_t.threshold.net_delay_time;
 }
 /*
 *********************************************************************************************************
@@ -2071,32 +2016,17 @@ uint8_t app_get_carema_search_mode(void)
 
 /*
 *********************************************************************************************************
-*    函 数 名: app_set_com_time_param_function
-*    功能说明: 设置通信相关时间参数:ping、上报
+*    函 数 名: app_set_report_time_function
+*    功能说明: 设置上报时间间隔
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
-void app_set_com_time_param_function(uint32_t *time,uint8_t mode) 
+void app_set_report_time_function(uint32_t time) 
 {
-    if(mode == 0) 
-    {
-        sg_comparam_t.dev_ping   = time[1]*1000;
-        sg_comparam_t.ping       = time[0]*1000;
-        sg_comparam_t.onvif_time = time[2];  // ONVIF时间  20230811
-    } 
-    else     if(mode == 1) 
-    {
-        sg_comparam_t.report  = time[0]*1000;
-    }
-    else     if(mode == 2)   // 网络延时时间  20220308
-    {
-        sg_comparam_t.network_time  = time[0];
-    }
-    /* 保存 */
+    sg_comparam_t.report  = time*1000;
     app_set_save_infor_function(SAVE_COM_PARAMETER);
 }
-
 
 /*
 *********************************************************************************************************
@@ -2121,19 +2051,19 @@ uint8_t *app_get_device_name(void)
 */
 void app_set_threshold_param_function(struct threshold_params param)
 {
-    sg_sysparam_t.threshold.volt_max = param.volt_max;
-    sg_sysparam_t.threshold.volt_min = param.volt_min; 
-    sg_sysparam_t.threshold.current = param.current;
-    sg_sysparam_t.threshold.angle = param.angle;
-    sg_sysparam_t.threshold.miu = param.miu;    
-    sg_sysparam_t.threshold.humi_high = param.humi_high;
-    sg_sysparam_t.threshold.humi_low = param.humi_low; 
-    sg_sysparam_t.threshold.temp_high = param.temp_high;
-    sg_sysparam_t.threshold.temp_low = param.temp_low; 
-    sg_sysparam_t.threshold.net_reload = param.net_reload;
-    sg_sysparam_t.threshold.net_retime = param.net_retime;    
-    
-    save_stroage_threshold_parameter(&sg_sysparam_t.threshold); 
+    sg_sysparam_t.threshold.volt_max        = param.volt_max;
+    sg_sysparam_t.threshold.volt_min        = param.volt_min; 
+    sg_sysparam_t.threshold.current         = param.current;
+    sg_sysparam_t.threshold.angle           = param.angle;
+    sg_sysparam_t.threshold.miu             = param.miu;    
+    sg_sysparam_t.threshold.humi_high       = param.humi_high;
+    sg_sysparam_t.threshold.humi_low        = param.humi_low; 
+    sg_sysparam_t.threshold.temp_high       = param.temp_high;
+    sg_sysparam_t.threshold.temp_low        = param.temp_low; 
+    sg_sysparam_t.threshold.net_reload      = param.net_reload;
+    sg_sysparam_t.threshold.net_retime      = param.net_retime;    
+    sg_sysparam_t.threshold.net_delay_time  = param.net_delay_time;
+    app_set_save_infor_function(SAVE_THRESHOLD);
 }
 /*
 *********************************************************************************************************
@@ -2292,32 +2222,6 @@ void app_send_data_task_function(void)
 
 /*
 *********************************************************************************************************
-*    函 数 名: app_set_update_status_function
-*    功能说明: 更新结果
-*    形    参: @mode        :
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void app_set_update_status_function(uint8_t flag)
-{
-    sg_sysoperate_t.update.status = flag;
-}
-
-/*
-*********************************************************************************************************
-*    函 数 名: app_set_update_status_function
-*    功能说明: 更新结果
-*    形    参: @mode        :
-*    返 回 值: 
-*********************************************************************************************************
-*/
-uint8_t app_get_update_status_function(void)
-{
-    return sg_sysoperate_t.update.status;
-}
-
-/*
-*********************************************************************************************************
 *    函 数 名: app_get_http_ota_function
 *    功能说明: 获取更新
 *    形    参: 
@@ -2339,9 +2243,33 @@ void *app_get_http_ota_function(void)
 void app_set_http_ota_function(struct update_addr param)
 {
     memcpy(&sg_sysparam_t.ota,&param,sizeof(struct update_addr));
-    save_stroage_http_ota_function(&sg_sysparam_t.ota);
+    app_set_save_infor_function(SAVE_UPDATE);
 }
-
+/*
+*********************************************************************************************************
+*    函 数 名: app_get_http_upload_function
+*    功能说明: 获取上传地址
+*    形    参: 
+*    返 回 值: 
+*********************************************************************************************************
+*/
+void *app_get_http_upload_function(void)
+{
+    return (&sg_sysparam_t.upload);
+} 
+/*
+*********************************************************************************************************
+*    函 数 名: app_set_http_upload_function
+*    功能说明: 存储上传地址
+*    形    参: 
+*    返 回 值: 
+*********************************************************************************************************
+*/
+void app_set_http_upload_function(struct upload_addr param)
+{
+    memcpy(&sg_sysparam_t.upload,&param,sizeof(struct upload_addr));
+    app_set_save_infor_function(SAVE_UPLOAD);
+}
 /*
 *********************************************************************************************************
 *    函 数 名: app_get_snmp_oid_function

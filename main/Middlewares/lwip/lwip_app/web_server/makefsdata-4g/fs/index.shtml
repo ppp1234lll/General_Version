@@ -114,13 +114,14 @@
             .from {
                 display: flex;
                 margin: 20px 0;
-                width: 300px;
+                width: 330px;
 
             }
 
             .from span{
-                min-width: 100px;
+                min-width: 120px;
                 text-align: left;
+                white-space: nowrap;
             }
             input,select {
                 width: 200px;
@@ -349,6 +350,7 @@
                     ["漏电(mA)","<!--#am-->",'am'],
 					["重启次数","<!--#bc-->",'bc'],
                     ["重启时间","<!--#bd-->",'bd'],
+                    ["网络延时时间","<!--#N-->","N"],
                 ],
                 btns:[
                     ["保存","threshold_save"]
@@ -381,10 +383,7 @@
                         type:"select",
                         options:["有线传输","无线传输","自动切换"],
                     }],
-                    ['摄像机检测方式','','camera_tran',{
-                        type:"select",
-                        options:["PING方式","端口扫描","RTSP拉流测试"],
-                    }],
+                    ["上报间隔时间","<!--#J-->",'J'],
                 ],
                 btns:[
                     ["保存","set_save"],
@@ -412,9 +411,8 @@
                     ["网关","<!--#g-->",'g'],
                     ["DNS","<!--#h-->","h"],
                     ["MAC","<!--#L-->","L"],
-                    ["主网检测地址1","<!--#i-->","i"],
-                    ["主网检测地址2","<!--#K-->","K"],
-					["网络延时时间","<!--#N-->","N"],
+                    ["主网地址1","<!--#i-->","i"],
+                    ["主网地址2","<!--#K-->","K"],
                     ["组播IP","<!--#O-->","O"],
                     ["组播端口","<!--#P-->","P"],
                     ["交换机IP","<!--#bf-->","bf"],
@@ -440,8 +438,10 @@
                     ['品牌','','e_b',{ type:"select", options:["海康","大华","其他"] }],
                     ["摄像机6","<!--#r-->",'r'],
                     ['品牌','','f_b',{ type:"select", options:["海康","大华","其他"] }],
-                    ["ping间隔时间","<!--#s-->",'s'],
-                    ["ping间隔时间-设置","<!--#t-->",'t'],
+                    ['检测方式','','camera_tran',{
+                        type:"select",
+                        options:["PING方式","端口扫描","RTSP拉流测试"],
+                    }],
                 ],
                 btns:[
                     ["保存","camera_save"]
@@ -467,7 +467,7 @@
                 ],
             },
             {
-                label:"服务器配置",
+                label:"平台配置",
                 divid:"content",
                 btntype:"serverset",
                 nodes:[
@@ -479,19 +479,20 @@
                     ["内网1端口_备份","<!--#af-->",'af'],
                     ["外网1地址_备份","<!--#ag-->",'ag'],
                     ["外网1端口_备份","<!--#ah-->",'ah'],
-                    ["上报间隔时间","<!--#J-->",'J'],
                 ],
                 btns:[
                     ["保存","remote_save"]
                 ]
             },
             {
-                label:"升级服务器",
+                label:"服务器",
                 divid:"content",
                 btntype:"update_addr",
                 nodes:[
                     ["升级url","<!--#ba-->",'ba'],
                     ["升级端口","<!--#bb-->",'bb'],
+                    ["上传url","<!--#bg-->",'bg'],
+                    ["上传端口","<!--#bh-->",'bh'],
                 ],
                 btns:[
                     ["保存","update_save"]
@@ -538,13 +539,16 @@
                 btns:[
                     ["系统升级-有线","updatelwip"],
 					["系统升级-无线","updategprs"],
-					["基站定位","lbsgps"],
                     ["恢复出厂","reset"],
                     ["重启","reboot"],
                     ["擦除存储","eacres"],
                     ["摄像机搜索","carema"],
+                    ["查摄像机1","snmpcamera1"],
+                    ["打印日志","printlog"],
+                    ["打印日志信息","printloginfo"],
                     ["打印mib","printmib"],
-                    ["查摄像机1","snmpcamera1"]
+                    ["清除当前批次","clearcurrent"],
+                    ["文件上传","uploadfile"],
                 ]
             }
         ]
@@ -708,8 +712,9 @@
                 ].join('')
             },
             btnhtml(i,data){
+                var style = this.model[i].btntype=="otherSetting" ? 'text-align:left; width:650px;' : 'text-align:center';
                 return [
-                    '<div style="text-align:center"><button class="button" onclick="View.click(\'',data[1],'\',',i,')">',
+                    '<div style="',style,'"><button class="button" onclick="View.click(\'',data[1],'\',',i,')">',
                         data[0],
                     '</button></div>'
                 ].join("")
@@ -719,9 +724,20 @@
                 var html="";
                 console.log('loadcontent',s,data,j)
                 for(var i=0;i<data.nodes.length;i++){
-                    if(s[i]){
+                    if(s[i]!==undefined&&s[i]!==null){
                         data.nodes[i][1]=s[i]+''
                     }
+                }
+                if(data.btntype=="VACollection"){
+                    html = this.renderVACollection(data,j)
+                    document.getElementById(data.divid).innerHTML=html
+                    return
+                }else if(data.btntype=="carema_user"){
+                    html = this.renderCameraUser(data,j)
+                    document.getElementById(data.divid).innerHTML=html
+                    return
+                }
+                for(var i=0;i<data.nodes.length;i++){
                     if (data.nodes[i][2] === 'oid_cmd') {
                         var devTypeNode = data.nodes.find(n => n[2] === 'dev_type');
                         if (devTypeNode) {
@@ -736,13 +752,7 @@
                         }
                     }
                     var item_html = "";
-                    if(data.btntype=="VACollection"){
-                        html = this.renderVACollection(data,j)
-                        break;
-                    }else if(data.btntype=="carema_user"){
-                        html = this.renderCameraUser(data,j)
-                        break;
-                    }else if(data.nodes[i][3]&&typeof data.nodes[i][3]=='object'){
+                    if(data.nodes[i][3]&&typeof data.nodes[i][3]=='object'){
                         if(data.nodes[i][3].type=="switch"){
                             item_html=this.swichhtml(data.nodes[i],j,i)
                         }else{
@@ -752,8 +762,11 @@
                         item_html=this.inputhtml(data.nodes[i],j,i)
                     }
 
-                    if (data.btntype=="otherSetting" && data.nodes[i][0].indexOf('摄像机') === 0 && data.nodes[i][0].length > 3) {
+                    if (data.btntype=="otherSetting" && data.nodes[i][0].indexOf('摄像机') === 0 && data.nodes[i][0].length > 3 && data.nodes[i][2] !== 'camera_tran') {
                         html += '<div style="display:flex; flex-direction:row; width:650px; justify-content: flex-start;">' + item_html;
+                    } else if (data.btntype=="otherSetting" && data.nodes[i][2] === 'camera_tran') {
+                        item_html = item_html.replace('class="from"', 'class="from" style="width:650px;"');
+                        html += item_html;
                     } else if (data.btntype=="otherSetting" && data.nodes[i][0] === '品牌' && i > 0 && data.nodes[i-1][0].indexOf('摄像机') === 0 && data.nodes[i-1][0].length > 3) {
                         // 为了紧凑显示，将from 的宽度设置为220px，并去除“品牌”文字
                         item_html = item_html.replace('class="from"', 'class="from" style="width:220px; margin-left:10px;"');

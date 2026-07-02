@@ -25,7 +25,7 @@ struct netif g_lwip_netif;                                  /* ¶¨ÒåÒ»¸öÈ«¾ÖµÄÍøÂ
 
 /* LINKÏß³ÌÅäÖÃ */
 #define LWIP_LINK_TASK_PRIO             3                   /* ÈÎÎñÓÅÏÈ¼¶ */
-#define LWIP_LINK_STK_SIZE              128 * 2             /* ÈÎÎñ¶ÑÕ»´óĞ¡ */
+#define LWIP_LINK_STK_SIZE              (512)               /* ÈÎÎñ¶ÑÕ»´óĞ¡ */
 void lwip_link_thread( void * argument );                   /* Á´Â·Ïß³Ì */
 
 
@@ -191,6 +191,7 @@ uint8_t lwip_comm_init(void)
     igmp_init();
     httpd_init();
     lwip_ping_multi_init();
+    lwip_ping_remote_init();
     dns_init();
 
     return 0;                                       /* ²Ù×÷OK. */
@@ -253,6 +254,13 @@ void lwip_link_thread( void * argument )
 
                 printf("ETHÁ´Â·²åÈë\r\n");
             }
+
+            if(g_lwipdev.netif_state == 0) // ÖØĞÂ²åÈëÍøÏßºó£¬ĞèÒªÖØĞÂ³õÊ¼»¯ÍøÂç
+            {
+                printf("ÖØĞÂÅäÖÃ£¬ĞèÒªÖØĞÂ³õÊ¼»¯ÍøÂç\r\n");
+                lwip_start_function();
+            }
+
         }
         vTaskDelay(100);
     }
@@ -321,8 +329,8 @@ void lwip_updata_remote_network_infor(__lwip_dev *lwipx)
 {
     static uint8_t sg_last_domename[128] = {0};
     struct remote_ip *remote = NULL;
-    int              ret      = 0;
-    int                 ip[4]   = {0};
+    int    ret     = 0;
+    int    ip[4]   = {0};
     
     remote = app_get_remote_network_function();
     
@@ -377,13 +385,38 @@ int8_t lwip_start_function(void)
         IP4_ADDR(&g_lwip_netif.netmask,g_lwipdev.netmask[0],g_lwipdev.netmask[1] ,g_lwipdev.netmask[2],g_lwipdev.netmask[3]);
         IP4_ADDR(&g_lwip_netif.gw,g_lwipdev.gateway[0],g_lwipdev.gateway[1],g_lwipdev.gateway[2],g_lwipdev.gateway[3]);
         
-        netif_set_up(&g_lwip_netif);
-        netif_set_link_up(&g_lwip_netif); // ´ò¿ªnetifÍø¿Ú
-        
-        led_control_function(LD_LAN,LD_ON);
         g_lwipdev.netif_state = 1;
+        enet_enable();
+        enet_interrupt_enable(ENET_DMA_INT_NIE);
+        enet_interrupt_enable(ENET_DMA_INT_RIE);
+        netif_set_up(&g_lwip_netif);
+        netif_set_link_up(&g_lwip_netif);
     }
     
     return 0;
+}
+
+/*
+*********************************************************************************************************
+*    º¯ Êı Ãû: lwip_stop_function
+*    ¹¦ÄÜËµÃ÷: ÍøÂçÍ£Ö¹º¯Êı
+*    ĞÎ    ²Î: 
+*    ·µ »Ø Öµ: 
+*********************************************************************************************************
+*/
+void lwip_stop_function(void)
+{
+	if(g_lwipdev.init == 1) 
+	{
+		if(g_lwipdev.netif_state == 1) 
+		{
+			g_lwipdev.netif_state = 0;
+            enet_disable();
+            enet_interrupt_disable(ENET_DMA_INT_NIE);
+            enet_interrupt_disable(ENET_DMA_INT_RIE);                
+            netif_set_down(&g_lwip_netif);
+            netif_set_link_down(&g_lwip_netif);
+		}
+	}
 }
 

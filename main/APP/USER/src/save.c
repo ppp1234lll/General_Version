@@ -1,19 +1,16 @@
 #include "main.h"
 #include "./User/inc/save.h"
 
-#define SAVE_LOCAL_NETWORK_NAME     ("network_name")      /* 本地网络信息 */
-#define SAVE_REMOTE_NETWORK_NAME    ("remote_name")       /* 远端网络信息 */
-#define SAVE_REMOTE_BACKUPS_NAME    ("backups")           /* 远端网络——备份 20231023*/ 
-#define SAVE_DEVICE_PARAMETER_NAME  ("device_name")       /* 设备详细:id、名称、密码等 */
-#define SAVE_CAREMA_PARAMETER       ("carema_param")      /* 摄像头相关信息 */
-#define SAVE_COM_PARAMETER_NAME     ("comparameter")      /* 通信相关参数 */
-#define SAVE_HTTP_UPDATE_ADDR_NAME  ("HTTP_OTA")           /* 更新地址 */
-#define SAVE_THRESHOLD_PARAMETER    ("threshold_params")  /* 相关阈值：电压 电流 角度 */ // 20230720
-#define SAVE_UPDATE_FILE_INFOR_NAME ("upfileinfor.bin")   /* 更新文件信息 */
-
-#define SAVE_SNMP_OID_PARAMETER     ("snmp_oid")  
-
-#define SAVE_ERROR_INFORMATION ("error_information")  /* 错误信息 */
+#define SAVE_LOCAL_NETWORK_NAME     ("network_name")        /* 本地网络信息 */
+#define SAVE_REMOTE_NETWORK_NAME    ("remote_name")         /* 远端网络信息 */
+#define SAVE_REMOTE_BACKUPS_NAME    ("backups")             /* 远端网络——备份 20231023*/ 
+#define SAVE_DEVICE_PARAMETER_NAME  ("device_name")         /* 设备详细:id、名称、密码等 */
+#define SAVE_CAREMA_PARAMETER       ("carema_param")        /* 摄像头相关信息 */
+#define SAVE_COM_PARAMETER_NAME     ("comparameter")        /* 通信相关参数 */
+#define SAVE_HTTP_UPDATE_ADDR_NAME  ("HTTP_OTA")            /* 更新地址 */
+#define SAVE_HTTP_UPLOAD_ADDR_NAME  ("HTTP_UPLOAD")         /* 文件上传地址 */
+#define SAVE_THRESHOLD_PARAMETER    ("threshold_params")    /* 相关阈值：电压 电流 角度 */ // 20230720
+#define SAVE_SNMP_OID_PARAMETER     ("snmp_oid")            /* SNMP OID */
 
 /*
 *********************************************************************************************************
@@ -47,16 +44,14 @@ void save_clear_file_function(uint8_t mode)
         lfs_remove(&g_lfs_t,SAVE_CAREMA_PARAMETER);          //    20230712
         lfs_remove(&g_lfs_t,SAVE_THRESHOLD_PARAMETER);  //    20230720
         lfs_remove(&g_lfs_t,SAVE_HTTP_UPDATE_ADDR_NAME);  //    20230720
+        lfs_remove(&g_lfs_t,SAVE_HTTP_UPLOAD_ADDR_NAME);
         lfs_remove(&g_lfs_t,SAVE_SNMP_OID_PARAMETER);
+        lfs_remove(&g_lfs_t,SAVE_REMOTE_BACKUPS_NAME);
     }
     else if(mode == 1)
     {
         lfs_remove(&g_lfs_t,SAVE_LOCAL_NETWORK_NAME);
     } 
-    else if(mode == 2) 
-    {
-    lfs_remove(&g_lfs_t,SAVE_UPDATE_FILE_INFOR_NAME);
-  }
 }
 
 /*
@@ -69,8 +64,8 @@ void save_clear_file_function(uint8_t mode)
 */
 int8_t save_stroage_local_network(struct local_ip_t *local)
 {
-    int8_t        ret      = 0;
-     int         err      = 0;
+    int8_t      ret      = 0;
+    int         err      = 0;
     lfs_file_t  lfs_fp   = {0};
     
     /* 数据保存 */
@@ -90,7 +85,6 @@ int8_t save_stroage_local_network(struct local_ip_t *local)
     err = lfs_file_close(&g_lfs_t, &lfs_fp);
     
     return ret;
-    
 }
 
 /*
@@ -103,7 +97,7 @@ int8_t save_stroage_local_network(struct local_ip_t *local)
 */
 int8_t save_read_local_network(struct local_ip_t *local)
 {
-    int8_t        ret      = 0;
+    int8_t      ret      = 0;
     int         err      = 0;
     lfs_file_t  lfs_fp   = {0};
     
@@ -132,7 +126,7 @@ int8_t save_read_local_network(struct local_ip_t *local)
 *********************************************************************************************************
 *    函 数 名: save_read_default_local_network
 *    功能说明: 读取默认参数
-*    形    参: 
+*    形    参: local_ip_t *local
 *    返 回 值: 
 *********************************************************************************************************
 */
@@ -141,6 +135,7 @@ void save_read_default_local_network(struct local_ip_t *local)
     uint32_t data= 0;
     uint8_t  mac[6] = {0};             // MAC地址 
     uint8_t  ret = 0;
+    uint8_t  zero_ret = 0;
     
 //    data = *(vu32*)(0X1FFF7A10);
     extern ChipID_t g_chipid_t;
@@ -158,8 +153,10 @@ void save_read_default_local_network(struct local_ip_t *local)
     {
         if(mac[i] == 0xFF)
             ret++;
+        if(mac[i] == 0x00)
+            zero_ret++;
     }
-    if(ret == 6)
+    if((ret == 6) || (zero_ret == 6))
     {
         local->mac[0]=2;//高三字节(IEEE称之为组织唯一ID,OUI)地址固定为:2.0.0
         local->mac[1]=0;
@@ -196,7 +193,7 @@ void save_read_default_local_network(struct local_ip_t *local)
     local->dns[2] = DEFALUT_DNS2;
     local->dns[3] = DEFALUT_DNS3;
     
-    local->server_mode = DEFALUT_SERVERMODE; // 同时连接
+    local->server_mode = DEFALUT_SERVERMODE; 
     
     /* 组播地址 */
     local->multicast_ip[0] = DEFALUT_MULTICAST_IP0;
@@ -208,22 +205,22 @@ void save_read_default_local_network(struct local_ip_t *local)
     memset(local->ping_ip,0,sizeof(local->ping_ip));
     memset(local->ping_sub_ip,0,sizeof(local->ping_sub_ip));
     
-    local->search_mode = 1; // PING模式
+    local->search_mode = DEFALUT_IPC_DET_TYPE; // PING模式
 }
 
 /*
 *********************************************************************************************************
 *    函 数 名: save_stroage_remote_ip_function
-*    功能说明: 
+*    功能说明: 保存远端IP地址
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
 int8_t save_stroage_remote_ip_function(struct remote_ip *remote)
 {
-    int8_t  ret      = 0;
-     int         err      = 0;
-    lfs_file_t  lfs_fp     = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     /* 数据保存 */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_REMOTE_NETWORK_NAME, LFS_O_RDWR | LFS_O_CREAT);
@@ -247,16 +244,16 @@ int8_t save_stroage_remote_ip_function(struct remote_ip *remote)
 /*
 *********************************************************************************************************
 *    函 数 名: save_read_remote_ip_function
-*    功能说明: 
-*    形    参: 
+*    功能说明: 读取远端IP地址
+*    形    参: remote_ip *remote
 *    返 回 值: 
 *********************************************************************************************************
 */
 int8_t save_read_remote_ip_function(struct remote_ip *remote)
 {
-    int8_t        ret      = 0;
-    int         err      = 0;
-    lfs_file_t  lfs_fp   = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_REMOTE_NETWORK_NAME, LFS_O_RDWR);
 
@@ -293,12 +290,12 @@ void save_read_default_remote_ip(struct remote_ip *remote)
 {
     /* 远程服务器数据 */
     memset(remote->outside_iporname,0,sizeof(remote->outside_iporname));
-    strcpy((char*)remote->outside_iporname,"47.104.250.225");
-    remote->outside_port  = 6012;
+    strcpy((char*)remote->outside_iporname,DEFALUT_LWIP_PLATFORM_URL);
+    remote->outside_port  = DEFALUT_LWIP_PLATFORM_PORT;
 
     memset(remote->inside_iporname,0,sizeof(remote->inside_iporname));
-    strcpy((char*)remote->inside_iporname,"47.104.250.225");
-    remote->inside_port  = 6012;
+    strcpy((char*)remote->inside_iporname,DEFALUT_GSM_PLATFORM_URL);
+    remote->inside_port  = DEFALUT_GSM_PLATFORM_PORT;
 
 }
 
@@ -312,9 +309,9 @@ void save_read_default_remote_ip(struct remote_ip *remote)
 */
 int8_t save_storage_device_parameter_function(struct device_param *param)
 {
-    int8_t        ret      = 0;
-     int         err      = 0;
-    lfs_file_t  lfs_fp   = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     /* 数据保存 */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_DEVICE_PARAMETER_NAME, LFS_O_RDWR | LFS_O_CREAT);
@@ -333,7 +330,6 @@ int8_t save_storage_device_parameter_function(struct device_param *param)
     err = lfs_file_close(&g_lfs_t, &lfs_fp);
     
     return ret;
-    
 }
 
 /*
@@ -351,8 +347,8 @@ void save_read_default_device_paramter_function(struct device_param *param)
     bsp_ReadCpuFlash(DEVICE_ID_ADDR,(uint8_t*)data_id.c,4);
     if((data_id.i >= 0xFFFFF)||(data_id.i == 0))
     {
-        param->id.i = 3;
-    }    
+        param->id.i = DEFALUT_DEVICE_ID;
+    }
     else
     {
         param->id.i = data_id.i;
@@ -374,9 +370,9 @@ void save_read_default_device_paramter_function(struct device_param *param)
 */
 int8_t save_read_device_paramter_function(struct device_param *param)
 {
-    int8_t        ret      = 0;
-    int         err      = 0;
-    lfs_file_t  lfs_fp   = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_DEVICE_PARAMETER_NAME, LFS_O_RDWR);
 
@@ -408,9 +404,9 @@ int8_t save_read_device_paramter_function(struct device_param *param)
 */
 int8_t save_stroage_com_param_function(com_param_t *param)
 {
-    int8_t        ret      = 0;
-     int         err      = 0;
-    lfs_file_t  lfs_fp   = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     /* 数据保存 */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_COM_PARAMETER_NAME, LFS_O_RDWR | LFS_O_CREAT);
@@ -433,24 +429,20 @@ int8_t save_stroage_com_param_function(com_param_t *param)
 
 /*
 *********************************************************************************************************
-*    函 数 名: 
-save_read_default_com_param_function
-*    功能说明: 
-
+*    函 数 名: save_read_default_com_param_function
+*    功能说明: 读取默认通信相关参数
 *    形    参: 
-
 *    返 回 值: 
-
 *********************************************************************************************************
 */
 void save_read_default_com_param_function(com_param_t *param)
 {
-    param->heart              = DEFALUT_HEART; // 90s
-    param->report             = DEFALUT_REPORT; // 60s
-    param->ping               = DEFALUT_PING;
-    param->dev_ping         = DEFALUT_DEV_PING;
-    param->network_time = DEFALUT_NETWORK_DELAY;  // 网络延时时间  20220308
-    param->onvif_time      = DEFALUT_ONVIF_TIME; // ONVIF搜索时间  20230811
+    param->heart        = DEFALUT_HEART; // 90s
+    param->report       = DEFALUT_REPORT; // 60s
+    param->ping         = DEFALUT_PING;
+    param->dev_ping     = DEFALUT_DEV_PING;
+    param->onvif_time   = DEFALUT_ONVIF_TIME;
+
 }
 
 /*
@@ -483,30 +475,25 @@ int8_t save_read_com_param_function(com_param_t *param)
         ret = -1;
     }
     err = lfs_file_close(&g_lfs_t, &lfs_fp);
-    
     return ret;
-
 }
-
-
 
 /*
 *********************************************************************************************************
 *    函 数 名: save_stroage_carema_parameter
-*    功能说明: 
+*    功能说明: 存储摄像头参数
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
 int8_t save_stroage_carema_parameter(carema_t *param)
 {
-    int8_t        ret      = 0;
-     int         err      = 0;
-    lfs_file_t  lfs_fp   = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     /* 数据保存 */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_CAREMA_PARAMETER, LFS_O_RDWR | LFS_O_CREAT);
-//    err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_CAREMA_PARAMETER, LFS_O_RDWR | LFS_O_CREAT | LFS_O_TRUNC);
     if(err == 0)
     {
         err = lfs_file_rewind(&g_lfs_t, &lfs_fp);
@@ -514,7 +501,6 @@ int8_t save_stroage_carema_parameter(carema_t *param)
         if(err != sizeof(carema_t)) 
         {
             err = lfs_file_write(&g_lfs_t, &lfs_fp, (uint8_t*)param, sizeof(carema_t));
-//            err = lfs_file_sync(&g_lfs_t, &lfs_fp);
         }
     }
     else
@@ -523,13 +509,12 @@ int8_t save_stroage_carema_parameter(carema_t *param)
     }
     err = lfs_file_close(&g_lfs_t, &lfs_fp);
     return ret;
-    
 }
 
 /*
 *********************************************************************************************************
 *    函 数 名: save_read_default_carema_parameter
-*    功能说明: 读取默认参数
+*    功能说明: 读取默认摄像头参数
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
@@ -542,16 +527,16 @@ void save_read_default_carema_parameter(carema_t *param)
 /*
 *********************************************************************************************************
 *    函 数 名: save_read_carema_parameter
-*    功能说明: 
+*    功能说明: 读取摄像头参数
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
 int8_t save_read_carema_parameter(carema_t *param)
 {
-    int8_t        ret      = 0;
-    int         err      = 0;
-    lfs_file_t  lfs_fp   = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_CAREMA_PARAMETER, LFS_O_RDWR);
     if(err == 0)
@@ -567,24 +552,22 @@ int8_t save_read_carema_parameter(carema_t *param)
         ret = -1;
     }
     err = lfs_file_close(&g_lfs_t, &lfs_fp);
-    
     return ret;
-    
 }
 
 /*
 *********************************************************************************************************
 *    函 数 名: save_stroage_threshold_parameter
-*    功能说明: 
-*    形    参: 20230720
+*    功能说明: 存储阈值参数
+*    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
 int8_t save_stroage_threshold_parameter(struct threshold_params *param)
 {
-    int8_t    ret    = 0;
-     int         err      = 0;
-    lfs_file_t  lfs_fp   = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     /* 数据保存 */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_THRESHOLD_PARAMETER, LFS_O_RDWR | LFS_O_CREAT);
@@ -603,41 +586,38 @@ int8_t save_stroage_threshold_parameter(struct threshold_params *param)
     }
     err = lfs_file_close(&g_lfs_t, &lfs_fp);
     return ret;
-    
 }
 
 /*
 *********************************************************************************************************
-*    函 数 名: save_read_default_carema_parameter
-*    功能说明: 读取默认参数
+*    函 数 名: save_read_default_threshold_parameter
+*    功能说明: 读取默认阈值参数
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
 void save_read_default_threshold_parameter(struct threshold_params *param)
 {
-    param->volt_max              = DEFALUT_VOLT_MAX;
-    param->volt_min              = DEFALUT_VOLT_MIN;
-    param->current                  = DEFALUT_CURRENT_MAX;
-    param->angle                   = DEFAULT_ANGLE;
-    param->humi_high             = DEFALUT_HUMI_HIGH;
+    param->volt_max             = DEFALUT_VOLT_MAX;
+    param->volt_min             = DEFALUT_VOLT_MIN;
+    param->current              = DEFALUT_CURRENT_MAX;
+    param->angle                = DEFAULT_ANGLE;
+    param->humi_high            = DEFALUT_HUMI_HIGH;
     param->humi_low             = DEFAULT_HUMI_LOW;
-    param->temp_high             = DEFALUT_TEMP_HIGH;
+    param->temp_high            = DEFALUT_TEMP_HIGH;
     param->temp_low             = DEFALUT_TEMP_LOW;
-    param->door_open_time   = DEFALUT_DOOR_OPEN_TIME;
-    param->door_close_time  = DEFALUT_DOOR_CLOSE_TIME;
-    param->light_open_time  = DEFALUT_LIGHT_OPEN_TIME;
-    param->light_close_time = DEFALUT_LIGHT_CLOSE_TIME;
-    param->miu                   = DEFAULT_MIU;
-    
-    param->net_reload     = 0;
-    param->net_retime     = 0;    
+    param->door_open_time       = DEFALUT_DOOR_OPEN_TIME;
+    param->door_close_time      = DEFALUT_DOOR_CLOSE_TIME;
+    param->miu                  = DEFAULT_MIU;
+    param->net_reload           = 0;
+    param->net_retime           = 0;    
+    param->net_delay_time       = DEFALUT_NETWORK_DELAY;
 }
 
 /*
 *********************************************************************************************************
 *    函 数 名: save_read_threshold_parameter
-*    功能说明: 
+*    功能说明: 读取阈值参数
 *    形    参: 20230720
 *    返 回 值: 
 *********************************************************************************************************
@@ -668,7 +648,7 @@ int8_t save_read_threshold_parameter(struct threshold_params *param)
 /*
 *********************************************************************************************************
 *    函 数 名: save_stroage_backups_function
-*    功能说明: 
+*    功能说明: 存储备份参数
 *    形    参: 20231022
 *    返 回 值: 
 *********************************************************************************************************
@@ -700,16 +680,16 @@ int8_t save_stroage_backups_function(sys_backups_t *param)
 /*
 *********************************************************************************************************
 *    函 数 名: save_read_backups_function
-*    功能说明: 
+*    功能说明: 读取备份参数
 *    形    参: 20231022
 *    返 回 值: 
 *********************************************************************************************************
 */
 int8_t save_read_backups_function(sys_backups_t *param)
 {
-    int8_t        ret  = 0;
-    int         err      = 0;
-    lfs_file_t  lfs_fp   = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_REMOTE_BACKUPS_NAME, LFS_O_RDWR);
     if(err == 0)
@@ -744,29 +724,28 @@ void save_read_default_backups(sys_backups_t *param)
 {
     /* 远程服务器数据 */
     memset(param->remote.outside_iporname,0,sizeof(param->remote.outside_iporname));
-    strcpy((char*)param->remote.outside_iporname,"test1.fnwlw.net");
-    param->remote.outside_port  = 6102;
+    strcpy((char*)param->remote.outside_iporname,DEFALUT_LWIP_PLATFORM_URL);
+    param->remote.outside_port  = DEFALUT_LWIP_PLATFORM_PORT;
     
     memset(param->remote.inside_iporname,0,sizeof(param->remote.inside_iporname));
-    strcpy((char*)param->remote.inside_iporname,"test1.fnwlw.net");
-    param->remote.inside_port  = 6102;
+    strcpy((char*)param->remote.inside_iporname,DEFALUT_GSM_PLATFORM_URL);
+    param->remote.inside_port  = DEFALUT_GSM_PLATFORM_PORT;
     param->config_flag =0;
 }
-
 
 /*
 *********************************************************************************************************
 *    函 数 名: save_stroage_http_ota_function
-*    功能说明: 
+*    功能说明: 存储OTA地址
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
 int8_t save_stroage_http_ota_function(struct update_addr *param)
 {
-    int8_t        ret      = 0;
-    int         err      = 0;
-    lfs_file_t  lfs_fp     = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     /* 数据保存 */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_HTTP_UPDATE_ADDR_NAME, LFS_O_RDWR | LFS_O_CREAT);
@@ -790,16 +769,16 @@ int8_t save_stroage_http_ota_function(struct update_addr *param)
 /*
 *********************************************************************************************************
 *    函 数 名: save_read_http_ota_function
-*    功能说明: 
+*    功能说明: 读取OTA地址
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
 int8_t save_read_http_ota_function(struct update_addr *param)
 {
-    int8_t        ret      = 0;
-    int         err      = 0;
-    lfs_file_t  lfs_fp   = {0};
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
     
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_HTTP_UPDATE_ADDR_NAME, LFS_O_RDWR);
 
@@ -810,18 +789,13 @@ int8_t save_read_http_ota_function(struct update_addr *param)
     }
     else
     {
-        /* 读取默认值 */
         err = lfs_file_close(&g_lfs_t, &lfs_fp);
-        
         save_read_default_http_ota(param);
         save_stroage_http_ota_function(param);
-        
         ret = -1;
     }
     err = lfs_file_close(&g_lfs_t, &lfs_fp);
-    
     return ret;
-
 }
 
 /*
@@ -835,25 +809,24 @@ int8_t save_read_http_ota_function(struct update_addr *param)
 void save_read_default_http_ota(struct update_addr *param)
 {
     memset(param->ip,0,sizeof(param->ip));
-    param->ip[0] = 47;
-    param->ip[1] = 104;
-    param->ip[2] = 98;
-    param->ip[3] = 214;
-    param->port  = 8989;
+    param->ip[0] = DEFALUT_OTA_IP0;
+    param->ip[1] = DEFALUT_OTA_IP1;
+    param->ip[2] = DEFALUT_OTA_IP2;
+    param->ip[3] = DEFALUT_OTA_IP3;
+    param->port  = DEFALUT_OTA_PORT;
 }
-
 
 /*
 *********************************************************************************************************
 *    函 数 名: save_stroage_electricity_function
-*    功能说明: 
+*    功能说明: 存储电流
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
 int8_t save_stroage_electricity_function(electricity_t *param)
 {
-    int8_t  ret = 0;
+    int8_t      ret     = 0;    
     
     /* 数据保存到内部FLASH */
     // 因为 electricity_t 的大小如果不是 4 字节的整数倍，可能需要按字写入，这里假设它是可以用 uint32_t 写入的
@@ -866,14 +839,14 @@ int8_t save_stroage_electricity_function(electricity_t *param)
 /*
 *********************************************************************************************************
 *    函 数 名: save_read_electricity_function
-*    功能说明: 
+*    功能说明: 读取电流
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
 int8_t save_read_electricity_function(electricity_t *param)
 {    
-    int8_t        ret      = 0;
+    int8_t      ret     = 0;
     
     /* 数据从内部FLASH读取 */
     uint32_t words_to_read = (sizeof(electricity_t) + 3) / 4;
@@ -884,20 +857,7 @@ int8_t save_read_electricity_function(electricity_t *param)
     if (isnan(param->total)) {
         param->total = 0.0f;
     }
-    
     return ret;
-}
-/*
-*********************************************************************************************************
-*    函 数 名: save_read_default_electricity
-*    功能说明: 读取默认值
-*    形    参: 
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void save_read_default_electricity(electricity_t *param)
-{
-    memset(param, 0,sizeof(electricity_t));    
 }
 
 /*
@@ -910,8 +870,8 @@ void save_read_default_electricity(electricity_t *param)
 */
 int8_t save_stroage_snmp_oid_parameter(snmp_oid_t *param)
 {
-    int8_t        ret      = 0;
-    int         err      = 0;
+    int8_t      ret     = 0;
+    int         err     = 0;
     lfs_file_t  lfs_fp   = {0};
     
     /* 数据保存 */
@@ -956,8 +916,8 @@ void save_read_default_snmp_oid_parameter(snmp_oid_t *param)
 */
 int8_t save_read_snmp_oid_parameter(snmp_oid_t *param)
 {
-    int8_t        ret      = 0;
-    int         err      = 0;
+    int8_t      ret     = 0;
+    int         err     = 0;
     lfs_file_t  lfs_fp   = {0};
     
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_SNMP_OID_PARAMETER, LFS_O_RDWR);
@@ -980,31 +940,85 @@ int8_t save_read_snmp_oid_parameter(snmp_oid_t *param)
 
 /*
 *********************************************************************************************************
-*    函 数 名: save_stroage_error_information
-*    功能说明: 保存错误信息
-*    形    参: 
+*    函 数 名: save_stroage_http_upload_function
+*    功能说明: 存储文件上传服务器地址
+*    形    参: param 上传参数结构体
+*    返 回 值: 0-成功 -1-失败
+*********************************************************************************************************
+*/
+int8_t save_stroage_http_upload_function(struct upload_addr *param)
+{
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
+    
+    /* 数据保存 */
+    err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_HTTP_UPLOAD_ADDR_NAME, LFS_O_RDWR | LFS_O_CREAT);
+    if(err == 0)
+    {
+        err = lfs_file_rewind(&g_lfs_t, &lfs_fp);
+        err = lfs_file_write(&g_lfs_t, &lfs_fp, (uint8_t*)param, sizeof(struct upload_addr));
+        if(err != sizeof(struct upload_addr)) {
+            err = lfs_file_write(&g_lfs_t, &lfs_fp, (uint8_t*)param, sizeof(struct upload_addr));
+        }
+    }
+    else
+    {
+        ret = -1;
+    }
+    err = lfs_file_close(&g_lfs_t, &lfs_fp);
+    
+    return ret;
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: save_read_http_upload_function
+*    功能说明: 读取文件上传服务器地址
+*    形    参: param 上传参数结构体
+*    返 回 值: 0-成功 -1-失败(使用默认值)
+*********************************************************************************************************
+*/
+int8_t save_read_http_upload_function(struct upload_addr *param)
+{
+    int8_t      ret     = 0;
+    int         err     = 0;
+    lfs_file_t  lfs_fp  = {0};
+    
+    err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_HTTP_UPLOAD_ADDR_NAME, LFS_O_RDWR);
+
+    if(err == 0)
+    {
+        err = lfs_file_rewind(&g_lfs_t, &lfs_fp);
+        err = lfs_file_read(&g_lfs_t, &lfs_fp, param, sizeof(struct upload_addr));
+    }
+    else
+    {
+        err = lfs_file_close(&g_lfs_t, &lfs_fp);
+        save_read_default_http_upload(param);
+        save_stroage_http_upload_function(param);
+        ret = -1;
+    }
+    err = lfs_file_close(&g_lfs_t, &lfs_fp);
+    return ret;
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: save_read_default_http_upload
+*    功能说明: 读取默认文件上传地址
+*    形    参: param 上传参数结构体
 *    返 回 值: 无
 *********************************************************************************************************
 */
-void save_stroage_error_information(uint8_t *data, uint16_t max_len,uint16_t err_count)
+void save_read_default_http_upload(struct upload_addr *param)
 {
-    lfs_file_t file;
-    struct lfs_info info;
-    int err;
-
-    // Check file size, if it's too large, remove it to avoid filling up the filesystem
-    err = lfs_stat(&g_lfs_t, SAVE_ERROR_INFORMATION, &info);
-    if (err == LFS_ERR_OK ) // e.g., max 1MB
-    {
-        if(info.size > 5*1024 * 1024 || err_count > 5000)
-            return;
-    }
-
-    err = lfs_file_open(&g_lfs_t, &file, SAVE_ERROR_INFORMATION, LFS_O_RDWR | LFS_O_APPEND | LFS_O_CREAT);
-    if (err == LFS_ERR_OK)
-    {
-        lfs_file_write(&g_lfs_t, &file, (void *)data, max_len);
-        lfs_file_close(&g_lfs_t, &file);
-    }
+    memset(param, 0, sizeof(struct upload_addr));
+    param->ip[0] = DEFALUT_UPLOAD_IP0;
+    param->ip[1] = DEFALUT_UPLOAD_IP1;
+    param->ip[2] = DEFALUT_UPLOAD_IP2;
+    param->ip[3] = DEFALUT_UPLOAD_IP3;
+    param->port  = DEFALUT_UPLOAD_PORT;
 }
+
 

@@ -277,7 +277,7 @@ void httpd_ssi_sensor_data_collection_function(char *pcInsert)
 void httpd_ssi_threshold_seting_function(char *pcInsert)
 {
     struct threshold_params *param = app_get_threshold_param_function();
-    char buff[11][5]  = {0};
+    char buff[12][5]  = {0};
     char times[2][15] = {0};
     
     sprintf(buff[0],"%d",param->volt_max);
@@ -291,12 +291,13 @@ void httpd_ssi_threshold_seting_function(char *pcInsert)
     sprintf(buff[8],"%d",param->miu);
     sprintf(buff[9],"%d",param->net_reload);
     sprintf(buff[10],"%d",param->net_retime);
+    sprintf(buff[11],"%d",param->net_delay_time);
     sprintf(times[0],"%02d:%02d-%02d:%02d",
             param->door_open_time/60,param->door_open_time%60,\
             param->door_close_time/60,param->door_close_time%60);
     
-    sprintf(pcInsert,"[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]",
-            buff[0],buff[1],buff[2],buff[3],buff[4],buff[5],buff[6],buff[7],times[0],buff[8],buff[9],buff[10]);
+    sprintf(pcInsert,"[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]",
+            buff[0],buff[1],buff[2],buff[3],buff[4],buff[5],buff[6],buff[7],times[0],buff[8],buff[9],buff[10],buff[11]);
 
 }
 /*
@@ -381,7 +382,6 @@ static void device_parameter_handler(char *pcInsert,uint8_t num)
 *    功能说明: 本地网络信息
 *    形    参: @pcInsert    :
 *    返 回 值: 0：IP 1：网关 2：掩码 3：DNS 4: 升级地址 5：升级端口 6：传输模式 7: 主网检测地址 8:主网检测地址2
-*    ? ? ?: *    
 *********************************************************************************************************
 */
 static void local_network_Handler(char *pcInsert, uint8_t mode)
@@ -453,19 +453,18 @@ static void local_network_Handler(char *pcInsert, uint8_t mode)
 void httpd_ssi_system_seting_function(char *pcInsert)
 {
     char buff[4][20] = {0};
-    char time[30]      = {0};
-    char buff2[2][3]    = {0};
+    char time[30]    = {0};
+    char buff2[3]    = {0};
     
     app_get_current_time(time);
     device_parameter_handler(buff[0],0);
     device_parameter_handler(buff[1],1);
     device_parameter_handler(buff[2],2);
     get_network_connect_status(buff[3]);
-    local_network_Handler(buff2[0],6);
-    local_network_Handler(buff2[1],12);
+    local_network_Handler(buff2,6);
     
-    sprintf(pcInsert,"[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]", 
-            time,buff[0],buff[1],buff[2],buff[3],buff2[0],buff2[1]);
+    sprintf(pcInsert,"[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%ds\"]", 
+            time,buff[0],buff[1],buff[2],buff[3],buff2,app_get_report_time()/1000);
 }
 
 /*
@@ -527,8 +526,7 @@ static void snmp_parameter_handler(char *pcInsert,uint8_t num)
 void httpd_ssi_network_setting_function(char* pcInsert)
 {
     char buff[10][20] = {0};
-    char time[5] = {0};   // 网络延时时间  20220308
-    
+
     local_network_Handler(buff[0],0);    // IP
     local_network_Handler(buff[1],2);    // 子网掩码
     local_network_Handler(buff[2],1);    // 网关
@@ -536,13 +534,12 @@ void httpd_ssi_network_setting_function(char* pcInsert)
     local_network_Handler(buff[6],9);    // MAC
     local_network_Handler(buff[4],7);   // 主网检测地址
     local_network_Handler(buff[5],8);   // 主网检测地址
-    sprintf(time,"%d",app_get_network_delay_time());     // 网络延时时间  20220308
     local_network_Handler(buff[7],10);    // IP
     local_network_Handler(buff[8],11);    // 组播
     snmp_parameter_handler(buff[9],0);    // 交换机IP
     
-    sprintf(pcInsert,"[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]",
-            buff[0],buff[1],buff[2],buff[3],buff[6],buff[4],buff[5],time,buff[7],buff[8],buff[9]);
+    sprintf(pcInsert,"[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]",
+            buff[0],buff[1],buff[2],buff[3],buff[6],buff[4],buff[5],buff[7],buff[8],buff[9]);
 
 }
 
@@ -557,10 +554,8 @@ void httpd_ssi_network_setting_function(char* pcInsert)
 static void camera_ip_get_Handler(char *pcInsert, uint8_t num)
 {
     uint8_t ip[4] = {0};
-    
     app_get_camera_function(ip,num);
     sprintf(pcInsert,"%d.%d.%d.%d",ip[0],ip[1],ip[2],ip[3]);
-    
 }
 /*
 *********************************************************************************************************
@@ -581,7 +576,7 @@ static void camera_brand_get_Handler(char *pcInsert, uint8_t num)
 /*
 *********************************************************************************************************
 *    函 数 名: httpd_ssi_other_setting_function
-*    功能说明: 其他设置-摄像头
+*    功能说明: 摄像头
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
@@ -589,9 +584,9 @@ static void camera_brand_get_Handler(char *pcInsert, uint8_t num)
 void httpd_ssi_other_setting_function(char *pcInsert)
 {
     char buff[6][20] = {0};
-    char time[2][10] = {0}; // 扩大数组，防止 "%d" + "s" 超出边界
     char brand[6][5] = {0};
-    
+    char buff2[3]    = {0};
+
     /* 摄像头1-6 */
     camera_ip_get_Handler(buff[0],0);
     camera_brand_get_Handler(brand[0],0);
@@ -606,16 +601,13 @@ void httpd_ssi_other_setting_function(char *pcInsert)
     camera_ip_get_Handler(buff[5],5);
     camera_brand_get_Handler(brand[5],5);    
 
-    sprintf(time[0],"%d",app_get_next_ping_time()/1000);        // PING间隔时间
-    sprintf(time[1],"%d",app_get_next_dev_ping_time()/1000);    // PING间隔时间-设备
-    // sprintf(time[2],"%d",app_get_onvif_time());    // ONVIF时间  20230811
-//    sprintf(time[3],"%d",app_get_device_reload_time()/3600);    // 重启时间       20240904
-    
+    local_network_Handler(buff2,12);
+
     // 这里不再在占位符中写 "s"，以防前端解析 JSON 数组时遇到包含 "s" 的字符串而失败
-    sprintf(pcInsert,"[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]",
+    sprintf(pcInsert,"[\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"]",
             buff[0],brand[0],buff[1],brand[1],buff[2],brand[2],
             buff[3],brand[3],buff[4],brand[4],buff[5],brand[5],
-            time[0],time[1]);
+            buff2);
 }
 
 /*
@@ -637,12 +629,11 @@ void http_ssi_server_setting_function(char *pcInsert)
     local_network_Handler(ip,4);
     local_network_Handler(port,5);
     
-    sprintf(pcInsert,"[\"%s\",\"%d\",\"%s\",\"%d\",\"%s\",\"%d\",\"%s\",\"%d\",\"%ds\"]",\
+    sprintf(pcInsert,"[\"%s\",\"%d\",\"%s\",\"%d\",\"%s\",\"%d\",\"%s\",\"%d\"]",\
             remote->inside_iporname,remote->inside_port,\
             remote->outside_iporname,remote->outside_port,
             p_back->inside_iporname,p_back->inside_port,\
-            p_back->outside_iporname,p_back->outside_port,
-            app_get_report_time()/1000);
+            p_back->outside_iporname,p_back->outside_port);
 }
 
 /*
@@ -676,8 +667,13 @@ void httpd_ssi_carema_user_function(char *pcInsert)
 */
 void http_ssi_update_addr_function(char *pcInsert)
 {
-    char ip[20]  = {0};
-    struct update_addr *param = app_get_http_ota_function();
-    sprintf(ip,"%d.%d.%d.%d",param->ip[0],param->ip[1],param->ip[2],param->ip[3]);
-    sprintf(pcInsert,"[\"%s\",\"%d\"]",ip,param->port);
+    char ip[2][20]  = {0};
+    struct update_addr *ota_param = app_get_http_ota_function();
+    struct upload_addr *upload_param = app_get_http_upload_function();
+
+    sprintf(ip[0],"%d.%d.%d.%d",ota_param->ip[0],ota_param->ip[1],ota_param->ip[2],ota_param->ip[3]);
+    sprintf(ip[1],"%d.%d.%d.%d",upload_param->ip[0],upload_param->ip[1],upload_param->ip[2],upload_param->ip[3]);
+    
+    sprintf(pcInsert,"[\"%s\",\"%d\",\"%s\",\"%d\"]",ip[0],ota_param->port,ip[1],upload_param->port);
 }
+

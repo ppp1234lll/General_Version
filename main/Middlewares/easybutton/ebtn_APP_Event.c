@@ -21,7 +21,7 @@
 #include "./Task/inc/det.h"
 #include "bsp.h"
 
-#define  KEY_DEBUG  0
+#define  KEY_DEBUG  1
 /* ---------------------------- 此函数中可自定义按键状态检测方式 ---------------------------- */
 
 /** ***************************************************************************
@@ -132,7 +132,7 @@ void ebtn_APP_Event(struct ebtn_btn *btn, ebtn_evt_t evt)
             det_set_key_value(PWR_KEY,KEY_NONE);
         }
         break;
-
+#if (configUSE_KEY_WATER == 1)
         /* ----------------------------------- WATER_KEY ---------------------------------- */
     case WATER_KEY:
         if (evt == EBTN_EVT_KEEPALIVE)
@@ -149,6 +149,43 @@ void ebtn_APP_Event(struct ebtn_btn *btn, ebtn_evt_t evt)
             det_set_key_value(WATER_KEY,KEY_NONE);
         }
         break;
+#endif
+#if (configUSE_KEY_SPD == 1)
+        /* ----------------------------------- SPD_KEY ---------------------------------- */
+    case SPD_KEY:
+        if (evt == EBTN_EVT_KEEPALIVE)
+        {
+            /* ------------------------------- 长按计数到达指定值时 ------------------------------- */
+            if (btn->keepalive_cnt == 1)
+            {
+                det_set_key_value(SPD_KEY,KEY_EVNT);
+                if(KEY_DEBUG)  printf("SPD_KEY long\n");
+            }
+        }
+        else if (evt == EBTN_EVT_ONRELEASE)// 按键 释放处理
+        {
+            det_set_key_value(SPD_KEY,KEY_NONE);
+        }
+        break;
+#endif
+#if (configUSE_KEY_MCB == 1)
+        /* ----------------------------------- MCB_KEY ---------------------------------- */
+    case MCB_KEY:
+        if (evt == EBTN_EVT_KEEPALIVE)
+        {
+            /* ------------------------------- 长按计数到达指定值时 ------------------------------- */
+            if (btn->keepalive_cnt == 1)
+            {
+                det_set_key_value(MCB_KEY,KEY_EVNT);
+                if(KEY_DEBUG)  printf("MCB_KEY long\n");
+            }
+        }
+        else if (evt == EBTN_EVT_ONRELEASE)// 按键 释放处理
+        {
+            det_set_key_value(MCB_KEY,KEY_NONE);
+        }
+        break;
+#endif
     }
 }
 

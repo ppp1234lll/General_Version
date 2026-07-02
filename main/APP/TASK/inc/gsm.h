@@ -24,7 +24,7 @@ void gsm_set_tcp_cmd(uint8_t cmd);
 void gsm_set_network_reset_function(void);
 void gsm_set_module_reset_function(void);
 
-
 int8_t gsm_network_status_check(void);
+void gsm_get_log_function(void);
 #endif
 

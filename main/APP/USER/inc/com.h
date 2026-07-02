@@ -44,7 +44,7 @@
 #define CR_QUERY_IPC_INFO                   (0xE5) // 查询IPC的信息：设备、网络、时间、OSD  20220329
 #define CR_QUERY_LBS_INFO                   (0xE6) // 查询LBS的信息：
 #define CR_QUERY_SNMP_INFO                  (0xE7) // 查询SNMP参数
-#define CR_QUERY_ERROR_INFO                 (0xE8) // 查询故障信息
+#define CR_QUERY_PING_INFO                  (0xE8) // 查询PING信息
 
 /* 重启指令 */
 #define CR_GPRS_NETWORK_RESET               (0xDD) // 复位GPRS网络
@@ -65,6 +65,8 @@
 /* 更新命令 */
 #define CONFIGURE_UPDATE_SYSTEM             (0xB3) // 更新系统
 #define CONFIGURE_NOW_TIME                  (0xB1) // 更新当前时间
+/* 文件上传 */
+#define CONFIGURE_UPLOAD_FILE               (0xB2) // 文件上传
 
 /* 通用错误码 */
 #define CR_DEVICE_NUMBER_ERROR              (0x70) // 设备编号错误
@@ -73,11 +75,11 @@
 #define CR_TAIL_ERROR                       (0x73) // 数据尾错误
 #define CR_CONFIG_ERROR                     (0x74) // 配置错误
 
-#define COM_SEND_MAX_NUM             (3)       // 重复发生3次
+#define COM_SEND_MAX_NUM                    (3)       // 重复发生3次
 
-#define COM_SEND_MAX_TIME             (10*1000) // 10s超时
+#define COM_SEND_MAX_TIME                   (10*1000) // 10s超时
 
-#define COM_MALLOC_SIZE                 (300)       // 内存数据申请
+#define COM_MALLOC_SIZE                     (300)       // 内存数据申请
 
 typedef struct
 {
@@ -133,14 +135,17 @@ void com_set_next_ping_time(com_rec_data_t *buff);   // 设置ping的时间间隔
 void com_set_network_delay_time(com_rec_data_t *buff);  // 配置网络延时时间
 void com_set_main_ping_ip(com_rec_data_t *buff);  // 设置主机pingip
 void com_deal_ack_parameter(com_rec_data_t *buff);  // 处理回复数据
-void com_query_processing_function(uint8_t query, uint8_t data);   // 查询处理函数
+
 void com_set_threshold_params_function(com_rec_data_t *buff);  // 20230721
-void com_set_onvif_time_function(com_rec_data_t *buff);
-void com_set_onvif_mode_function(com_rec_data_t *buff);
+
+void com_set_carema_search_mode_function(com_rec_data_t *buff);
 void com_set_device_password(com_rec_data_t *buff);
 void com_gprs_lbs_information(uint8_t *pdata, uint16_t *size);
 void com_deal_configure_snmp_oid(com_rec_data_t *buff,uint8_t len);
 int com_device_snmp_information(uint8_t *pdata, uint16_t *size);
+int com_device_ping_information(uint8_t *pdata, uint16_t *size);
+void com_deal_upload_file_function(com_rec_data_t *buff);
+
 // 队列
 void com_recevie_function_init(void);  // 通信接收初始化函数
 void com_cache_initialization(uint16_t size);
@@ -163,6 +168,7 @@ void com_set_device_name_function(com_rec_data_t *buff);  //设置设备名称  202204
 void com_deal_configure_device_id(com_rec_data_t *buff);  // 20231026
 void com_deal_fan_temp_parmaeter(com_rec_data_t *buff);
 void com_deal_fan_humi_param(com_rec_data_t *buff);
+void com_set_carema_search_mode_function(com_rec_data_t *buff);
 
 void com_set_work_time(com_rec_data_t *buff,uint8_t mode);  // 补光灯时间
 void com_set_network_reload(com_rec_data_t *buff);

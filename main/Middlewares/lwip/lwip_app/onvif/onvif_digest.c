@@ -1,5 +1,4 @@
-#include "onvif_digest.h"
-#include "SHA1.h"
+#include "./onvif/onvif_digest.h"
 #include "main.h"
 
 // 全局常量定义

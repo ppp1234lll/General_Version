@@ -32,7 +32,7 @@ void alarm_task_function(void)
 		alarm_net_collection_param();  
 		alarm_sensor_collection_param();  
 		FeedFwdgt();	
-		vTaskDelay(50);
+		vTaskDelay(10);
 	}
 }
 
@@ -52,7 +52,7 @@ void alarm_elec_collection_param(void)
 	/* 适配器、断电上报 */
 	if(det_get_key_value(PWR_KEY) == KEY_EVNT) // 12V断电
 	{
-		if(det_get_total_energy_handler(0) < 50)  // 市电电压 < 50V，说明断电
+		if(det_get_total_energy_handler(ENERGY_VOLTAGE) < 50)  // 市电电压 < 50V，说明断电
 		{
 			if( (elec_error & 0x01) == 0) 
 			{
@@ -60,7 +60,7 @@ void alarm_elec_collection_param(void)
 				elec_normal &=~0x01;
 				app_power_fail_protection_function();  // 关闭继电器
 				Error_Set(ELEC_MAIN_AC);
-				app_report_information_immediately(0);
+				app_report_information_immediately(1);
 			}						
 		}
 		else 					   // 市电电压 > 50V，说明适配器故障
@@ -70,7 +70,7 @@ void alarm_elec_collection_param(void)
 				elec_error  |= 0x02;
 				elec_normal &=~0x02;
 				Error_Set(ELEC_ACDC_MODULE);
-				app_report_information_immediately(0);
+				app_report_information_immediately(1);
 			}
 		}
 	}		
@@ -115,7 +115,7 @@ void alarm_elec_collection_param(void)
 			{
 				sg_alarm_code_t.volt = 0;
 				Error_Clear(ELEC_AC_OVER_V);
-				app_report_information_immediately(0);
+				app_report_information_immediately(1);
 				vTaskDelay(2000);
 				app_power_open_protection_function();  // 打开继电器
 			}
@@ -132,7 +132,7 @@ void alarm_elec_collection_param(void)
 				app_power_fail_protection_function(); // 关闭继电器		
 				sg_alarm_code_t.volt = 1;
 				Error_Set(ELEC_AC_OVER_V);
-				app_report_information_immediately(0);	
+				app_report_information_immediately(1);	
 			}
 		}
 		else 
@@ -167,7 +167,7 @@ void alarm_elec_collection_param(void)
 			{
 					Error_Clear(ELEC_AC_LOW_V);
 					sg_alarm_code_t.volt = 0;
-					app_report_information_immediately(0);
+					app_report_information_immediately(1);
 					app_power_open_protection_function();  // 打开继电器
 			}
 		}	
@@ -185,7 +185,7 @@ void alarm_elec_collection_param(void)
 				app_power_fail_protection_function();  // 关闭继电器
 				Error_Set(ELEC_AC_LOW_V);
 				sg_alarm_code_t.volt = 2;
-				app_report_information_immediately(0);
+				app_report_information_immediately(1);
 			}
 		}
 		else if(det_get_total_energy_handler(0) >= sg_alarm_threshold_t->volt_min) // 市电有电情况下	
@@ -220,7 +220,7 @@ void alarm_elec_collection_param(void)
 				elec_normal &=~ 0x10;
 				sg_alarm_code_t.current = 1;
 				Error_Set(ELEC_AC_OVER_C);
-				app_report_information_immediately(0);
+				app_report_information_immediately(1);
 			}
 		} 
 		else  if(det_get_total_energy_handler(1) >= 20)
@@ -244,7 +244,7 @@ void alarm_elec_collection_param(void)
 			app_power_fail_protection_function();  // 关闭继电器
 			Error_Set(ELEC_AC_LEAKAGE);
 			sg_alarm_code_t.miu = 2;
-			app_report_information_immediately(0);
+			app_report_information_immediately(1);
 		}
 	} 
 	else 
@@ -273,7 +273,7 @@ void alarm_elec_collection_param(void)
 				elec_normal &=~0x40;
 				sg_alarm_code_t.mcb = 2;
 				Error_Set(SENSOR_WATER_LEAK);				
-				app_report_information_immediately(0);
+				app_report_information_immediately(1);
 			}
 		}
 		else
@@ -316,7 +316,7 @@ void alarm_net_collection_param(void)
 			net_error  |= 0x01;
 			net_normal &=~0x01;
 			Error_Set(NET_LAN_PORT);
-			app_report_information_immediately(0);
+			app_report_information_immediately(1);
 		}
 	} 
 	else
@@ -397,7 +397,7 @@ void alarm_sensor_collection_param(void)
 			sensor_error  |= 0x01;
 			sensor_normal &=~0x01;
 			Error_Set(SENSOR_BOX_TILT);
-			app_report_information_immediately(0);
+			app_report_information_immediately(1);
 		}
 	} 
 	else 
@@ -419,7 +419,7 @@ void alarm_sensor_collection_param(void)
 			sensor_error  |= 0x02;
 			sensor_normal &=~0x02;
 			Error_Set(SENSOR_DOOR_OPEN);
-			app_report_information_immediately(0);
+			app_report_information_immediately(1);
 		}
 	} 
 	else 
@@ -434,6 +434,7 @@ void alarm_sensor_collection_param(void)
 	}
 	
 	/* 浸水检测模块 */
+#if (configUSE_KEY_WATER == 1)
 	if(sg_alarm_data_t->key_s[ WATER_KEY] == KEY_EVNT)
 	{
 		if((sensor_error & 0x04) == 0) 
@@ -441,7 +442,7 @@ void alarm_sensor_collection_param(void)
 			sensor_error  |= 0x04;
 			sensor_normal &=~0x04;
 			Error_Set(SENSOR_WATER_LEAK);
-			app_report_information_immediately(0);
+			app_report_information_immediately(1);
 		}
 	} 
 	else  
@@ -453,7 +454,99 @@ void alarm_sensor_collection_param(void)
 			Error_Clear(SENSOR_WATER_LEAK);
 			app_report_information_immediately(0);
 		}	
-	}		
+	}
+#endif
+
+	/* 防雷检测 */
+#if (configUSE_KEY_SPD == 1)
+	if(sg_alarm_data_t->key_s[ SPD_KEY] == KEY_EVNT)
+	{
+		if((sensor_error & 0x08) == 0) 
+		{
+			sensor_error  |= 0x08;
+			sensor_normal &=~0x08;
+			Error_Set(SENSOR_SPD_FAULT);
+			app_report_information_immediately(1);
+		}
+	} 
+	else  
+	{
+		if((sensor_normal & 0x08) == 0) 
+		{
+			sensor_normal |= 0x08;
+			sensor_error  &=~0x08;
+			Error_Clear(SENSOR_SPD_FAULT);
+			app_report_information_immediately(0);
+		}	
+	}
+#endif
+
+	/* 温度高 */
+	if(sg_alarm_data_t->temp_inside >= sg_alarm_threshold_t->temp_high)
+	{
+		if((sensor_error & 0x0100) == 0) 
+		{
+			sensor_error  |= 0x0100;
+			sensor_normal &=~0x0100;
+			Error_Set(SENSOR_TEMP_HIGH);
+			app_report_information_immediately(1);
+		}
+	} 
+	else  
+	{
+		if((sensor_normal & 0x0100) == 0) 
+		{
+			sensor_normal |= 0x0100;
+			sensor_error  &=~0x0100;
+			Error_Clear(SENSOR_TEMP_HIGH);
+			app_report_information_immediately(0);
+		}	
+	}
+
+	/* 温度低 */
+	if(sg_alarm_data_t->temp_inside <= sg_alarm_threshold_t->temp_low)
+	{
+		if((sensor_error & 0x0200) == 0) 
+		{
+			sensor_error  |= 0x0200;
+			sensor_normal &=~0x0200;
+			Error_Set(SENSOR_TEMP_LOW);
+			app_report_information_immediately(1);
+		}
+	} 
+	else  
+	{
+		if((sensor_normal & 0x0200) == 0) 
+		{
+			sensor_normal |= 0x0200;
+			sensor_error  &=~0x0200;
+			Error_Clear(SENSOR_TEMP_LOW);
+			app_report_information_immediately(0);
+		}	
+	}
+
+	/* 湿度高 */
+	if(sg_alarm_data_t->humi_inside >= sg_alarm_threshold_t->humi_high)
+	{
+		if((sensor_error & 0x0400) == 0) 
+		{
+			sensor_error  |= 0x0400;
+			sensor_normal &=~0x0400;
+			Error_Set(SENSOR_HUMI_HIGH);
+			app_report_information_immediately(1);
+		}
+	} 
+	else  
+	{
+		if((sensor_normal & 0x0400) == 0) 
+		{
+			sensor_normal |= 0x0400;
+			sensor_error  &=~0x0400;
+			Error_Clear(SENSOR_HUMI_HIGH);
+			app_report_information_immediately(0);
+		}	
+	}
+
 }
 
 /*

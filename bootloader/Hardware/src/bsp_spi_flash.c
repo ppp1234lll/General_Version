@@ -675,7 +675,13 @@ void sf_ReadInfo(void)
                 g_tSF.TotalSize = 2 * 1024 * 1024;    /* 总容量 = 2M */
                 g_tSF.SectorSize = 4 * 1024;        /* 扇区大小 = 4K */
                 break;
-
+            
+            case W25Q32_ID:
+                strcpy(g_tSF.ChipName, "W25Q32");
+                g_tSF.TotalSize = 4 * 1024 * 1024;    /* 总容量 = 4M */
+                g_tSF.SectorSize = 4 * 1024;        /* 扇区大小 = 4K */
+                break;
+            
             case W25Q64BV_ID:
                 strcpy(g_tSF.ChipName, "W25Q64");
                 g_tSF.TotalSize = 8 * 1024 * 1024;    /* 总容量 = 8M */

@@ -1,6 +1,8 @@
 #include "./web_server/httpd_cgi_ssi.h"
 #include "main.h"
 
+static uint8_t tran_changed = 0;
+
 static void setting_switch_status_function(char *pcParam[], char *pcValue[], uint8_t i);
 static void setting_threshold_time(char *buff, uint8_t mode);
 static int8_t setting_threshold_parameter_function(char *pcParam[], char *pcValue[], uint8_t i);
@@ -271,8 +273,12 @@ static int8_t setting_threshold_parameter_function(char *pcParam[], char *pcValu
     if (strcmp(pcParam[i] , "bd")==0) // 重启时间间隔
     {
         param.net_retime = atoi(pcValue[i]);
-        app_set_threshold_param_function(param);
-    }    
+    }  
+    if (strcmp(pcParam[i] , "bg")==0) // 网络延时时间
+    {
+		param.net_delay_time = atoi(pcValue[i]);
+		app_set_threshold_param_function(param);
+    }   
     return ret;
 }
 
@@ -356,8 +362,8 @@ static int8_t setting_device_parameter_function(char *pcParam[], char *pcValue[]
 {
     static struct device_param param = {0};
     int8_t        ret      = 0;
+    uint8_t       time     = 0;
     uint8_t       mode     = 0;
-
     /* 系统设置 */
     if (strcmp(pcParam[i] , "a")==0) // 同步时间
     {
@@ -377,18 +383,17 @@ static int8_t setting_device_parameter_function(char *pcParam[], char *pcValue[]
         memset(param.password,0,sizeof(param.password));
         memcpy(param.password,pcValue[i],strlen(pcValue[i]));
     }
-    if (strcmp(pcParam[i] , "tran") == 0)  // 传输模式
+    else if (strcmp(pcParam[i] , "tran") == 0)  // 传输模式
     {
         mode = atoi(pcValue[i]);
-        app_set_transfer_mode_function(mode);
+        tran_changed = app_set_transfer_mode_function(mode);
     }
-    if (strcmp(pcParam[i] , "camera_tran") == 0)  // 搜索模式
-    {
-        mode = atoi(pcValue[i]);
-        
-        /* 处理完最后一个参数后保存 */
-        app_set_carema_search_mode_function(mode,0);
-        app_set_device_param_function(param);
+	else if (strcmp(pcParam[i] , "J")==0) // 上报时间间隔
+	{
+		time = atoi(pcValue[i]); 	
+
+		app_set_report_time_function(time);
+		app_set_device_param_function(param);
     }
     return ret;
 }
@@ -408,6 +413,7 @@ int8_t httpd_cgi_set_system_function(int iNumParams, char *pcParam[], char *pcVa
     
     if (strcmp(pcValue[0] , "set_save")==0)
     {
+        tran_changed = 0;
         for (i=1; i< (iNumParams); i++)
         {
             ret = setting_device_parameter_function(pcParam,pcValue,i);
@@ -422,9 +428,12 @@ int8_t httpd_cgi_set_system_function(int iNumParams, char *pcParam[], char *pcVa
                 {
                     set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
                     vTaskDelay(100);
-                    eth_set_tcp_connect_reset();            /* 重启TCP连接 */
-                    gsm_set_module_reset_function();        /* 重启无线连接 */
-                }    
+                    if (tran_changed)
+                    {
+                        eth_set_tcp_connect_reset();            /* 重启TCP连接 */
+                        gsm_set_module_reset_function();        /* 重启无线连接 */
+                    }
+                }
             }
         }
         return 0;
@@ -445,12 +454,12 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
     static struct local_ip_t param  = {0};
     int8_t  ret      =  0;
     int     temp[6]  = {0};
-    uint8_t time[1]  = {0};
-    
+
     if (strcmp(pcParam[i] , "e")==0)  // IP
     {
         ret = sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
-        if(ret == 4) {
+        if(ret == 4) 
+        {
             param.ip[0] = temp[0];
             param.ip[1] = temp[1];
             param.ip[2] = temp[2];
@@ -525,11 +534,6 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
             param.ping_sub_ip[3] = temp[3];
         }
     }
-  // 网络延时时间  20220308
-    else if(strcmp(pcParam[i] , "N") == 0) {
-        time[0] = atoi(pcValue[i]);
-        app_set_com_time_param_function((uint32_t*)time,2); // 网络延时时间 
-    }
     else if (strcmp(pcParam[i] , "O")==0)  // IP
     {
         ret = sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
@@ -545,7 +549,6 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
     else if (strcmp(pcParam[i] , "P")==0) // 内外端口
     {
         param.multicast_port = atoi(pcValue[i]);
-        // app_set_local_network_function_two(param);
     }
     else if (strcmp(pcParam[i] , "bf")==0) // 交换机IP
     {
@@ -560,7 +563,7 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
             app_set_snmp_ip_function(ip_buf);
             ret = 0;
         }
-        app_set_local_network_function_two(param);
+        app_set_local_network_function(param);
     }    
     return ret;
 }
@@ -612,12 +615,12 @@ int8_t httpd_cgi_set_network_function(int iNumParams, char *pcParam[], char *pcV
 */
 static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i)
 {
-    static uint32_t time[4]     = {0};
     static uint8_t  ip[6][4]    = {0};
     static uint8_t  brand[6]    = {0};
     int8_t          ret         = 0;
     int             temp[4]     = {0};
-    
+    uint8_t          mode       = 0;
+
     if (strcmp(pcParam[i] , "m")==0) // 摄像头1
     {
         sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
@@ -691,16 +694,12 @@ static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i
     {
         brand[5] = atoi(pcValue[i]);
     }        
-    /* 每轮ping间隔时间 */
-    else if(strcmp(pcParam[i] , "s") == 0) {
-        time[0] = atoi(pcValue[i]);
-    }
+    /* 摄像机检测方式 */
+	if (strcmp(pcParam[i] , "camera_tran") == 0) { // 搜索模式
+	
+		mode = atoi(pcValue[i]);
     
-    /* 下一次ping的间隔时间 */
-    else if(strcmp(pcParam[i] , "t") == 0) {
-        time[1] = atoi(pcValue[i]);
-        
-        app_set_com_time_param_function(time,0);
+        app_set_carema_search_mode_function(mode,0);
         app_set_camera_function((uint8_t*)ip);
         app_set_camera_brand_function(brand);
     }
@@ -753,7 +752,6 @@ int8_t httpd_cgi_set_camera_ip_function(int iNumParams, char *pcParam[], char *p
 static int8_t setting_remote_network_function(char *pcParam[], char *pcValue[],uint8_t i)
 {
     static struct remote_ip param = {0};
-    static uint32_t time = 0;
     int8_t          ret  = 0;
     
     if (strcmp(pcParam[i] , "D")==0) // 内外IP
@@ -777,13 +775,6 @@ static int8_t setting_remote_network_function(char *pcParam[], char *pcValue[],u
     if (strcmp(pcParam[i] , "G")==0) // 外网端口
     {
         param.outside_port = atoi(pcValue[i]);         
-        return ret;
-    }
-    if (strcmp(pcParam[i] , "J")==0) // 上报时间间隔
-    {
-        time = atoi(pcValue[i]);     
-
-        app_set_com_time_param_function(&time,1);
         app_set_remote_network_function(param);
     }
     return ret;
@@ -835,23 +826,39 @@ int8_t httpd_cgi_set_remote_ip_function(int iNumParams, char *pcParam[], char *p
 */
 static int8_t setting_update_addr_function(char *pcParam[], char *pcValue[],uint8_t i)
 {
-    static struct update_addr param       = {0};
+    static struct update_addr ota_param = {0};
+    static struct upload_addr upload_param = {0};
     int temp[4]     = {0};    
     if (strcmp(pcParam[i] , "ba")==0) // 内外IP
     {
 //        memset(param.update_url,0,sizeof(param.update_url));
 //        memcpy(param.update_url,pcValue[i],strlen((const char*)pcValue[i]));
         sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
-        param.ip[0] = temp[0];
-        param.ip[1] = temp[1];
-        param.ip[2] = temp[2];
-        param.ip[3] = temp[3];    
+        ota_param.ip[0] = temp[0];
+        ota_param.ip[1] = temp[1];
+        ota_param.ip[2] = temp[2];
+        ota_param.ip[3] = temp[3];    
     }
-    
-    if (strcmp(pcParam[i] , "bb")==0) // 内外端口
+    else if (strcmp(pcParam[i] , "bb")==0) // 内外端口
     {
-        param.port = atoi(pcValue[i]);
-        app_set_http_ota_function(param);
+        ota_param.port = atoi(pcValue[i]);
+    }
+    else if (strcmp(pcParam[i] , "bg")==0) // 内外IP
+    {
+//        memset(param.update_url,0,sizeof(param.update_url));
+//        memcpy(param.update_url,pcValue[i],strlen((const char*)pcValue[i]));
+        sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
+        upload_param.ip[0] = temp[0];
+        upload_param.ip[1] = temp[1];
+        upload_param.ip[2] = temp[2];
+        upload_param.ip[3] = temp[3];    
+    }
+    else if (strcmp(pcParam[i] , "bh")==0) // 内外端口
+    {
+        upload_param.port = atoi(pcValue[i]);
+
+        app_set_http_ota_function(ota_param);
+        app_set_http_upload_function(upload_param);
     }
     return 0;
 }
@@ -1176,6 +1183,37 @@ int8_t httpd_cgi_system_function(int iNumParams, char *pcParam[], char *pcValue[
     if ( strcmp(pcValue[0] , "snmpcamera1")==0 ) {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
         app_set_com_send_flag_function(CR_QUERY_SNMP_INFO,1);
+        return 0;
+    }
+    // 打印日志
+    if(strcmp(pcValue[0] , "printlog")==0)
+    {
+        set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
+        log_print_all_function();
+        return 0;
+    }
+    // 打印日志信息
+    if ( strcmp(pcValue[0] , "printloginfo")==0 ) {
+        set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
+        log_print_dir_function();
+        return 0;
+    }
+    // 打印mib信息
+    if ( strcmp(pcValue[0] , "printmib")==0 ) {
+        set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
+        log_print_meta_function();
+        return 0;
+    }
+    // 清除全部日志批次(current+pending)
+    if ( strcmp(pcValue[0] , "clearcurrent")==0 ) {
+        set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
+        log_clear_current_function();
+        return 0;
+    }
+    // 文件上传
+    if ( strcmp(pcValue[0] , "uploadfile")==0 ) {
+        set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
+        upload_set_upload_mode(UPLOAD_MODE_LWIP);
         return 0;
     }
     return -1;

@@ -1,4 +1,5 @@
 #include "main.h"
+#include "./Driver/inc/GPRS.h"
 
 #define GSM_GET_GPS_TIME (90*1000) // 90s
 #define GSM_DET_STATUS_TIME (60*100) // 60s
@@ -20,7 +21,8 @@ typedef struct
 gsm_operate_t sg_gsmoperate_t;
 uint8_t  *sg_gsm_buff;
 uint16_t sg_gsm_flag   = 0;
-
+uint8_t sg_gsm_log[128];
+uint16_t sg_gsm_log_len = 0;;
 /*
 *********************************************************************************************************
 *    函 数 名: gsm_task_function
@@ -32,9 +34,6 @@ uint16_t sg_gsm_flag   = 0;
 void gsm_task_function(void)
 {
     uint32_t status_count = 0;
-    #ifdef COM_GPS_ENABLE
-    uint16_t gps_count = 0;
-    #endif
     
     #ifdef WIRELESS_PRIORITY_CONNECTION
     /* 判断网络模式 */
@@ -51,13 +50,25 @@ __RESET:
 
     memset(&sg_gsmoperate_t,0,sizeof(gsm_operate_t));
     gprs_deinit_function(); // 清除数据再进行初始化
-    while(gprs_status_check_function() == 1) {
+    static uint32_t s_log_tick = 0;
+
+    s_log_tick = HAL_GetTick();
+
+    while(gprs_status_check_function() == 1) 
+    {
         FeedFwdgt();    
-        vTaskDelay(10);
+        vTaskDelay(100);
+
+        if(HAL_GetTick() - s_log_tick >= 1800000)  /* 30分钟保存一次 */
+        {
+            s_log_tick = HAL_GetTick();
+            gsm_get_log_function();
+            log_device_write(sg_gsm_log, sg_gsm_log_len);
+        }
     }
     /* 模块状态检测 */
-    if( gprs_get_module_status_function() != 1) {
-
+    if( gprs_get_module_status_function() != 1) 
+    {
         /* 模块初始化失败 */
         #ifdef WIRELESS_PRIORITY_CONNECTION
         eth_set_tcp_cmd(1); // 启动有线网
@@ -70,25 +81,51 @@ __RESET:
     /* 执行主功能函数 */
     while(1)
     {
+        gprs_sim_status_monitoring_function();
+        gprs_csq_status_monitoring_function();
         /* 查看是否允许无线网络连接 */
         if( (app_get_network_mode() != SERVER_MODE_LWIP ))    
         {
-            if(update_get_mode_function() != UPDATE_MODE_GPRS) // 是否在升级程序状态下
-            {
-                gsm_tcp_control_function();    // tcp连接
-                gsm_reset_task_function();    // 重启软件
-                    
-                if(sg_gsmoperate_t.tcp_status == 1 && (sg_gsm_flag&0x8000))        /* 数据发送 */
-                {
-                    gprs_network_data_send_function(sg_gsm_buff,(sg_gsm_flag&0x7fff));
+//            if((update_get_mode_function() != UPDATE_MODE_GPRS) && (upload_get_mode_function() != UPLOAD_MODE_GPRS))// 是否在升级程序状态下
+            /* DATA 业务始终运行，OTA/Upload 不再阻塞主链路。
+             * 驱动层 g_gprs_at_mutex 已序列化 AT 指令，多路 socket 可并行。 */
+            gsm_tcp_control_function();    // tcp连接
+            gsm_reset_task_function();     // 重启软件
 
-                    sg_gsm_flag = 0;
+            if(sg_gsmoperate_t.tcp_status == 1 && (sg_gsm_flag&0x8000))        /* 数据发送 */
+            {
+                uint8_t send_ret = gprs_network_data_send_function(sg_gsm_buff,(sg_gsm_flag&0x7fff));
+                sg_gsm_flag = 0;
+
+                if(send_ret == GPRS_SEND_OK)
+                {
+                    app_set_send_result_function(SR_OK);
+                }
+                else if(send_ret == GPRS_SEND_DISCONN)
+                {
+                    sg_gsmoperate_t.tcp_status = 0;
+                    app_set_send_result_function(SR_SEND_ERROR);
+                }
+                else
+                {
+                    app_set_send_result_function(SR_SEND_ERROR);
                 }
             }
-            else if( update_get_mode_function() == UPDATE_MODE_GPRS)
+            /* 检查 DATA 链路异步断开(disconn_pending[0] 由 ISR 异步置位,
+             * OTA/FILE 通过 recv API 消费; DATA 链路在此统一检查) */
+            else if(sg_gsmoperate_t.tcp_status == 1 && gprs_check_data_disconn())
             {
-                update_mobile_task_function();        /* 通过无线更新 */
-            }        
+                sg_gsmoperate_t.tcp_status = 0;
+            }
+
+            if(update_get_mode_function() == UPDATE_MODE_GPRS)
+            {
+                update_gsm_poll();
+            }
+            else if(upload_get_mode_function() == UPLOAD_MODE_GPRS)
+            {
+                upload_gsm_poll();
+            }
         }
         /* 模块状态监测-只有在tcp功能未启动时监测 */
         #ifdef WIRED_PRIORITY_CONNECTION
@@ -137,10 +174,9 @@ __RESET:
 */
 void gsm_tcp_control_function(void)
 {
-    struct remote_ip *remote  = app_get_remote_network_function();
-    static     uint8_t flag   = 0;
-    uint8_t     ret        = 0;
-    uint8_t     port[6]   = {0};
+    struct  remote_ip *remote  = app_get_remote_network_function();
+    static  uint8_t flag   = 0;
+    uint8_t ret        = 0;
     
         
     /* 检测tcp状态:tcp未连接 且 tcp被允许连接 */
@@ -173,16 +209,15 @@ void gsm_tcp_control_function(void)
             #else
             eth_set_tcp_cmd(1);
             led_control_function(LD_GPRS,LD_ON);
-
             #endif
         } 
         else 
         {
             /* 连接主线路 */
-            sprintf((char*)port,"%d",remote->outside_port);
-            ret = gprs_network_connect_function(remote->outside_iporname,port);
+            gprs_network_disconnect_function(GPRS_LINK_DATA);
+            ret = gprs_network_connect_function((const char*)remote->outside_iporname, (unsigned short)remote->outside_port, GPRS_LINK_DATA);
 
-            if(ret == 0)                       // 连接成功
+            if(ret == GPRS_SEND_OK)                       // 连接成功
             {
                 #ifdef WIRELESS_PRIORITY_CONNECTION
                 eth_set_tcp_cmd(0);
@@ -191,7 +226,7 @@ void gsm_tcp_control_function(void)
                 app_set_com_interface_selection_function(1);
                 sg_gsmoperate_t.tcp_status = 1;
                 app_send_once_heart_infor();  // 发送一次心跳
-//                app_report_information_immediately(0);
+                update_status_detection();  // 更新状态检测
             }
             else                               // 连接失败
             {
@@ -212,17 +247,18 @@ void gsm_tcp_control_function(void)
     /* tcp连接被拒绝 */
     if(sg_gsmoperate_t.tcp_cmd == 0 && sg_gsmoperate_t.tcp_status == 1)
     {
-        gprs_network_disconnect_function(0);
+        gprs_network_disconnect_function(GPRS_LINK_DATA);
         
         app_set_com_interface_selection_function(0);
     }
     #endif
-  #ifdef WIRED_PRIORITY_CONNECTION
+    #ifdef WIRED_PRIORITY_CONNECTION
     if(sg_gsmoperate_t.tcp_cmd == 0) {
         flag = 0;
     }
     #else 
-    if(sg_gsmoperate_t.tcp_status == 0) {
+    if(sg_gsmoperate_t.tcp_status == 0) 
+    {
         flag = 0;
     }
     #endif
@@ -242,9 +278,7 @@ void gsm_reset_task_function(void)
     {
         sg_gsmoperate_t.reset.network = 0;
         /* 断开网络连接 */
-        gprs_network_connection_restart_function();
-
-//        gsm_set_module_reset_function(); // 重启模块
+        gprs_network_disconnect_function(GPRS_LINK_DATA);
         sg_gsmoperate_t.tcp_status = 0;
     }
 }
@@ -296,7 +330,6 @@ const char gsm_find_mipcall[]   = {0xe6,0x9f,0xa5,0xe8,0xaf,0xa2,0xe6,0x8b,0xa8,
 *    功能说明: 获取gsm工作状态:
 *    形    参: @buff        : 数据指针
 *    返 回 值: 0-信号强度 1-入网地址 2-拨号状态
-*    ? ? ?: *    
 *********************************************************************************************************
 */
 uint8_t  gsm_gst_init_status_function(uint8_t sel)
@@ -437,17 +470,22 @@ void gsm_set_module_reset_function(void)
     sg_gsmoperate_t.reset.module = 1;
 }
 
+
 /*
 *********************************************************************************************************
-*    函 数 名: gsm_data_send_function
-*    功能说明: 网络数据发送函数
+*    函 数 名: gsm_get_log_function
+*    功能说明: 获取模块日志数据
 *    形    参: 
 *    返 回 值: 
 *********************************************************************************************************
 */
-uint8_t gsm_data_send_function(uint8_t *buff, uint16_t len)
+void gsm_get_log_function(void)
 {
-    return gprs_network_data_send_function(buff,len);
+    gprs_log_t *log = NULL;
+
+    log = (gprs_log_t *)gprs_get_log_function();
+
+    sg_gsm_log_len = snprintf((char *)sg_gsm_log, sizeof(sg_gsm_log),
+                    "INIT=%d;CEREG=%d;CSQ=%d;ERROR=%d",
+                    log->init_step, log->cereg, log->csq, log->errors);
 }
-
-

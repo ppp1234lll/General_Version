@@ -23,10 +23,10 @@
 /*
     4°¢ ‰»ÎºÏ≤‚
         ∞¥º¸(ª÷∏¥≥ˆ≥ß…Ë÷√):    PD2
-        œ‰√≈ºÏ≤‚:             PA11
+        œ‰√≈ºÏ≤‚:              PA11
         12VµÁ‘¥ ‰»Îº‡≤‚:       PD0
-        ÀÆΩ˛ :               PD13	
-        ∑¿¿◊ºÏ≤‚£∫            PD14
+        ÀÆΩ˛ :                PD13	
+        ∑¿¿◊ºÏ≤‚£∫            PC8
         ø’ø™ºÏ≤‚£∫            PD15
 */
 #define RESET_KEY_PIN               GPIO_PIN_2                
@@ -37,7 +37,7 @@
 #define DOOR_KEY_PIN                GPIO_PIN_11                
 #define DOOR_KEY_GPIO_PORT          GPIOA                      
 #define DOOR_KEY_GPIO_CLK           RCU_GPIOA    
-#define DOOR_KEY_ACTIVE_LEVEL       EBTN_ACTIVE_LOW
+#define DOOR_KEY_ACTIVE_LEVEL       EBTN_ACTIVE_HIGH
 
 #define PWR_KEY_PIN                 GPIO_PIN_0                
 #define PWR_KEY_GPIO_PORT           GPIOD                      
@@ -52,9 +52,9 @@
 #endif
 
 #if (configUSE_KEY_SPD == 1)
-    #define SPD_KEY_PIN               GPIO_PIN_14
-    #define SPD_KEY_GPIO_PORT         GPIOD                      
-    #define SPD_KEY_GPIO_CLK          RCU_GPIOD
+    #define SPD_KEY_PIN               GPIO_PIN_8
+    #define SPD_KEY_GPIO_PORT         GPIOC                      
+    #define SPD_KEY_GPIO_CLK          RCU_GPIOC
     #define SPD_KEY_ACTIVE_LEVEL      EBTN_ACTIVE_LOW
 #endif
 
@@ -62,7 +62,7 @@
     #define MCB_KEY_PIN               GPIO_PIN_15
     #define MCB_KEY_GPIO_PORT         GPIOD                      
     #define MCB_KEY_GPIO_CLK          RCU_GPIOD    
-    #define MCB_KEY_ACTIVE_LEVEL      EBTN_ACTIVE_HIGH
+    #define MCB_KEY_ACTIVE_LEVEL      EBTN_ACTIVE_LOW
 #endif
 
 /** ***************************************************************************
