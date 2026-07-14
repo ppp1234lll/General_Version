@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Stack-internal timers implementation.
  * This file includes timer callbacks for stack-internal timers as well as

@@ -4,32 +4,32 @@
 #include <lwip/sockets.h>
 
 
-#define RTSP_PRIO             5                   // TCP¿Í»§¶ËÈÎÎñ
-#define RTSP_STK_SIZE       512                  // ÈÎÎñ¶ÑÕ»´óĞ¡
+#define RTSP_PRIO           6                   // TCPå®¢æˆ·ç«¯ä»»åŠ¡
+#define RTSP_STK_SIZE       512                  // ä»»åŠ¡å †æ ˆå¤§å°
 TaskHandle_t RTSP_Task_Handler;
 
-#define RTSP_DEBUG  1         // µ÷ÊÔ
+#define RTSP_DEBUG  1         // è°ƒè¯•
 
 #define RTSP_MAX_CAMERAS     10
-#define RTSP_SCAN_TIME       30     // Ã¿ÂÖÉ¨ÃèÊ±¼ä¼ä¸ô 30s
+#define RTSP_SCAN_TIME       30     // æ¯è½®æ‰«ææ—¶é—´é—´éš” 30s
 
 typedef struct
 {
-    uint8_t  rtsp_falg;  // RTSPÏß³Ì×´Ì¬£¬Îª´´½¨ÔòĞÂ½¨ÈÎÎñ
-    uint8_t  ipc_next; // ÏÂÒ»ÂÖÉãÏñ»ú
-    uint16_t ipc_time; // ¼ÆÊ±
-    uint8_t  ipc_idx;  // µ±Ç°ÕıÔÚÉ¨ÃèµÄÉãÏñÍ· 
+    uint8_t  rtsp_falg;  // RTSPçº¿ç¨‹çŠ¶æ€ï¼Œä¸ºåˆ›å»ºåˆ™æ–°å»ºä»»åŠ¡
+    uint8_t  ipc_next; // ä¸‹ä¸€è½®æ‘„åƒæœº
+    uint16_t ipc_time; // è®¡æ—¶
+    uint8_t  ipc_idx;  // å½“å‰æ­£åœ¨æ‰«æçš„æ‘„åƒå¤´ 
     uint8_t  rtsp_cmd;
     uint8_t  rtsp_steps;  // 
     char     recv[512];        
     char     send[128];            
-    uint8_t  result;   // É¨Ãè½á¹û
+    uint8_t  result;   // æ‰«æç»“æœ
 }rtsp_t;  
 
 rtsp_t sg_rtsp_t; 
 int sg_socket = -1;
 
-//udpÈÎÎñº¯Êı
+//udpä»»åŠ¡å‡½æ•°
 static void rtsp_thread(void *arg)
 {
     int ret = 0;
@@ -41,7 +41,7 @@ static void rtsp_thread(void *arg)
     {
         switch(sg_rtsp_t.rtsp_steps)
         {
-            case 0:  // »ñÈ¡IPµØÖ·
+            case 0:  // è·å–IPåœ°å€
                 ret = rtsp_get_ip_function(rtsp_ip);
                 if(ret == 0)
                     sg_rtsp_t.rtsp_steps++;
@@ -52,7 +52,7 @@ static void rtsp_thread(void *arg)
                 }
             break;
             
-            case 1:   // Á¬½ÓIPµØÖ·
+            case 1:   // è¿æ¥IPåœ°å€
                 if(rtsp_connect_server(rtsp_ip,554) == 0)
                     sg_rtsp_t.rtsp_steps++;
                 else
@@ -62,23 +62,23 @@ static void rtsp_thread(void *arg)
                 }
             break;            
             
-            case 2:   // ·¢ËÍRTSP
+            case 2:   // å‘é€RTSP
                 if(rtsp_send_method(rtsp_ip) == 0)
                     sg_rtsp_t.rtsp_steps++;
             break;                
 
-            case 3:   // ½ÓÊÕ
+            case 3:   // æ¥æ”¶
                 ret = rtsp_recv_method() ;
-                if(ret > 0 )  // ½ÓÊÕµ½Êı¾İ
+                if(ret > 0 )  // æ¥æ”¶åˆ°æ•°æ®
                     sg_rtsp_t.rtsp_steps++;
-                else if(ret < 0 ) // ³¬Ê±
+                else if(ret < 0 ) // è¶…æ—¶
                 {
                     sg_rtsp_t.result = 0;
                     sg_rtsp_t.rtsp_steps = 9;
                 }
             break;    
 
-            case 4:   // ´¦Àí½ÓÊÕÊı¾İ
+            case 4:   // å¤„ç†æ¥æ”¶æ•°æ®
 //                ret = rtsp_deal_recv_data(sg_rtsp_t.recv);
 //                if(ret < 0 )  
 //                {
@@ -95,34 +95,34 @@ static void rtsp_thread(void *arg)
             default:
                 if(sg_socket >= 0)
                 {
-                    closesocket(sg_socket); // ¹Ø±ÕÁ¬½Ó
+                    closesocket(sg_socket); // å…³é—­è¿æ¥
                     sg_socket = -1;
                 }
             
                 if(sg_rtsp_t.result == 1)
-                    det_set_camera_status(sg_rtsp_t.ipc_idx,1);  // ÉèÖÃÉãÏñ»úÍøÂç×´Ì¬
+                    det_set_camera_status(sg_rtsp_t.ipc_idx,NET_STATUS_NORMAL);  // ç½‘ç»œæ­£å¸¸
                 else
-                    det_set_camera_status(sg_rtsp_t.ipc_idx,0);
+                    det_set_camera_status(sg_rtsp_t.ipc_idx,NET_STATUS_FAULT);  // ç½‘ç»œæ•…éšœ
                 
-              sg_rtsp_t.rtsp_steps = 0;
+                sg_rtsp_t.rtsp_steps = 0;
                 sg_rtsp_t.ipc_idx++;
                 if(sg_rtsp_t.ipc_idx >= RTSP_MAX_CAMERAS)
                 {
                     sg_rtsp_t.ipc_idx  = 0;
-                    sg_rtsp_t.ipc_next = 0; /* ¿ªÊ¼ĞÂµÄÒ»ÂÖ¼ÆÊ± */
+                    sg_rtsp_t.ipc_next = 0; /* å¼€å§‹æ–°çš„ä¸€è½®è®¡æ—¶ */
                 }
             break;
         }
-        vTaskDelay(50);  //ÑÓÊ±5s
+        vTaskDelay(50);  //å»¶æ—¶5s
     }
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: rtsp_timer_function
-*    ¹¦ÄÜËµÃ÷: É¨ÃèÊ±¼ä
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: rtsp_timer_function
+*    åŠŸèƒ½è¯´æ˜: æ‰«ææ—¶é—´
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void rtsp_timer_function(void)
@@ -132,7 +132,7 @@ void rtsp_timer_function(void)
         sg_rtsp_t.ipc_time++;
         if(sg_rtsp_t.ipc_time > RTSP_SCAN_TIME)
         {
-            /* ¿ªÊ¼Ò»´ÎÉ¨Ãè */
+            /* å¼€å§‹ä¸€æ¬¡æ‰«æ */
             sg_rtsp_t.ipc_time  = 0;
             sg_rtsp_t.ipc_idx   = 0;
             sg_rtsp_t.ipc_next  = 1;
@@ -144,17 +144,17 @@ void rtsp_timer_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: rtsp_get_ip_function
-*    ¹¦ÄÜËµÃ÷: »ñÈ¡IP
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: rtsp_get_ip_function
+*    åŠŸèƒ½è¯´æ˜: è·å–IP
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 int8_t rtsp_get_ip_function(uint8_t ip[4])
 {
     int8_t  ret = 0;
     
-    /* ¼ì²âÊÇ·ñ¿ÉÒÔ¿ªÊ¼Ò»ÂÖÉ¨Ãè  */
+    /* æ£€æµ‹æ˜¯å¦å¯ä»¥å¼€å§‹ä¸€è½®æ‰«æ  */
     if(sg_rtsp_t.ipc_next == 0)
     {
         return -2;
@@ -163,9 +163,9 @@ int8_t rtsp_get_ip_function(uint8_t ip[4])
     {
         if(sg_rtsp_t.rtsp_cmd == 0) 
         {
-            if(app_get_camera_function(ip,sg_rtsp_t.ipc_idx) <0) /* Î´¼ì²âÉãÏñÍ·ip£¬Ö±½Ó±ê¼Ç */    
+            if(app_get_camera_function(ip,sg_rtsp_t.ipc_idx) <0) /* æœªæ£€æµ‹æ‘„åƒå¤´ipï¼Œç›´æ¥æ ‡è®° */    
                 ret = -1;
-            else                    /* ¼ì²âµ½ÉãÏñÍ·ip£¬¿ªÊ¼ping */
+            else                    /* æ£€æµ‹åˆ°æ‘„åƒå¤´ipï¼Œå¼€å§‹ping */
                 ret = 0;
         }
     }
@@ -173,10 +173,10 @@ int8_t rtsp_get_ip_function(uint8_t ip[4])
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: rtsp_connect_server
-*    ¹¦ÄÜËµÃ÷: Á¬½ÓRTSP·şÎñÆ÷
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: rtsp_connect_server
+*    åŠŸèƒ½è¯´æ˜: è¿æ¥RTSPæœåŠ¡å™¨
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 int8_t rtsp_connect_server(uint8_t ip[4],int port)
@@ -185,55 +185,55 @@ int8_t rtsp_connect_server(uint8_t ip[4],int port)
     char ip_param[20] = {0};
     int ret = -1;
     
-    sg_socket = socket(AF_INET, SOCK_STREAM, 0);  /* ¿É¿¿Êı¾İÁ÷½»¸¶·şÎñ¼ÈÊÇTCPĞ­Òé */
+    sg_socket = socket(AF_INET, SOCK_STREAM, 0);  /* å¯é æ•°æ®æµäº¤ä»˜æœåŠ¡æ—¢æ˜¯TCPåè®® */
     if (sg_socket < 0)
     {
         if(RTSP_DEBUG) printf("Socket error\n");
         close(sg_socket);
         sg_socket = -1;
-        ret =  -2;  // ´´½¨Ê§°Ü
+        ret =  -2;  // åˆ›å»ºå¤±è´¥
     }    
     else
     {
         sprintf(ip_param,"%d.%d.%d.%d",ip[0],ip[1],ip[2],ip[3]);
-        server_addr.sin_family = AF_INET;    /* ±íÊ¾IPv4ÍøÂçĞ­Òé */
-        server_addr.sin_port = htons(port);  /* ¶Ë¿ÚºÅ */
-        server_addr.sin_addr.s_addr = inet_addr(ip_param);   /* Ô¶³ÌIPµØÖ· */
+        server_addr.sin_family = AF_INET;    /* è¡¨ç¤ºIPv4ç½‘ç»œåè®® */
+        server_addr.sin_port = htons(port);  /* ç«¯å£å· */
+        server_addr.sin_addr.s_addr = inet_addr(ip_param);   /* è¿œç¨‹IPåœ°å€ */
         memset(&(server_addr.sin_zero), 0, sizeof(server_addr.sin_zero));
         
-    /*ÅäÖÃ³É·Ç×èÈûÄ£Ê½*/
+    /*é…ç½®æˆéé˜»å¡æ¨¡å¼*/
         int val = 1;
         ioctlsocket(sg_socket, FIONBIO, &val);
         
-        /* Á¬½ÓÔ¶³ÌIPµØÖ· */
+        /* è¿æ¥è¿œç¨‹IPåœ°å€ */
         if (connect(sg_socket, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in)))
         {
 //            if(RTSP_DEBUG) printf("%s:%d error\n", ip_param, port);
-//            ret = -1;  // Á¬½ÓÊ§°Ü
+//            ret = -1;  // è¿æ¥å¤±è´¥
 //            closesocket(sock);
 //            sock = -1;
         }
         else
         {
             if(RTSP_DEBUG) printf("%s:%d open\n", ip_param, port);
-            ret = 0; // Á¬½Ó³É¹¦
+            ret = 0; // è¿æ¥æˆåŠŸ
         }
         
     fd_set fdset;
     FD_ZERO(&fdset);
     FD_SET(sg_socket, &fdset);
-    //¿ÉÒÔÀûÓÃtv_secºÍtv_usec×ö¸üĞ¡¾«¶ÈµÄ³¬Ê±¿ØÖÆ
+    //å¯ä»¥åˆ©ç”¨tv_secå’Œtv_usecåšæ›´å°ç²¾åº¦çš„è¶…æ—¶æ§åˆ¶
     struct timeval timeout;
     timeout.tv_sec = 1;  
     timeout.tv_usec = 0;
     if (select(sg_socket + 1, NULL, &fdset, NULL, &timeout) == 1)
     {
-            ret = 0; // Á¬½Ó³É¹¦
+            ret = 0; // è¿æ¥æˆåŠŸ
       if(RTSP_DEBUG) printf("select %s:%d open\n", ip_param,port);
     } 
         else 
         {
-            ret = -1;  // Á¬½ÓÊ§°Ü
+            ret = -1;  // è¿æ¥å¤±è´¥
             closesocket(sg_socket);
             sg_socket = -1;
       if(RTSP_DEBUG) printf("select %s:%d error\n", ip_param,port); 
@@ -245,10 +245,10 @@ int8_t rtsp_connect_server(uint8_t ip[4],int port)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: rtsp_send_method
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍRTSPÊı¾İ
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: rtsp_send_method
+*    åŠŸèƒ½è¯´æ˜: å‘é€RTSPæ•°æ®
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 int rtsp_send_method(uint8_t ip[4])
@@ -256,20 +256,20 @@ int rtsp_send_method(uint8_t ip[4])
     int  data_len = 0;    
     memset(sg_rtsp_t.send,0,128);    
     memset(sg_rtsp_t.recv,0,512);    
-    data_len  = sprintf(sg_rtsp_t.send,"OPTIONS rtsp://%d.%d.%d.%d:554/ RTSP/1.0\r\n",ip[0],ip[1],ip[2],ip[3]); // ·½·¨
+    data_len  = sprintf(sg_rtsp_t.send,"OPTIONS rtsp://%d.%d.%d.%d:554/ RTSP/1.0\r\n",ip[0],ip[1],ip[2],ip[3]); // æ–¹æ³•
     data_len += sprintf(sg_rtsp_t.send+data_len,"%s","CSeq: 2\r\n");
     data_len += sprintf(sg_rtsp_t.send+data_len,"%s","User-Agent: LibVLC/3.0.19 (LIVE555 Streaming Media v2016.11.28)\r\n\r\n");
 
-    send(sg_socket, sg_rtsp_t.send, data_len, 0); // socketÊı¾İ·¢ËÍ
+    send(sg_socket, sg_rtsp_t.send, data_len, 0); // socketæ•°æ®å‘é€
     return 0;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: rtsp_recv_method
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍRTSPÊı¾İ
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: rtsp_recv_method
+*    åŠŸèƒ½è¯´æ˜: å‘é€RTSPæ•°æ®
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 int rtsp_recv_method(void)
@@ -292,10 +292,10 @@ int rtsp_recv_method(void)
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: rtsp_deal_recv_data
-*    ¹¦ÄÜËµÃ÷: ´¦ÀíRTSPÊı¾İ
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: rtsp_deal_recv_data
+*    åŠŸèƒ½è¯´æ˜: å¤„ç†RTSPæ•°æ®
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 int rtsp_deal_recv_data(char *data)
@@ -303,41 +303,20 @@ int rtsp_deal_recv_data(char *data)
     char *str = NULL;
 
     str = strstr(data,"200 OK");    /*SOAP-ENV:Sender*/
-    if(str == NULL)      // Î´ÕÒµ½Ö¸¶¨×Ö·û´®     
+    if(str == NULL)      // æœªæ‰¾åˆ°æŒ‡å®šå­—ç¬¦ä¸²     
     {
         return -1;
     }
   return 0;
 }
 
-//´´½¨UDPÏß³Ì
-//·µ»ØÖµ:0 UDP´´½¨³É¹¦
-//        ÆäËû UDP´´½¨Ê§°Ü
+//åˆ›å»ºUDPçº¿ç¨‹
+//è¿”å›å€¼:0 UDPåˆ›å»ºæˆåŠŸ
+//        å…¶ä»– UDPåˆ›å»ºå¤±è´¥
 unsigned char rtsp_thread_init(void)
-{
-//    INT8U res,err;
-//    OS_CPU_SR cpu_sr;
-//    
-//    OS_ENTER_CRITICAL();    //¹ØÖĞ¶Ï
-////    res = OSTaskCreate(rtsp_thread,(void*)0,(OS_STK*)&RTSP_TASK_STK[RTSP_STK_SIZE-1],RTSP_PRIO); //´´½¨UDPÏß³Ì
-//    res = OSTaskCreateExt(rtsp_thread,                                                             //½¨Á¢À©Õ¹ÈÎÎñ(ÈÎÎñ´úÂëÖ¸Õë) 
-//                                        (void *)0,                                                                                    //´«µİ²ÎÊıÖ¸Õë 
-//                                        (OS_STK*)&RTSP_TASK_STK[RTSP_STK_SIZE-1],                     //·ÖÅäÈÎÎñ¶ÑÕ»Õ»¶¥Ö¸Õë 
-//                                        (INT8U)RTSP_PRIO,                                                             //·ÖÅäÈÎÎñÓÅÏÈ¼¶ 
-//                                        (INT16U)RTSP_PRIO,                                                            //(Î´À´µÄ)ÓÅÏÈ¼¶±êÊ¶(ÓëÓÅÏÈ¼¶ÏàÍ¬) 
-//                                        (OS_STK *)&RTSP_TASK_STK[0],                                             //·ÖÅäÈÎÎñ¶ÑÕ»Õ»µ×Ö¸Õë 
-//                                        (INT32U)RTSP_STK_SIZE,                                                             //Ö¸¶¨¶ÑÕ»µÄÈİÁ¿(¼ìÑéÓÃ) 
-//                                        (void *)0,                                                                                    //Ö¸ÏòÓÃ»§¸½¼ÓµÄÊı¾İÓòµÄÖ¸Õë 
-//                                        (INT16U)OS_TASK_OPT_STK_CHK|OS_TASK_OPT_STK_CLR);        //½¨Á¢ÈÎÎñÉè¶¨Ñ¡Ïî     
-//    
-//    OSTaskNameSet(RTSP_PRIO, (INT8U *)(void *)"rtsp_thread", &err);
-
-//    OS_EXIT_CRITICAL();        //¿ªÖĞ¶Ï
-//    
-//    return res;
-                                        
+{                     
     BaseType_t res;                                        
-    taskENTER_CRITICAL();    /*½øÈëÁÙ½çÇø*/
+    taskENTER_CRITICAL();    /*è¿›å…¥ä¸´ç•ŒåŒº*/
     
     xTaskCreate((TaskFunction_t )rtsp_thread,
                             (const char *   )"rtsp_thread",
@@ -346,17 +325,17 @@ unsigned char rtsp_thread_init(void)
                             (UBaseType_t    )RTSP_PRIO,
                             (TaskHandle_t * )&RTSP_Task_Handler);
 
-    taskEXIT_CRITICAL();    /*ÍË³öÁÙ½çÇø*/
+    taskEXIT_CRITICAL();    /*é€€å‡ºä¸´ç•ŒåŒº*/
     
     return res;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: onvif_udp_start
-*    ¹¦ÄÜËµÃ÷: udpÆô¶¯º¯Êı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: onvif_udp_start
+*    åŠŸèƒ½è¯´æ˜: udpå¯åŠ¨å‡½æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void rtsp_thread_start(void)
@@ -370,24 +349,20 @@ void rtsp_thread_start(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: rtsp_thread_stop
-*    ¹¦ÄÜËµÃ÷: tcp¿Í»§¶ËÍ£Ö¹º¯Êı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: rtsp_thread_stop
+*    åŠŸèƒ½è¯´æ˜: tcpå®¢æˆ·ç«¯åœæ­¢å‡½æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void rtsp_thread_stop(void)
 {
-//    OS_CPU_SR cpu_sr;
     if(sg_rtsp_t.rtsp_falg == 1)
     {
         sg_rtsp_t.rtsp_falg = 0;
-//        OS_ENTER_CRITICAL();        // ¹ØÖĞ¶Ï
-//        OSTaskDel(RTSP_PRIO);     // É¾³ıTCPÈÎÎñ
-//        OS_EXIT_CRITICAL();            // ¿ªÖĞ¶Ï
-        taskENTER_CRITICAL();    /*½øÈëÁÙ½çÇø*/
-      vTaskDelete(RTSP_Task_Handler);        // É¾³ıTCPÈÎÎñ
-      taskEXIT_CRITICAL();    /*ÍË³öÁÙ½çÇø*/
+        taskENTER_CRITICAL();    /*è¿›å…¥ä¸´ç•ŒåŒº*/
+        vTaskDelete(RTSP_Task_Handler);        // åˆ é™¤TCPä»»åŠ¡
+        taskEXIT_CRITICAL();    /*é€€å‡ºä¸´ç•ŒåŒº*/
     }
 }
 

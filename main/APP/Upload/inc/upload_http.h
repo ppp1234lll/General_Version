@@ -1,84 +1,74 @@
-#ifndef _UPLOAD_HTTP_H_
+ï»¿#ifndef _UPLOAD_HTTP_H_
 #define _UPLOAD_HTTP_H_
 
 #include "./SYSTEM/sys/sys.h"
 
 /*
 *********************************************************************************************************
-*    HTTP ·ÖÆ¬ÎÄ¼şÉÏ´«Ä£¿é
-*    Ğ­ÒéÁ÷³Ì: /fnwlw/oss/log/upload/start -> /fnwlw/oss/log/upload/chunk -> /fnwlw/oss/log/upload/finish
-*    ·şÎñÆ÷: http://47.104.250.225:8080
+*    HTTP åˆ†ç‰‡æ–‡ä»¶ä¸Šä¼ æ¨¡å—
+*    åè®®æµç¨‹: /fnwlw/oss/log/upload/start -> /fnwlw/oss/log/upload/chunk -> /fnwlw/oss/log/upload/finish
+*    æœåŠ¡å™¨: http://47.104.250.225:8080
 *********************************************************************************************************
 */
 
-/* HTTP ÎÄ¼şÉÏ´«·µ»ØÖµ */
-#define UPLOAD_HTTP_OK                    ((int8_t)0)   /* ³É¹¦ */
-#define UPLOAD_HTTP_ERR_PARAM             ((int8_t)-21) /* ²ÎÊı´íÎó */
-#define UPLOAD_HTTP_ERR_LINK              ((int8_t)-22) /* Á´Â·ÀàĞÍÎŞĞ§ */
-#define UPLOAD_HTTP_ERR_RESOLVE           ((int8_t)-23) /* ÓòÃû½âÎöÊ§°Ü */
-#define UPLOAD_HTTP_ERR_CONNECT           ((int8_t)-24) /* Á¬½ÓÊ§°Ü */
-#define UPLOAD_HTTP_ERR_FILE              ((int8_t)-25) /* ÎÄ¼ş²Ù×÷Ê§°Ü */
-#define UPLOAD_HTTP_ERR_SEND              ((int8_t)-26) /* ·¢ËÍÊ§°Ü */
-#define UPLOAD_HTTP_ERR_RESPONSE          ((int8_t)-27) /* Ó¦´ğ½âÎöÊ§°Ü */
-#define UPLOAD_HTTP_ERR_STATUS            ((int8_t)-28) /* HTTP ×´Ì¬Âë·Ç 2xx */
-#define UPLOAD_HTTP_ERR_NET               ((int8_t)-29) /* ÍøÂç²»¿ÉÓÃ */
+/* HTTP æ–‡ä»¶ä¸Šä¼ è¿”å›å€¼ */
+#define UPLOAD_HTTP_OK                    ((int8_t)0)   /* æˆåŠŸ */
+#define UPLOAD_HTTP_ERR_PARAM             ((int8_t)-21) /* å‚æ•°é”™è¯¯ */
+#define UPLOAD_HTTP_ERR_LINK              ((int8_t)-22) /* é“¾è·¯ç±»å‹æ— æ•ˆ */
+#define UPLOAD_HTTP_ERR_RESOLVE           ((int8_t)-23) /* åŸŸåè§£æå¤±è´¥ */
+#define UPLOAD_HTTP_ERR_CONNECT           ((int8_t)-24) /* è¿æ¥å¤±è´¥ */
+#define UPLOAD_HTTP_ERR_FILE              ((int8_t)-25) /* æ–‡ä»¶æ“ä½œå¤±è´¥ */
+#define UPLOAD_HTTP_ERR_SEND              ((int8_t)-26) /* å‘é€å¤±è´¥ */
+#define UPLOAD_HTTP_ERR_RESPONSE          ((int8_t)-27) /* åº”ç­”è§£æå¤±è´¥ */
+#define UPLOAD_HTTP_ERR_STATUS            ((int8_t)-28) /* HTTP çŠ¶æ€ç é 2xx */
+#define UPLOAD_HTTP_ERR_NET               ((int8_t)-29) /* ç½‘ç»œä¸å¯ç”¨ */
 
-/* ÈÕÖ¾ÉÏ´«·şÎñÆ÷Ä¬ÈÏµØÖ· */
-#define UPLOAD_HTTP_DEFAULT_HOST          "47.104.250.225"
-#define UPLOAD_HTTP_DEFAULT_PORT          8080U
-
-/* ·ÖÆ¬ÉÏ´« API Â·¾¶ */
+/* åˆ†ç‰‡ä¸Šä¼  API è·¯å¾„ */
 #define UPLOAD_HTTP_PATH_START            "/fnwlw/oss/log/upload/start"
 #define UPLOAD_HTTP_PATH_CHUNK            "/fnwlw/oss/log/upload/chunk"
 #define UPLOAD_HTTP_PATH_FINISH           "/fnwlw/oss/log/upload/finish"
 
-#define UPLOAD_HTTP_CHUNK_SIZE            1024U /* µ¥·ÖÆ¬×î´ó×Ö½ÚÊı */
-#define UPLOAD_HTTP_UPLOAD_ID_MAX         64U   /* ¿ªÊ¼ÉÏ´«·µ»Ø uploadId ×î´ó³¤¶È */
-#define UPLOAD_HTTP_QUERY_PATH_MAX        384U  /* start ½Ó¿Ú query Â·¾¶»º³å */
+#define UPLOAD_HTTP_CHUNK_SIZE            1024U /* å•åˆ†ç‰‡æœ€å¤§å­—èŠ‚æ•° */
+#define UPLOAD_HTTP_UPLOAD_ID_MAX         64U   /* å¼€å§‹ä¸Šä¼ è¿”å› uploadId æœ€å¤§é•¿åº¦ */
+#define UPLOAD_HTTP_QUERY_PATH_MAX        384U  /* start æ¥å£ query è·¯å¾„ç¼“å†² */
 
-#define UPLOAD_HTTP_FINISH_MD5_DISABLE    0U    /* finish ²»´ø md5(Ä¬ÈÏ) */
-#define UPLOAD_HTTP_FINISH_MD5_ENABLE     1U    /* finish Ğ¯´ø md5 Ğ£Ñé */
+#define UPLOAD_HTTP_FINISH_MD5_DISABLE    0U    /* finish ä¸å¸¦ md5(é»˜è®¤) */
+#define UPLOAD_HTTP_FINISH_MD5_ENABLE     1U    /* finish æºå¸¦ md5 æ ¡éªŒ */
 
-/* ÉÏ´«Á´Â·ÀàĞÍ */
-typedef enum
-{
-    UPLOAD_HTTP_LINK_AUTO = 0, /* ×Ô¶¯Ñ¡Ôñ */
-    UPLOAD_HTTP_LINK_LWIP = 1, /* ÓĞÏßÍøÂç */
-    UPLOAD_HTTP_LINK_GPRS = 2  /* 4G ÍøÂç */
-} upload_http_link_t;
-
-/* HTTP ÉÏ´«ÇëÇó²ÎÊı */
+/* HTTP ä¸Šä¼ è¯·æ±‚å‚æ•° */
 typedef struct
 {
-    const char *host;              /* ·şÎñÆ÷µØÖ·,Ö§³ÖIP»òÓòÃû,NULLÊ±Ê¹ÓÃ UPLOAD_HTTP_DEFAULT_HOST */
-    uint16_t port;                 /* ·şÎñÆ÷¶Ë¿Ú,0Ê±Ê¹ÓÃ UPLOAD_HTTP_DEFAULT_PORT */
-    const char *url;               /* ±£Áô×Ö¶Î,ĞÂĞ­Òé²»ÔÙÊ¹ÓÃ */
-    const char *file_path;         /* LittleFS ÎÄ¼şÂ·¾¶ */
-    const char *upload_file_name;  /* ÉÏ´«ÈÕÖ¾ÎÄ¼şÃû(Èç 000003_log_20260101120000.txt),±ØÌî */
-    const char *device_sn;         /* Éè±¸±àºÅ,NULLÊ±´Ó Flash ¶ÁÈ¡ */
-    const char *log_type;          /* ÈÕÖ¾ÀàĞÍ,NULLÊ±Ä¬ÈÏ SYSTEM */
-    uint8_t finish_md5_enable;     /* finish ÊÇ·ñĞ¯´ø md5,Ä¬ÈÏ UPLOAD_HTTP_FINISH_MD5_DISABLE */
-    upload_http_link_t preferred_link; /* AUTO/LWIP/GPRS */
+    const char *upload_file_name;  /* ä¸Šä¼ æ—¥å¿—æ–‡ä»¶å(å¿…å¡«,æ¥è‡ª log.c) */
+    const char *log_type;          /* æ—¥å¿—ç±»å‹,NULL æ—¶é»˜è®¤ SYSTEM */
+    uint8_t finish_md5_enable;     /* finish æ˜¯å¦æºå¸¦ md5,é»˜è®¤ UPLOAD_HTTP_FINISH_MD5_DISABLE */
 } upload_http_request_t;
 
-/* ÓĞÏßÉÏ´«: ĞÂ½¨ TCP,¶ÁÈ¡ pending ÈÕÖ¾,°´ 1KB ·Ö°üÉÏ´« */
-int8_t upload_lwip_file_function(void);
-void upload_lwip_poll(void);
-uint8_t upload_lwip_is_running(void);
+/*
+ * HTTP ä¼ è¾“å±‚å›è°ƒæ¥å£
+ * ç”± upload_lwip.c / upload_gsm.c åˆ†åˆ«å®ç°å¹¶æ³¨å…¥,ä½¿ upload_http.c ä¼ è¾“æ— å…³ã€‚
+ * recv å›è°ƒæ”¶åˆ°æ•°æ®åé¡»è°ƒç”¨ upload_http_save_response() è¿½åŠ åˆ°å½“å‰åº”ç­”ç¼“å†²ã€‚
+ */
+typedef struct
+{
+    int  (*connect_fn)(const char *host, uint16_t port); /* å»ºç«‹è¿æ¥: 0 æˆåŠŸ, -1 å¤±è´¥ */
+    int  (*send_fn)(const uint8_t *data, uint32_t len);  /* å‘é€å…¨éƒ¨æ•°æ®: 0 æˆåŠŸ, -1 å¤±è´¥ */
+    int  (*recv_fn)(int *out_recv_size);                 /* æ”¶ä¸€åŒ…: 0 æˆåŠŸ(å«æ— æ•°æ®), -1 é”™è¯¯, -3 æ–­å¼€ */
+    void (*close_fn)(void);                              /* å…³é—­è¿æ¥ */
+} upload_http_transport_t;
 
+/* ä¾›ä¼ è¾“å±‚ recv å›è°ƒè°ƒç”¨: å°†æ”¶åˆ°çš„æ•°æ®è¿½åŠ åˆ°å½“å‰åº”ç­”ç¼“å†², 0 æˆåŠŸ -1 æº¢å‡º */
+int upload_http_save_response(const uint8_t *data, int data_len);
 
-/* ÎŞÏßÉÏ´«: ×Ô¶¯¶ÁÈ¡ pending ÈÕÖ¾,°´ 1KB ·Ö°üÉÏ´« */
-int8_t upload_gsm_file_function(void);
-void upload_gsm_poll(void);
-uint8_t upload_gsm_is_running(void);
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_file_function
-*    ¹¦ÄÜËµÃ÷: Ö´ĞĞÈı²½·ÖÆ¬ÉÏ´«,Ïê¼û upload_http.c¡£
-*    ĞÎ    ²Î: request ÉÏ´«ÇëÇó; http_status_code Êä³ö HTTP ×´Ì¬Âë(¿ÉÎª NULL)
-*    ·µ »Ø Öµ: UPLOAD_HTTP_OK »ò´íÎóÂë¡£
+*    å‡½ æ•° å: upload_http_file_function
+*    åŠŸèƒ½è¯´æ˜: æ‰§è¡Œä¸‰æ­¥åˆ†ç‰‡ä¸Šä¼ (ä¼ è¾“æ— å…³),è¯¦è§ upload_http.cã€‚
+*    å½¢    å‚: request ä¸Šä¼ è¯·æ±‚; transport ä¼ è¾“å±‚å›è°ƒ; http_status_code è¾“å‡º HTTP çŠ¶æ€ç (å¯ä¸º NULL)
+*    è¿” å› å€¼: UPLOAD_HTTP_OK æˆ–é”™è¯¯ç ã€‚
 *********************************************************************************************************
 */
-int8_t upload_http_file_function(const upload_http_request_t *request, int *http_status_code);
+int8_t upload_http_file_function(const upload_http_request_t *request,
+                                 const upload_http_transport_t *transport,
+                                 int *http_status_code);
 
 #endif

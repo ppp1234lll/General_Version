@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SNMP Agent message handling structures (internal API, do not use in client code).
  */

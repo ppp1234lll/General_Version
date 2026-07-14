@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_syscfg.h
     \brief   definitions for the SYSCFG
     

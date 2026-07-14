@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SNMPv3 crypto/auth functions implemented for ARM mbedtls.
  */

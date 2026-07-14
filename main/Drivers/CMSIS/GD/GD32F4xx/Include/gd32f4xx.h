@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx.h
     \brief   general definitions for GD32F4xx
     

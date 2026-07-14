@@ -80,9 +80,9 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>0</RunUserProg1>
+            <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name></UserProg1Name>
+            <UserProg1Name>..\..\HexBin.bat $K !L @L $L</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -413,11 +413,6 @@
               <FileType>1</FileType>
               <FilePath>..\..\Drivers\CMSIS\GD\GD32F4xx\Source\system_gd32f4xx.c</FilePath>
             </File>
-            <File>
-              <FileName>demo_spi_flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\demo_spi_flash.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -487,6 +482,16 @@
               <FileName>gprs_rx.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\APP\TASK\src\gprs_rx.c</FilePath>
+            </File>
+            <File>
+              <FileName>dtu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\APP\Task\src\dtu.c</FilePath>
+            </File>
+            <File>
+              <FileName>send.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\APP\Task\src\send.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * eap.h - Extensible Authentication Protocol for PPP (RFC 2284)
  * Copyright (c) 2001 by Sun Microsystems, Inc.
  * All rights reserved.

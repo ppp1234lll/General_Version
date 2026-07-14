@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_adc.h
     \brief   definitions for the ADC
     

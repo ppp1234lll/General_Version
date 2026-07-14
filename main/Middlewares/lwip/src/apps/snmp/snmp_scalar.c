@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SNMP scalar node support implementation.
  */

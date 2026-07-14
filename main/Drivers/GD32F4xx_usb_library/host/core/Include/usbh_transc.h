@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_transc.h
     \brief   USB host mode transactions header file
 

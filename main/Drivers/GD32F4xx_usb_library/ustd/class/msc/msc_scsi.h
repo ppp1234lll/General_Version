@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    msc_scsi.h
     \brief   definitions for the USB MSC SCSI commands
 

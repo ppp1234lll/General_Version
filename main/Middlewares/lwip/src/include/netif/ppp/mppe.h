@@ -1,4 +1,4 @@
-/*
+﻿/*
  * mppe.h - Definitions for MPPE
  * Copyright (c) 2008 Paul Mackerras. All rights reserved.
  * Redistribution and use in source and binary forms, with or without

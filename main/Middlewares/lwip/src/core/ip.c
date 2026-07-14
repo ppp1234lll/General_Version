@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Common IPv4 and IPv6 code
  * @defgroup ip IP

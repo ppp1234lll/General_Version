@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Network Interface Sequential API module
  * @defgroup netifapi NETIF API

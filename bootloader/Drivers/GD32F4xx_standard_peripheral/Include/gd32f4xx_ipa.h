@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_ipa.h
     \brief   definitions for the IPA
 

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_transc.c
     \brief   USB transaction core functions
 

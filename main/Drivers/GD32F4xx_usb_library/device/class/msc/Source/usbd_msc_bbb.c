@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_msc_bbb.c
     \brief   USB BBB(Bulk/Bulk/Bulk) protocol core functions
     \note    BBB means Bulk-only transport protocol for USB MSC

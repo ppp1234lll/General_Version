@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * IANA assigned numbers (RFC 1700 and successors)
  * @defgroup iana IANA assigned numbers

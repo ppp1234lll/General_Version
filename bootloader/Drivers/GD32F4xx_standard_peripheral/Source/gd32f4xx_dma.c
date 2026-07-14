@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_dma.c
     \brief   DMA driver
     \version 2026-02-05, V3.3.3, firmware for GD32F4xx

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    drv_usb_regs.h
     \brief   USB cell registers definition and handle macros
 

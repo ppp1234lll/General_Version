@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    cdc_acm_core.c
     \brief   CDC ACM driver
 

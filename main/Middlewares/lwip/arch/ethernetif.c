@@ -1,4 +1,4 @@
-/**
+﻿/**
 * @file
 * Ethernet Interface Skeleton
 */
@@ -44,7 +44,7 @@
 
 
 #define ETHERNETIF_INPUT_TASK_STACK_SIZE          (350)
-#define ETHERNETIF_INPUT_TASK_PRIO                (configMAX_PRIORITIES - 1)
+#define ETHERNETIF_INPUT_TASK_PRIO                (configMAX_PRIORITIES - 2)
 #define LOWLEVEL_OUTPUT_WAITING_TIME              (250)
 /* The time to block waiting for input */
 #define LOWLEVEL_INPUT_WAITING_TIME               ((portTickType )100)
@@ -82,7 +82,6 @@ xSemaphoreHandle g_rx_semaphore = NULL;
 */
 static void low_level_init(struct netif *netif)
 {
-    uint32_t i;
 
     /* set netif MAC hardware address length */
     netif->hwaddr_len = ETHARP_HWADDR_LEN;

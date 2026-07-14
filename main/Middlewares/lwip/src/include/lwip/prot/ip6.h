@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * IPv6 protocol definitions
  */

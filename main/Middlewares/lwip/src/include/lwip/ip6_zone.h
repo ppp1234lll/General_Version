@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * IPv6 address scopes, zones, and scoping policy.
  * This header provides the means to implement support for IPv6 address scopes,

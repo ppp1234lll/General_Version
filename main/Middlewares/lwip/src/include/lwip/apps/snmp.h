@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SNMP server main API - start and basic configuration
  */

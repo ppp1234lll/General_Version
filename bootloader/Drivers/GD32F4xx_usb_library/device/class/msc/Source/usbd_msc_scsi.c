@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_msc_scsi.c
     \brief   USB SCSI layer functions
 

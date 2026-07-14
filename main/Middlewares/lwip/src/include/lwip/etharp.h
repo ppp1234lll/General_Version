@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Ethernet output function - handles OUTGOING ethernet level traffic, implements
  * ARP resolving.

@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  FIPS-180-1 compliant SHA-1 implementation
  *  Based on XySSL: Copyright (C) 2006-2008  Christophe Devine
  *  Copyright (C) 2009  Paul Bakker <polarssl_maintainer at polarssl dot org>

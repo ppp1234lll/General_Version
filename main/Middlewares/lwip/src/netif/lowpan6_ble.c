@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * 6LowPAN over BLE output for IPv6 (RFC7668).
 */

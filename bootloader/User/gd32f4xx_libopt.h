@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_libopt.h
     \brief   library optional for gd32f4xx
 

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * utils.c - various utility functions used in pppd.
  * Copyright (c) 1999-2002 Paul Mackerras. All rights reserved.
  * Redistribution and use in source and binary forms, with or without

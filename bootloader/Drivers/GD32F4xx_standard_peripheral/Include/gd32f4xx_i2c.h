@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_i2c.h
     \brief   definitions for the I2C
 

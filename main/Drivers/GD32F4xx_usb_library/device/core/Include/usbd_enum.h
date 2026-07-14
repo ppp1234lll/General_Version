@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_enum.h
     \brief   USB enumeration definitions
 

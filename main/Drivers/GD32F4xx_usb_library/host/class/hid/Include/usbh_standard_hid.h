@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_standard_hid.h
     \brief   header file for usbh_standard_hid.c
 

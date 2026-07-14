@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    drv_usb_hw.h
     \brief   usb hardware configuration header file
 

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_enum.h
     \brief   USB host mode USB enumeration header file
 

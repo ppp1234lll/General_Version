@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * DHCPv6 protocol definitions
  */

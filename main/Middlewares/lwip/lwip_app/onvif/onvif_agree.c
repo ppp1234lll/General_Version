@@ -1,8 +1,8 @@
-#include "./onvif/onvif_agree.h"
+ï»¿#include "./onvif/onvif_agree.h"
 #include "main.h"
 
 
-/* HTTP ¸ñÊ½
+/* HTTP æ ¼å¼
 POST /onvif/device_service HTTP/1.1
 Content-Type: application/soap+xml; charset=utf-8; action="http://www.onvif.org/ver10/device/wsdl/GetScopes"
 Host: 192.168.2.247
@@ -17,24 +17,24 @@ int onvif_http_head(char* buf,char *ip,int port,char *onvif_cmd,int xml_len,uint
     str_len = sprintf(buf,"%s","POST /onvif/"); 
     if(sort == 1)
     {
-        if(brand == 1) // ´ó»ªÉãÏñ»ú
+        if(brand == 1) // å¤§åæ‘„åƒæœº
         {
-            str_len += sprintf(buf+str_len,"%s","media2_service");  // Éè±¸ĞÅÏ¢
+            str_len += sprintf(buf+str_len,"%s","media2_service");  // è®¾å¤‡ä¿¡æ¯
         }
         else
         {
-            str_len += sprintf(buf+str_len,"%s","Media");  // Éè±¸ĞÅÏ¢
+            str_len += sprintf(buf+str_len,"%s","Media");  // è®¾å¤‡ä¿¡æ¯
         }
     }
     else if(sort == 0)
-        str_len += sprintf(buf+str_len,"%s","device_service"); // ÊÓÆµĞÅÏ¢
+        str_len += sprintf(buf+str_len,"%s","device_service"); // è§†é¢‘ä¿¡æ¯
     
     str_len += sprintf(buf+str_len,"%s"," HTTP/1.1\r\nContent-Type: application/soap+xml; charset=utf-8; action=\"");
     
     if(sort == 1)
-        str_len += sprintf(buf+str_len,"%s","http://www.onvif.org/ver10/media/wsdl/");  // Éè±¸ĞÅÏ¢
+        str_len += sprintf(buf+str_len,"%s","http://www.onvif.org/ver10/media/wsdl/");  // è®¾å¤‡ä¿¡æ¯
     else if(sort == 0)
-        str_len += sprintf(buf+str_len,"%s","http://www.onvif.org/ver10/device/wsdl/"); // ÊÓÆµĞÅÏ¢
+        str_len += sprintf(buf+str_len,"%s","http://www.onvif.org/ver10/device/wsdl/"); // è§†é¢‘ä¿¡æ¯
     str_len += sprintf(buf+str_len,"%s",onvif_cmd);
     
     str_len += sprintf(buf+str_len,"%s","\"\r\n");
@@ -50,7 +50,7 @@ int onvif_http_head(char* buf,char *ip,int port,char *onvif_cmd,int xml_len,uint
     return str_len;
 }
 
-/* XML¸ñÊ½£¨ÖĞ¼äÃ»ÓĞ»»ĞĞ·û£¬Îª·½±ã²é¿´£¬½øĞĞ»»ĞĞ´¦Àí£©
+/* XMLæ ¼å¼ï¼ˆä¸­é—´æ²¡æœ‰æ¢è¡Œç¬¦ï¼Œä¸ºæ–¹ä¾¿æŸ¥çœ‹ï¼Œè¿›è¡Œæ¢è¡Œå¤„ç†ï¼‰
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
     <s:Header>
         <Security s:mustUnderstand="1" xmlns="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
@@ -77,11 +77,11 @@ int onvif_xml(char* buf,char *user_name,char *password,char *onvif_cmd,uint8_t s
     char token_buf[64] = {0};
     
     onvif_get_token_function(token_buf);
-    GetNonce(nonce_buf);        // Éú³É¼ÓÃÜºóµÄËæ»úÊı
-    GetCreated(created_buf);    // »ñÈ¡Ê±¼ä    
+    GetNonce(nonce_buf);        // ç”ŸæˆåŠ å¯†åçš„éšæœºæ•°
+    GetCreated(created_buf);    // è·å–æ—¶é—´    
     GetPasswordDigest(nonce_buf,created_buf,password,pwd_digest_buf);
     
-    time_buf = (char *)mymalloc(SRAMIN,450);  // ÉêÇëÄÚ´æ    
+    time_buf = (char *)mymalloc(SRAMIN,450);  // ç”³è¯·å†…å­˜    
     memset(time_buf,0,450);
     
     str_len = sprintf(buf,"%s","<s:Envelope xmlns:s=\"http://www.w3.org/2003/05/soap-envelope\">");    
@@ -108,7 +108,7 @@ int onvif_xml(char* buf,char *user_name,char *password,char *onvif_cmd,uint8_t s
     
     if(strcmp(onvif_cmd,"SetSystemDateAndTime") == 0)
     {
-        str_len += sprintf(buf+str_len,"%s"," xmlns=\"http://www.onvif.org/ver10/device/wsdl\">"); // ÊÓÆµĞÅÏ¢
+        str_len += sprintf(buf+str_len,"%s"," xmlns=\"http://www.onvif.org/ver10/device/wsdl\">"); // è§†é¢‘ä¿¡æ¯
         onvif_time_str_create(time_buf);
         str_len += sprintf(buf+str_len,"%s",time_buf);    
     }
@@ -116,7 +116,7 @@ int onvif_xml(char* buf,char *user_name,char *password,char *onvif_cmd,uint8_t s
     {
         if(sort == 1)
         {
-            if((strcmp(onvif_cmd,"GetOSDs") == 0)&&(strcmp(sg_ipc_param.device.manufacturer,"Tiandy Tech") == 0))   // ÌìµØÎ°ÒµÉãÏñ»úĞèÒªÌí¼ÓTOKENĞÅÏ¢
+            if((strcmp(onvif_cmd,"GetOSDs") == 0)&&(strcmp(sg_ipc_param.device.manufacturer,"Tiandy Tech") == 0))   // å¤©åœ°ä¼Ÿä¸šæ‘„åƒæœºéœ€è¦æ·»åŠ TOKENä¿¡æ¯
             {
                 str_len += sprintf(buf+str_len,"%s"," xmlns=\"http://www.onvif.org/ver10/media/wsdl\">");   
                 str_len += sprintf(buf+str_len,"%s","<ConfigurationToken>");   
@@ -124,17 +124,17 @@ int onvif_xml(char* buf,char *user_name,char *password,char *onvif_cmd,uint8_t s
                 str_len += sprintf(buf+str_len,"%s","</ConfigurationToken></GetOSDs>");   
             }
             else
-                str_len += sprintf(buf+str_len,"%s"," xmlns=\"http://www.onvif.org/ver10/media/wsdl\"/>");  // Éè±¸ĞÅÏ¢
+                str_len += sprintf(buf+str_len,"%s"," xmlns=\"http://www.onvif.org/ver10/media/wsdl\"/>");  // è®¾å¤‡ä¿¡æ¯
         }
         else if(sort == 0)
-            str_len += sprintf(buf+str_len,"%s"," xmlns=\"http://www.onvif.org/ver10/device/wsdl\"/>"); // ÊÓÆµĞÅÏ¢    
+            str_len += sprintf(buf+str_len,"%s"," xmlns=\"http://www.onvif.org/ver10/device/wsdl\"/>"); // è§†é¢‘ä¿¡æ¯    
     }
     str_len += sprintf(buf+str_len,"%s","</s:Body></s:Envelope>");
-    myfree(SRAMIN,time_buf);   // ÊÍ·ÅÄÚ´æ
+    myfree(SRAMIN,time_buf);   // é‡Šæ”¾å†…å­˜
     return str_len;
 }
 
-// HTTPÓëXMLÆ´½Ó£¬×é³É·¢ËÍÊı¾İ
+// HTTPä¸XMLæ‹¼æ¥ï¼Œç»„æˆå‘é€æ•°æ®
 int onvif_agreement_create(char* buf,char *onvif_cmd,char *ip,int port,uint8_t sort,uint8_t brand)
 {
     int xml_len        = 0;
@@ -153,8 +153,8 @@ int onvif_agreement_create(char* buf,char *onvif_cmd,char *ip,int port,uint8_t s
     snprintf(cmd,sizeof(cmd),"%s",onvif_cmd);
     sort_cmd = sort;
     
-    http_buf = (char *)mymalloc(SRAMIN,300);  // ÉêÇëÄÚ´æ
-    xml_buf = (char *)mymalloc(SRAMIN,1400);  // ÉêÇëÄÚ´æ    
+    http_buf = (char *)mymalloc(SRAMIN,300);  // ç”³è¯·å†…å­˜
+    xml_buf = (char *)mymalloc(SRAMIN,1400);  // ç”³è¯·å†…å­˜    
 
     memset(http_buf,0,300);
     memset(xml_buf,0,1400);
@@ -167,8 +167,8 @@ int onvif_agreement_create(char* buf,char *onvif_cmd,char *ip,int port,uint8_t s
     strncpy(buf,http_buf,http_len);     
     strncpy(buf+http_len,xml_buf,xml_len); 
     
-    myfree(SRAMIN,xml_buf);   // ÊÍ·ÅÄÚ´æ
-    myfree(SRAMIN,http_buf);   // ÊÍ·ÅÄÚ´æ
+    myfree(SRAMIN,xml_buf);   // é‡Šæ”¾å†…å­˜
+    myfree(SRAMIN,http_buf);   // é‡Šæ”¾å†…å­˜
 
     return (xml_len+http_len);
 }
@@ -183,7 +183,7 @@ int onvif_time_str_create(char *buff)
     
     length = sprintf(buff,"%s","<DateTimeType>Manual</DateTimeType><DaylightSavings>false</DaylightSavings>");
     length += sprintf(buff+length,"%s","<TimeZone><TZ xmlns=\"http://www.onvif.org/ver10/schema\">");
-    if(strcmp(sg_ipc_param.device.manufacturer,"Dahua") == 0)  // ´ó»ªÉãÏñ»ú
+    if(strcmp(sg_ipc_param.device.manufacturer,"Dahua") == 0)  // å¤§åæ‘„åƒæœº
     {
         length += sprintf(buff+length,"%s","PacificStandardTime8DaylightTime,M3.2.0,M11.1.0");
     }    
@@ -241,7 +241,7 @@ void onvif_get_set_times(rtc_time_t *time_t)
     time_t->hour  = t.tm_hour;
     time_t->min   = t.tm_min;
     time_t->sec   = t.tm_sec;
-    /* ÉèÖÃÊ±¼ä */
+    /* è®¾ç½®æ—¶é—´ */
 }
 
 

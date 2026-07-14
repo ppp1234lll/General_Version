@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Ethernet input function - handles INCOMING ethernet level traffic
  * To be used in most low-level netif implementations

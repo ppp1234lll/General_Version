@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * IP checksum calculation functions
  */

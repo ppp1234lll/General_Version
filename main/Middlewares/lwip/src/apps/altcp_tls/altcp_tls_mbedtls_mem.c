@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Application layered TCP connection API (to be used from TCPIP thread)
  * This file contains memory management functions for a TLS layer using mbedTLS.

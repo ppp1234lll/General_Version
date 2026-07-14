@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_msc_bbb.h
     \brief   the header file of the usbd_msc_bbb.c file
 

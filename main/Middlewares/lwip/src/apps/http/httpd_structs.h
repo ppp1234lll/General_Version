@@ -1,4 +1,4 @@
-#ifndef LWIP_HTTPD_STRUCTS_H
+﻿#ifndef LWIP_HTTPD_STRUCTS_H
 #define LWIP_HTTPD_STRUCTS_H
 
 #include "lwip/apps/httpd.h"

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Modules initialization
  */

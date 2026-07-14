@@ -1,11 +1,11 @@
-#ifndef _TOOL_H_
+ï»¿#ifndef _TOOL_H_
 #define _TOOL_H_
 
 #include "./SYSTEM/sys/sys.h"
 
-/* ²ÎÊı */
+/* å‚æ•° */
 
-/* º¯ÊıÉùÃ÷ */
+/* å‡½æ•°å£°æ˜ */
 uint32_t complement_to_original(uint32_t data);
 int8_t hex_to_dec(char c);
 uint8_t str_to_hex(uint8_t *buff);

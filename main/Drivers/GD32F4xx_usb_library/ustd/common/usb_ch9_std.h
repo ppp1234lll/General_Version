@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usb_ch9_std.h
     \brief   USB 2.0 standard defines
 

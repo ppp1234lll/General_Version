@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SMTP client module
  * Author: Simon Goldschmidt

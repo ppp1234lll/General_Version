@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_enet.h
     \brief   definitions for the ENET
 

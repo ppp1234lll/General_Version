@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Application layered TCP connection API that executes a proxy-connect.
  * This file provides a starting layer that executes a proxy-connect e.g. to

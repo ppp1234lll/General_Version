@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    printer_core.h
     \brief   the header file of USB printer device class core functions
 

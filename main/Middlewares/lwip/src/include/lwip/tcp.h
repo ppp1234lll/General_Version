@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * TCP API (to be used from TCPIP thread)<br>
  * See also @ref tcp_raw

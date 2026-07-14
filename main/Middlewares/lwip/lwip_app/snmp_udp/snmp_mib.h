@@ -1,4 +1,4 @@
-#ifndef __SNMP_MIB_H__
+﻿#ifndef __SNMP_MIB_H__
 #define __SNMP_MIB_H__
 
 #include "sys.h"

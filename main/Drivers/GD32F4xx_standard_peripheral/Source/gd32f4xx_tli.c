@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_tli.c
     \brief   TLI driver
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * IP address API (common IPv4 and IPv6)
  */

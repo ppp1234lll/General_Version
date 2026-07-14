@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_i2c.c
     \brief   I2C driver
 

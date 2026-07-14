@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_msc_bbb.c
     \brief   USB MSC BBB protocol related functions
 

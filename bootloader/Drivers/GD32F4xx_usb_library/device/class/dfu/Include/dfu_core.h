@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    dfu_core.h
     \brief   the header file of USB DFU device class core functions
 

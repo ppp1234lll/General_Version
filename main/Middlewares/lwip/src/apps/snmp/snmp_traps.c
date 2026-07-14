@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SNMPv1 and SNMPv2 traps implementation.
  */

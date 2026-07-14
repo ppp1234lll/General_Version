@@ -5,74 +5,92 @@
 #define NUM_CONFIG_CGI_URIS    (sizeof(ppcURLs) / sizeof(tCGI))
 #define NUM_CONFIG_SSI_TAGS    (sizeof(ppcTAGs) / sizeof(char *))
     
-//¿ØÖÆLEDµÄCGI handler
+//æ§åˆ¶LEDçš„CGI handler
 const char* INDEX_CGI_Handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]);
 const char* SETTING_CGI_Handler(int iIndex,int iNumParams,char *pcParam[],char *pcValue[]);
 
 uint8_t g_return_t[1024] =  {0};
 uint16_t g_return_flag  = 0;
 
-#define PPCTAGS_SIZE (53)
-static const char *ppcTAGs[PPCTAGS_SIZE]=  //SSIµÄTag
+static const char *ppcTAGs[]=  //SSIçš„Tag
 {
-    "a", // Í¬²½Ê±¼ä
-    "b", // ±¾»úID
-    "c", // Éè±¸Ãû³Æ
-    "d", // µÇÂ½ÃÜÂë
+    "a", // åŒæ­¥æ—¶é—´
+    "b", // æœ¬æœºID
+    "c", // è®¾å¤‡åç§°
+    "d", // ç™»é™†å¯†ç 
     "e", // IP
-    "f", // ×ÓÍøÑÚÂë
-    "g", // Íø¹Ø
+    "f", // å­ç½‘æ©ç 
+    "g", // ç½‘å…³
     "h", // DNS
-    "i", // Ö÷Íø¼ì²âµØÖ·
-    "m", // ÉãÏñÍ·1
-    "n", // ÉãÏñÍ·2
-    "o", // ÉãÏñÍ·3
-    "p", // ÉãÏñÍ·4
-    "q", // ÉãÏñÍ·5
-    "r", // ÉãÏñÍ·6
-    "s", // Ã¿ÂÖping¼ä¸ôÊ±¼ä
-    "t", // ÏÂ´ÎpingµÄÊ±¼ä
-    "C", // ÍøÂçÁ¬½Ó×´Ì¬
-    "D", // ÄÚÍøIP
-    "E", // ÄÚÍø¶Ë¿Ú
-    "F", // ÍâÍøIP
-    "G", // ÍâÍø¶Ë¿Ú
-    "H", // Éı¼¶µØÖ·
-    "I", // Éı¼¶¶Ë¿Ú
-    "J", // ÉÏ±¨Ê±¼ä 
+    "i", // ä¸»ç½‘æ£€æµ‹åœ°å€
+    "m", // æ‘„åƒå¤´1
+    "n", // æ‘„åƒå¤´2
+    "o", // æ‘„åƒå¤´3
+    "p", // æ‘„åƒå¤´4
+    "q", // æ‘„åƒå¤´5
+    "r", // æ‘„åƒå¤´6
+    "s", // æ¯è½®pingé—´éš”æ—¶é—´
+    "t", // ä¸‹æ¬¡pingçš„æ—¶é—´
+    "C", // ç½‘ç»œè¿æ¥çŠ¶æ€
+    "D", // å†…ç½‘IP
+    "E", // å†…ç½‘ç«¯å£
+    "F", // å¤–ç½‘IP
+    "G", // å¤–ç½‘ç«¯å£
+    "H", // å‡çº§åœ°å€
+    "I", // å‡çº§ç«¯å£
+    "J", // ä¸ŠæŠ¥æ—¶é—´ 
     "L", // MAC
-    "N", // ÍøÂçÑÓÊ±Ê±¼ä  20220308
-    "O", // ×é²¥IP
-    "P", // ×é²¥¶Ë¿Ú  
-    "Q", // ONVIFÊ±¼ä 20230811 
-    "aa", // ¸ßÑ¹  20230720
-    "ab", // µÍÑ¹  
-    "ac", // µçÁ÷  
-    "ad", // ×ËÌ¬ 
-    "ae", // ·çÉÈÆô¶¯ÎÂ¶È
-    "af", // ·çÉÈÍ£Ö¹ÎÂ¶È  
-    "ag", // ·çÉÈÆô¶¯Êª¶È  
-    "ah", // ·çÉÈÍ£Ö¹Êª¶È 
-    "ai", // ±¾»ú¶Ë¿Ú
-    "aj", // ÖØÆô     
-    "ak", // ÏäÃÅ¿ªÆôÊ±¼ä    
-    "al", // ²¹¹âµÆ¿ªÆôÊ±¼ä
-    "am", // Â©µç
-    "ba", // Éı¼¶url 
-    "bb", // Éı¼¶¶Ë¿Ú 
-    "bc", // ÖØÆô´ÎÊı 
-    "bd", // ÖØÆôÊ±¼ä
+    "N", // ç½‘ç»œå»¶æ—¶æ—¶é—´  20220308
+    "O", // ç»„æ’­IP
+    "P", // ç»„æ’­ç«¯å£  
+    "Q", // ONVIFæ—¶é—´ 20230811 
+    "aa", // é«˜å‹  20230720
+    "ab", // ä½å‹  
+    "ac", // ç”µæµ  
+    "ad", // å§¿æ€ 
+    "ae", // é£æ‰‡å¯åŠ¨æ¸©åº¦
+    "af", // é£æ‰‡åœæ­¢æ¸©åº¦  
+    "ag", // é£æ‰‡å¯åŠ¨æ¹¿åº¦  
+    "ah", // é£æ‰‡åœæ­¢æ¹¿åº¦ 
+    "ai", // æœ¬æœºç«¯å£
+    "aj", // é‡å¯     
+    "ak", // ç®±é—¨å¼€å¯æ—¶é—´    
+    "al", // è¡¥å…‰ç¯å¼€å¯æ—¶é—´
+    "am", // æ¼ç”µ
+    "ba", // å‡çº§url 
+    "bb", // å‡çº§ç«¯å£ 
+    "bc", // é‡å¯æ¬¡æ•° 
+    "bd", // é‡å¯æ—¶é—´
     "be", // OID
-    "bf", // ½»»»»úIP
-    "bg", // ÉÏ´«url
-    "bh", // ÉÏ´«¶Ë¿Ú
+    "bf", // äº¤æ¢æœºIP
+    "bg", // ä¸Šä¼ url
+    "bh", // ä¸Šä¼ ç«¯å£
+    "a1", // æ‘„åƒæœº1è´¦å·
+    "b1", // æ‘„åƒæœº1å¯†ç 
+    "c1", // æ‘„åƒæœº1ç«¯å£
+    "a2", // æ‘„åƒæœº2è´¦å·
+    "b2", // æ‘„åƒæœº2å¯†ç 
+    "c2", // æ‘„åƒæœº2ç«¯å£
+    "a3", // æ‘„åƒæœº3è´¦å·
+    "b3", // æ‘„åƒæœº3å¯†ç 
+    "c3", // æ‘„åƒæœº3ç«¯å£
+    "a4", // æ‘„åƒæœº4è´¦å·
+    "b4", // æ‘„åƒæœº4å¯†ç 
+    "c4", // æ‘„åƒæœº4ç«¯å£
+    "a5", // æ‘„åƒæœº5è´¦å·
+    "b5", // æ‘„åƒæœº5å¯†ç 
+    "c5", // æ‘„åƒæœº5ç«¯å£
+    "a6", // æ‘„åƒæœº6è´¦å·
+    "b6", // æ‘„åƒæœº6å¯†ç 
+    "c6", // æ‘„åƒæœº6ç«¯å£
 
     "Y",
     "Z",
 };
+#define PPCTAGS_SIZE (sizeof(ppcTAGs) / sizeof(ppcTAGs[0]))
 
 
-static const tCGI ppcURLs[]= //cgi³ÌĞò
+static const tCGI ppcURLs[]= //cgiç¨‹åº
 {
     {"/parse.cgi",INDEX_CGI_Handler},
     {"/setting.cgi",SETTING_CGI_Handler},
@@ -81,10 +99,10 @@ static const tCGI ppcURLs[]= //cgi³ÌĞò
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: FindCGIParameter
-*    ¹¦ÄÜËµÃ÷: ²éÕÒCGI²ÎÊıÔÚ²ÎÊıÁĞ±íÖĞµÄË÷Òı
-*    ĞÎ    ²Î: pcToFind - ´ı²éÕÒµÄ²ÎÊıÃû
-*    ·µ »Ø Öµ: ²ÎÊıË÷Òı, Î´ÕÒµ½·µ»Ø-1
+*    å‡½ æ•° å: FindCGIParameter
+*    åŠŸèƒ½è¯´æ˜: æŸ¥æ‰¾CGIå‚æ•°åœ¨å‚æ•°åˆ—è¡¨ä¸­çš„ç´¢å¼•
+*    å½¢    å‚: pcToFind - å¾…æŸ¥æ‰¾çš„å‚æ•°å
+*    è¿” å› å€¼: å‚æ•°ç´¢å¼•, æœªæ‰¾åˆ°è¿”å›-1
 *********************************************************************************************************
 */
 static int FindCGIParameter(const char *pcToFind,char *pcParam[],int iNumParams)
@@ -94,7 +112,7 @@ static int FindCGIParameter(const char *pcToFind,char *pcParam[],int iNumParams)
     {
         if(strcmp(pcToFind,pcParam[iLoop]) == 0)
         {
-            return (iLoop); //·µ»ØiLOOP
+            return (iLoop); //è¿”å›iLOOP
         }
     }
     return (-1);
@@ -102,10 +120,10 @@ static int FindCGIParameter(const char *pcToFind,char *pcParam[],int iNumParams)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: INDEX_CGI_Handler
-*    ¹¦ÄÜËµÃ÷: Ê×Ò³µÇÂ¼Ïà¹ØCGI´¦Àíº¯Êı
-*    ĞÎ    ²Î: iIndex - ²ÎÊıË÷Òı
-*    ·µ »Ø Öµ: CGIÖØ¶¨ÏòÒ³ÃæÂ·¾¶
+*    å‡½ æ•° å: INDEX_CGI_Handler
+*    åŠŸèƒ½è¯´æ˜: é¦–é¡µç™»å½•ç›¸å…³CGIå¤„ç†å‡½æ•°
+*    å½¢    å‚: iIndex - å‚æ•°ç´¢å¼•
+*    è¿” å› å€¼: CGIé‡å®šå‘é¡µé¢è·¯å¾„
 *********************************************************************************************************
 */
 const char *INDEX_CGI_Handler(int iIndex,int iNumParams,char *pcParam[],char *pcValue[])
@@ -127,10 +145,10 @@ const char *INDEX_CGI_Handler(int iIndex,int iNumParams,char *pcParam[],char *pc
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: SETTING_CGI_Handler
-*    ¹¦ÄÜËµÃ÷: ÍøÒ³ÉèÖÃÏà¹ØCGI´¦Àíº¯Êı
-*    ĞÎ    ²Î: iIndex - ²ÎÊıË÷Òı
-*    ·µ »Ø Öµ: CGIÖØ¶¨ÏòÒ³ÃæÂ·¾¶
+*    å‡½ æ•° å: SETTING_CGI_Handler
+*    åŠŸèƒ½è¯´æ˜: ç½‘é¡µè®¾ç½®ç›¸å…³CGIå¤„ç†å‡½æ•°
+*    å½¢    å‚: iIndex - å‚æ•°ç´¢å¼•
+*    è¿” å› å€¼: CGIé‡å®šå‘é¡µé¢è·¯å¾„
 *********************************************************************************************************
 */
 const char *SETTING_CGI_Handler(int iIndex,int iNumParams,char *pcParam[],char *pcValue[])
@@ -140,81 +158,88 @@ const char *SETTING_CGI_Handler(int iIndex,int iNumParams,char *pcParam[],char *
     iIndex = FindCGIParameter("btntype",pcParam,iNumParams);
     
     if(iIndex != -1) {
-        /* ÍøÒ³µÇÂ¼ */
+        /* ç½‘é¡µç™»å½• */
         ret = httpd_cgi_login_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
         goto EXIT;
         }
-        /* ÃÜÂëĞŞ¸Ä */
+        /* å¯†ç ä¿®æ”¹ */
         ret = httpd_cgi_login_mod_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
-        /* ÏÂÀ­¿ò */
+        /* ä¸‹æ‹‰æ¡† */
         ret = httpd_cgi_select_function(pcValue);
         if(ret == 0) {
             goto EXIT;
         }
-        /* ãĞÖµ 20230720*/
+        /* é˜ˆå€¼ 20230720*/
         ret = httpd_cgi_set_threshold_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
-        /* ¿ª¹Ø×´Ì¬ */
+        /* å¼€å…³çŠ¶æ€ */
         ret = httpd_cgi_switch_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
-        /* ÏµÍ³ÉèÖÃ */
+        /* ç³»ç»Ÿè®¾ç½® */
         ret = httpd_cgi_set_system_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
-        /* ÍøÂçÉèÖÃ */
+        /* ç½‘ç»œè®¾ç½® */
         ret = httpd_cgi_set_network_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
-        /* ÉãÏñ»úIP */
+        /* æ‘„åƒæœºIP */
         ret = httpd_cgi_set_camera_ip_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
-        /* Ô¶¶Ë·şÎñÆ÷ */
+
+        /* æ‘„åƒæœºè´¦å· */
+        ret = httpd_cgi_set_camera_user_function(iNumParams,pcParam,pcValue);
+        if(ret == 0) {
+            goto EXIT;
+        }
+
+        /* è¿œç«¯æœåŠ¡å™¨ */
         ret = httpd_cgi_set_remote_ip_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
         
-        /* ¸üĞÂ·şÎñÆ÷ */
+        /* æ›´æ–°æœåŠ¡å™¨ */
         ret = httpd_cgi_set_update_addr_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
 
-        /* SNMPÉèÖÃ */
+        /* SNMPè®¾ç½® */
         ret = httpd_cgi_snmp_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
-        /* SNMP²âÊÔ */
+        /* SNMPæµ‹è¯• */
         ret = httpd_cgi_snmp_test_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }        
         
-        /* ÏµÍ³¸üĞÂ */
+        /* ç³»ç»Ÿæ›´æ–° */
         ret = httpd_cgi_update_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
 
-        /* ÏµÍ³ÉèÖÃ */
+        /* ç³»ç»Ÿè®¾ç½® */
         ret = httpd_cgi_system_function(iNumParams,pcParam,pcValue);
         if(ret == 0) {
             goto EXIT;
         }
-        /* ÏÔÊ¾¸üĞÂ */
+        /* æ˜¾ç¤ºæ›´æ–° */
         ret = httpd_cgi_show_function(pcValue,&g_return_flag,g_return_t);
         if(ret == 0) {
             goto EXIT;
@@ -226,13 +251,13 @@ EXIT:
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: 
+*    å‡½ æ•° å: 
 Return_status_Handler
-*    ¹¦ÄÜËµÃ÷: 
+*    åŠŸèƒ½è¯´æ˜: 
 
-*    ĞÎ    ²Î: 
+*    å½¢    å‚: 
 
-*    ·µ »Ø Öµ: 
+*    è¿” å› å€¼: 
 
 *********************************************************************************************************
 */
@@ -249,12 +274,12 @@ static void Return_status_Handler(char *pcInsert, uint8_t mode)
     
 }
 
-//SSIµÄHandler¾ä±ú
+//SSIçš„Handlerå¥æŸ„
 static u16_t SSIHandler(int iIndex,char *pcInsert,int iInsertLen)
 {
     switch(iIndex)
     {
-        /* ·µ»Ø */
+        /* è¿”å› */
         case (PPCTAGS_SIZE-2):
             Return_status_Handler(pcInsert,0);
             break;
@@ -269,13 +294,13 @@ static u16_t SSIHandler(int iIndex,char *pcInsert,int iInsertLen)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: 
+*    å‡½ æ•° å: 
 set_return_status_function
-*    ¹¦ÄÜËµÃ÷: 
+*    åŠŸèƒ½è¯´æ˜: 
 
-*    ĞÎ    ²Î: 
+*    å½¢    å‚: 
 
-*    ·µ »Ø Öµ: 
+*    è¿” å› å€¼: 
 
 *********************************************************************************************************
 */
@@ -287,17 +312,17 @@ void set_return_status_function(uint16_t flag,uint8_t *buff)
 }
 
 
-//SSI¾ä±ú³õÊ¼»¯
+//SSIå¥æŸ„åˆå§‹åŒ–
 void httpd_ssi_init(void)
 {  
-    //ÅäÖÃÄÚ²¿ÎÂ¶È´«¸ĞÆ÷µÄSSI¾ä±ú
+    //é…ç½®å†…éƒ¨æ¸©åº¦ä¼ æ„Ÿå™¨çš„SSIå¥æŸ„
     http_set_ssi_handler(SSIHandler,ppcTAGs,NUM_CONFIG_SSI_TAGS);
 }
 
-//CGI¾ä±ú³õÊ¼»¯
+//CGIå¥æŸ„åˆå§‹åŒ–
 void httpd_cgi_init(void)
 { 
-  //ÅäÖÃCGI¾ä±úLEDs control CGI) */
+  //é…ç½®CGIå¥æŸ„LEDs control CGI) */
   http_set_cgi_handlers(ppcURLs, NUM_CONFIG_CGI_URIS);
 }
 

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the CmBacktrace Library.
  * Copyright (c) 2016, Armink, <armink.ztl@gmail.com>
  * Permission is hereby granted, free of charge, to any person obtaining

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_usart.c
     \brief   USART driver
 

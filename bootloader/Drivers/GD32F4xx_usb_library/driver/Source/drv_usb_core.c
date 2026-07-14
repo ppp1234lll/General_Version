@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    drv_usb_core.c
     \brief   USB core driver which can operate in host and device mode
 

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    systick.c
     \brief   the systick configuration file
 

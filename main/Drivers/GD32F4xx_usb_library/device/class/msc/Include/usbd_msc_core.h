@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_msc_core.h
     \brief   the header file of USB MSC device class core functions
 

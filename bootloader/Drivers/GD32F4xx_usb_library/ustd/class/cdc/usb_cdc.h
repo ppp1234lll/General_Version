@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usb_cdc.h
     \brief   the header file of communication device class standard
 

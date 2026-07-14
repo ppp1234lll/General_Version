@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_rtc.c
     \brief   definitions for the RTC
 

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_core.h
     \brief   USB host core state machine header file
 

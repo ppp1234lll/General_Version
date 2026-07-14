@@ -1,10 +1,10 @@
-#ifndef _LIS3DH_SPI_H_
+ï»¿#ifndef _LIS3DH_SPI_H_
 #define _LIS3DH_SPI_H_
 
 #include "./SYSTEM/sys/sys.h"
 
-/* º¯ÊıÉùÃ÷ */
-void LIS3DH_SPI_INIT(void);                         // ³õÊ¼»¯SPI2¿Ú
-uint8_t LIS3DH_SPI_ReadWriteByte(uint8_t TxData); // SPI2×ÜÏß¶ÁĞ´Ò»¸ö×Ö½Ú
+/* å‡½æ•°å£°æ˜ */
+void LIS3DH_SPI_INIT(void);                         // åˆå§‹åŒ–SPI2å£
+uint8_t LIS3DH_SPI_ReadWriteByte(uint8_t TxData); // SPI2æ€»çº¿è¯»å†™ä¸€ä¸ªå­—èŠ‚
 
 #endif

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_core.c
     \brief   USB MSC(mass storage device) class driver
 

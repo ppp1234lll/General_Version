@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * MDNS responder - output related functionalities
  */

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * @defgroup altcp Application layered TCP Functions
  * @ingroup altcp_api

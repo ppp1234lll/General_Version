@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Socket API (to be used from non-TCPIP threads)
  */

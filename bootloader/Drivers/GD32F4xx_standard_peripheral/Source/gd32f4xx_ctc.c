@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_ctc.c
     \brief   CTC driver
 

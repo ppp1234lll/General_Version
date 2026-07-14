@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * API functions for name resolving
  * @defgroup netdbapi NETDB API

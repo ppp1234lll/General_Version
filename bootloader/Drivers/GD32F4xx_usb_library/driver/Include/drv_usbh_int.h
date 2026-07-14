@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    drv_usbh_int.h.h
     \brief   USB host mode interrupt management header file
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Sockets BSD-Like API module
  */

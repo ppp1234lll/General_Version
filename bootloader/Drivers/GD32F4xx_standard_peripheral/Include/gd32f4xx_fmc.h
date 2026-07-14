@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_fmc.h
     \brief   definitions for the FMC
 

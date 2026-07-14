@@ -1,4 +1,4 @@
-/*
+﻿/*
  * chap_ms.c - Microsoft MS-CHAP compatible implementation.
  * Copyright (c) 1995 Eric Rosenquist.  All rights reserved.
  * Redistribution and use in source and binary forms, with or without

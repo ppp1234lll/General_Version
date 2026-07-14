@@ -1,4 +1,4 @@
-#ifndef __PORT_SCAN_H__
+﻿#ifndef __PORT_SCAN_H__
 #define __PORT_SCAN_H__
 
 #include <stdint.h>

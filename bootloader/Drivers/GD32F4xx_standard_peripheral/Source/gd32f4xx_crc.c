@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_crc.c
     \brief   CRC driver
 

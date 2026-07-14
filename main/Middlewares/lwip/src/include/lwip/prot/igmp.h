@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * IGMP protocol definitions
  */

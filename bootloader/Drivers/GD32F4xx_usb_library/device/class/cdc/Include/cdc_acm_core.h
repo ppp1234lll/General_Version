@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    cdc_acm_core.h
     \brief   the header file of cdc acm driver
 

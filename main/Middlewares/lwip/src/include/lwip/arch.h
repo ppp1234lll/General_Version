@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Support for different processor and compiler architectures
  */

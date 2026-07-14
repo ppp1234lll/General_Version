@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    drv_usb_host.h
     \brief   USB host mode low level driver header file
 

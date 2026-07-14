@@ -1,4 +1,4 @@
-#ifndef _BIT_ARRAY_H_
+﻿#ifndef _BIT_ARRAY_H_
 #define _BIT_ARRAY_H_
 
 #include <stdint.h>

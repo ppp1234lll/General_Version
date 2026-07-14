@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    dfu_mem.h
     \brief   USB DFU device media access layer header file
 

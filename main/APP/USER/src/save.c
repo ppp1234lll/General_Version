@@ -1,36 +1,36 @@
 #include "main.h"
 #include "./User/inc/save.h"
 
-#define SAVE_LOCAL_NETWORK_NAME     ("network_name")        /* ±¾µØÍøÂçĞÅÏ¢ */
-#define SAVE_REMOTE_NETWORK_NAME    ("remote_name")         /* Ô¶¶ËÍøÂçĞÅÏ¢ */
-#define SAVE_REMOTE_BACKUPS_NAME    ("backups")             /* Ô¶¶ËÍøÂç¡ª¡ª±¸·İ 20231023*/ 
-#define SAVE_DEVICE_PARAMETER_NAME  ("device_name")         /* Éè±¸ÏêÏ¸:id¡¢Ãû³Æ¡¢ÃÜÂëµÈ */
-#define SAVE_CAREMA_PARAMETER       ("carema_param")        /* ÉãÏñÍ·Ïà¹ØĞÅÏ¢ */
-#define SAVE_COM_PARAMETER_NAME     ("comparameter")        /* Í¨ĞÅÏà¹Ø²ÎÊı */
-#define SAVE_HTTP_UPDATE_ADDR_NAME  ("HTTP_OTA")            /* ¸üĞÂµØÖ· */
-#define SAVE_HTTP_UPLOAD_ADDR_NAME  ("HTTP_UPLOAD")         /* ÎÄ¼şÉÏ´«µØÖ· */
-#define SAVE_THRESHOLD_PARAMETER    ("threshold_params")    /* Ïà¹ØãĞÖµ£ºµçÑ¹ µçÁ÷ ½Ç¶È */ // 20230720
+#define SAVE_LOCAL_NETWORK_NAME     ("network_name")        /* æœ¬åœ°ç½‘ç»œä¿¡æ¯ */
+#define SAVE_REMOTE_NETWORK_NAME    ("remote_name")         /* è¿œç«¯ç½‘ç»œä¿¡æ¯ */
+#define SAVE_REMOTE_BACKUPS_NAME    ("backups")             /* è¿œç«¯ç½‘ç»œâ€”â€”å¤‡ä»½ 20231023*/ 
+#define SAVE_DEVICE_PARAMETER_NAME  ("device_name")         /* è®¾å¤‡è¯¦ç»†:idã€åç§°ã€å¯†ç ç­‰ */
+#define SAVE_CAREMA_PARAMETER       ("carema_param")        /* æ‘„åƒå¤´ç›¸å…³ä¿¡æ¯ */
+#define SAVE_COM_PARAMETER_NAME     ("comparameter")        /* é€šä¿¡ç›¸å…³å‚æ•° */
+#define SAVE_HTTP_UPDATE_ADDR_NAME  ("HTTP_OTA")            /* æ›´æ–°åœ°å€ */
+#define SAVE_HTTP_UPLOAD_ADDR_NAME  ("HTTP_UPLOAD")         /* æ–‡ä»¶ä¸Šä¼ åœ°å€ */
+#define SAVE_THRESHOLD_PARAMETER    ("threshold_params")    /* ç›¸å…³é˜ˆå€¼ï¼šç”µå‹ ç”µæµ è§’åº¦ */ // 20230720
 #define SAVE_SNMP_OID_PARAMETER     ("snmp_oid")            /* SNMP OID */
-
+#define SAVE_RS485_CONFIG           ("rs485_config")        /* 485å‚æ•° */
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_init_function
-*    ¹¦ÄÜËµÃ÷: ´æ´¢¹¦ÄÜ³õÊ¼»¯º¯Êı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_init_function
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨åŠŸèƒ½åˆå§‹åŒ–å‡½æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void save_init_function(void)
 {
-    lfs_init_function();                             // ¹ÒÔØÎÄ¼şÏµÍ³
+    lfs_init_function();                             // æŒ‚è½½æ–‡ä»¶ç³»ç»Ÿ
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_clear_file_function
-*    ¹¦ÄÜËµÃ÷: »Ö¸´³ö³§»¯
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_clear_file_function
+*    åŠŸèƒ½è¯´æ˜: æ¢å¤å‡ºå‚åŒ–
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void save_clear_file_function(uint8_t mode)
@@ -56,10 +56,10 @@ void save_clear_file_function(uint8_t mode)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_stroage_local_network
-*    ¹¦ÄÜËµÃ÷: ´æ´¢±¾µØÍøÂç²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_stroage_local_network
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨æœ¬åœ°ç½‘ç»œå‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_stroage_local_network(struct local_ip_t *local)
@@ -68,7 +68,7 @@ int8_t save_stroage_local_network(struct local_ip_t *local)
     int         err      = 0;
     lfs_file_t  lfs_fp   = {0};
     
-    /* Êı¾İ±£´æ */
+    /* æ•°æ®ä¿å­˜ */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_LOCAL_NETWORK_NAME, LFS_O_RDWR | LFS_O_CREAT);
     if(err == 0)
     {
@@ -89,10 +89,10 @@ int8_t save_stroage_local_network(struct local_ip_t *local)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_local_network
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡±¾µØÍøÂçÉèÖÃ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_local_network
+*    åŠŸèƒ½è¯´æ˜: è¯»å–æœ¬åœ°ç½‘ç»œè®¾ç½®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_read_local_network(struct local_ip_t *local)
@@ -110,7 +110,7 @@ int8_t save_read_local_network(struct local_ip_t *local)
     }
     else
     {
-        /* ¶ÁÈ¡Ä¬ÈÏÖµ */
+        /* è¯»å–é»˜è®¤å€¼ */
         err = lfs_file_close(&g_lfs_t, &lfs_fp);
         
         save_read_default_local_network(local);
@@ -124,16 +124,16 @@ int8_t save_read_local_network(struct local_ip_t *local)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_default_local_network
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Ä¬ÈÏ²ÎÊı
-*    ĞÎ    ²Î: local_ip_t *local
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_default_local_network
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é»˜è®¤å‚æ•°
+*    å½¢    å‚: local_ip_t *local
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void save_read_default_local_network(struct local_ip_t *local)
 {
     uint32_t data= 0;
-    uint8_t  mac[6] = {0};             // MACµØÖ· 
+    uint8_t  mac[6] = {0};             // MACåœ°å€ 
     uint8_t  ret = 0;
     uint8_t  zero_ret = 0;
     
@@ -141,13 +141,13 @@ void save_read_default_local_network(struct local_ip_t *local)
     extern ChipID_t g_chipid_t;
     data = g_chipid_t.id[0];
     
-    /* ±¾»úipµØÖ· */
+    /* æœ¬æœºipåœ°å€ */
     local->ip[0] = DEFALUT_LOCAL_IP0;
     local->ip[1] = DEFALUT_LOCAL_IP1;
     local->ip[2] = DEFALUT_LOCAL_IP2;
     local->ip[3] = DEFALUT_LOCAL_IP3;
 
-    /* ±¾»úMAC */
+    /* æœ¬æœºMAC */
     bsp_ReadCpuFlash(DEVICE_MAC_ADDR, (uint8_t *)mac, 6);
     for(uint8_t i=0;i<6;i++)
     {
@@ -158,10 +158,10 @@ void save_read_default_local_network(struct local_ip_t *local)
     }
     if((ret == 6) || (zero_ret == 6))
     {
-        local->mac[0]=2;//¸ßÈı×Ö½Ú(IEEE³ÆÖ®Îª×éÖ¯Î¨Ò»ID,OUI)µØÖ·¹Ì¶¨Îª:2.0.0
+        local->mac[0]=2;//é«˜ä¸‰å­—èŠ‚(IEEEç§°ä¹‹ä¸ºç»„ç»‡å”¯ä¸€ID,OUI)åœ°å€å›ºå®šä¸º:2.0.0
         local->mac[1]=0;
         local->mac[2]=0;
-        local->mac[3]=(data>>16)&0XFF;//µÍÈı×Ö½ÚÓÃSTM32µÄÎ¨Ò»ID
+        local->mac[3]=(data>>16)&0XFF;//ä½ä¸‰å­—èŠ‚ç”¨STM32çš„å”¯ä¸€ID
         local->mac[4]=(data>>8)&0XFF;
         local->mac[5]=data&0XFF;     
     }    
@@ -176,18 +176,18 @@ void save_read_default_local_network(struct local_ip_t *local)
     }
     bsp_WriteCpuFlash_Save(DEVICE_FLASH_STORE,DEVICE_MAC_ADDR,(uint8_t *)&local->mac,6);        
 
-    /* ±¾»ú×ÓÍøÑÚÂë */
+    /* æœ¬æœºå­ç½‘æ©ç  */
     local->netmask[0]=DEFALUT_NETMASK0;    
     local->netmask[1]=DEFALUT_NETMASK1;
     local->netmask[2]=DEFALUT_NETMASK2;
     local->netmask[3]=DEFALUT_NETMASK3;
-    /* ±¾»úÄ¬ÈÏÍø¹Ø */
+    /* æœ¬æœºé»˜è®¤ç½‘å…³ */
     local->gateway[0]=DEFALUT_GATEWAY0;    
     local->gateway[1]=DEFALUT_GATEWAY1;
     local->gateway[2]=DEFALUT_GATEWAY2;
     local->gateway[3]=DEFALUT_GATEWAY3;    
     
-    /* ±¾»úDNS */
+    /* æœ¬æœºDNS */
     local->dns[0] = DEFALUT_DNS0;
     local->dns[1] = DEFALUT_DNS1;
     local->dns[2] = DEFALUT_DNS2;
@@ -195,7 +195,7 @@ void save_read_default_local_network(struct local_ip_t *local)
     
     local->server_mode = DEFALUT_SERVERMODE; 
     
-    /* ×é²¥µØÖ· */
+    /* ç»„æ’­åœ°å€ */
     local->multicast_ip[0] = DEFALUT_MULTICAST_IP0;
     local->multicast_ip[1] = DEFALUT_MULTICAST_IP1;
     local->multicast_ip[2] = DEFALUT_MULTICAST_IP2;
@@ -205,15 +205,15 @@ void save_read_default_local_network(struct local_ip_t *local)
     memset(local->ping_ip,0,sizeof(local->ping_ip));
     memset(local->ping_sub_ip,0,sizeof(local->ping_sub_ip));
     
-    local->search_mode = DEFALUT_IPC_DET_TYPE; // PINGÄ£Ê½
+    local->search_mode = DEFALUT_IPC_DET_TYPE; // PINGæ¨¡å¼
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_stroage_remote_ip_function
-*    ¹¦ÄÜËµÃ÷: ±£´æÔ¶¶ËIPµØÖ·
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_stroage_remote_ip_function
+*    åŠŸèƒ½è¯´æ˜: ä¿å­˜è¿œç«¯IPåœ°å€
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_stroage_remote_ip_function(struct remote_ip *remote)
@@ -222,7 +222,7 @@ int8_t save_stroage_remote_ip_function(struct remote_ip *remote)
     int         err     = 0;
     lfs_file_t  lfs_fp  = {0};
     
-    /* Êı¾İ±£´æ */
+    /* æ•°æ®ä¿å­˜ */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_REMOTE_NETWORK_NAME, LFS_O_RDWR | LFS_O_CREAT);
     if(err == 0)
     {
@@ -243,10 +243,10 @@ int8_t save_stroage_remote_ip_function(struct remote_ip *remote)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_remote_ip_function
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Ô¶¶ËIPµØÖ·
-*    ĞÎ    ²Î: remote_ip *remote
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_remote_ip_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–è¿œç«¯IPåœ°å€
+*    å½¢    å‚: remote_ip *remote
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_read_remote_ip_function(struct remote_ip *remote)
@@ -264,7 +264,7 @@ int8_t save_read_remote_ip_function(struct remote_ip *remote)
     }
     else
     {
-        /* ¶ÁÈ¡Ä¬ÈÏÖµ */
+        /* è¯»å–é»˜è®¤å€¼ */
         err = lfs_file_close(&g_lfs_t, &lfs_fp);
         
         save_read_default_remote_ip(remote);
@@ -280,15 +280,15 @@ int8_t save_read_remote_ip_function(struct remote_ip *remote)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_default_remote_ip
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Ä¬ÈÏÖµ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_default_remote_ip
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é»˜è®¤å€¼
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void save_read_default_remote_ip(struct remote_ip *remote)
 {
-    /* Ô¶³Ì·şÎñÆ÷Êı¾İ */
+    /* è¿œç¨‹æœåŠ¡å™¨æ•°æ® */
     memset(remote->outside_iporname,0,sizeof(remote->outside_iporname));
     strcpy((char*)remote->outside_iporname,DEFALUT_LWIP_PLATFORM_URL);
     remote->outside_port  = DEFALUT_LWIP_PLATFORM_PORT;
@@ -301,10 +301,10 @@ void save_read_default_remote_ip(struct remote_ip *remote)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_storage_device_parameter_function
-*    ¹¦ÄÜËµÃ÷: ´æ´¢Éè±¸Ïà¹Ø²ÎÊı£ºID¡¢ÃÜÂëµÈ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_storage_device_parameter_function
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨è®¾å¤‡ç›¸å…³å‚æ•°ï¼šIDã€å¯†ç ç­‰
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_storage_device_parameter_function(struct device_param *param)
@@ -313,7 +313,7 @@ int8_t save_storage_device_parameter_function(struct device_param *param)
     int         err     = 0;
     lfs_file_t  lfs_fp  = {0};
     
-    /* Êı¾İ±£´æ */
+    /* æ•°æ®ä¿å­˜ */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_DEVICE_PARAMETER_NAME, LFS_O_RDWR | LFS_O_CREAT);
     if(err == 0)
     {
@@ -334,10 +334,10 @@ int8_t save_storage_device_parameter_function(struct device_param *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_default_device_paramter_function
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Éè±¸Ïà¹Ø²ÎÊı£ºID¡¢ÃÜÂëµÈ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_default_device_paramter_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–è®¾å¤‡ç›¸å…³å‚æ•°ï¼šIDã€å¯†ç ç­‰
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void save_read_default_device_paramter_function(struct device_param *param)
@@ -357,15 +357,15 @@ void save_read_default_device_paramter_function(struct device_param *param)
     memset(param->name,0,sizeof(param->name));
     memset(param->password,0,sizeof(param->password));
     strcpy((char*)param->password,DEFALUT_PASSWORD);
-    param->default_password = 1; // Ä¬ÈÏ¿ª»úĞèÒªĞŞ¸ÄÃÜÂë
+    param->default_password = 1; // é»˜è®¤å¼€æœºéœ€è¦ä¿®æ”¹å¯†ç 
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_device_paramter_function
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Éè±¸Ïà¹Ø²ÎÊı£ºID¡¢ÃÜÂëµÈ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_device_paramter_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–è®¾å¤‡ç›¸å…³å‚æ•°ï¼šIDã€å¯†ç ç­‰
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_read_device_paramter_function(struct device_param *param)
@@ -385,7 +385,7 @@ int8_t save_read_device_paramter_function(struct device_param *param)
     {
         err = lfs_file_close(&g_lfs_t, &lfs_fp);
         save_read_default_device_paramter_function(param);
-        /* ´æ´¢ */
+        /* å­˜å‚¨ */
         save_storage_device_parameter_function(param);
         ret = -1;
     }
@@ -396,10 +396,10 @@ int8_t save_read_device_paramter_function(struct device_param *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_stroage_com_param_function
-*    ¹¦ÄÜËµÃ÷: ´æ´¢Í¨ĞÅÏà¹Ø²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_stroage_com_param_function
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨é€šä¿¡ç›¸å…³å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_stroage_com_param_function(com_param_t *param)
@@ -408,7 +408,7 @@ int8_t save_stroage_com_param_function(com_param_t *param)
     int         err     = 0;
     lfs_file_t  lfs_fp  = {0};
     
-    /* Êı¾İ±£´æ */
+    /* æ•°æ®ä¿å­˜ */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_COM_PARAMETER_NAME, LFS_O_RDWR | LFS_O_CREAT);
     if(err == 0)
     {
@@ -429,10 +429,10 @@ int8_t save_stroage_com_param_function(com_param_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_default_com_param_function
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Ä¬ÈÏÍ¨ĞÅÏà¹Ø²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_default_com_param_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é»˜è®¤é€šä¿¡ç›¸å…³å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void save_read_default_com_param_function(com_param_t *param)
@@ -447,10 +447,10 @@ void save_read_default_com_param_function(com_param_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_com_param_function
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Í¨ĞÅÏà¹Ø²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_com_param_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é€šä¿¡ç›¸å…³å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_read_com_param_function(com_param_t *param)
@@ -470,7 +470,7 @@ int8_t save_read_com_param_function(com_param_t *param)
     {
         err = lfs_file_close(&g_lfs_t, &lfs_fp);
         save_read_default_com_param_function(param);
-        /* ´æ´¢ */
+        /* å­˜å‚¨ */
         save_stroage_com_param_function(param);
         ret = -1;
     }
@@ -480,10 +480,10 @@ int8_t save_read_com_param_function(com_param_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_stroage_carema_parameter
-*    ¹¦ÄÜËµÃ÷: ´æ´¢ÉãÏñÍ·²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_stroage_carema_parameter
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨æ‘„åƒå¤´å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_stroage_carema_parameter(carema_t *param)
@@ -492,7 +492,7 @@ int8_t save_stroage_carema_parameter(carema_t *param)
     int         err     = 0;
     lfs_file_t  lfs_fp  = {0};
     
-    /* Êı¾İ±£´æ */
+    /* æ•°æ®ä¿å­˜ */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_CAREMA_PARAMETER, LFS_O_RDWR | LFS_O_CREAT);
     if(err == 0)
     {
@@ -513,23 +513,29 @@ int8_t save_stroage_carema_parameter(carema_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_default_carema_parameter
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Ä¬ÈÏÉãÏñÍ·²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_default_carema_parameter
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é»˜è®¤æ‘„åƒå¤´å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void save_read_default_carema_parameter(carema_t *param)
 {
+    uint8_t i = 0;
+    
     memset(param,0,sizeof(carema_t));
+    for(i = 0; i < 6; i++)
+    {
+        param->port[i] = 80;
+    }
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_carema_parameter
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡ÉãÏñÍ·²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_carema_parameter
+*    åŠŸèƒ½è¯´æ˜: è¯»å–æ‘„åƒå¤´å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_read_carema_parameter(carema_t *param)
@@ -557,10 +563,10 @@ int8_t save_read_carema_parameter(carema_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_stroage_threshold_parameter
-*    ¹¦ÄÜËµÃ÷: ´æ´¢ãĞÖµ²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_stroage_threshold_parameter
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨é˜ˆå€¼å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_stroage_threshold_parameter(struct threshold_params *param)
@@ -569,7 +575,7 @@ int8_t save_stroage_threshold_parameter(struct threshold_params *param)
     int         err     = 0;
     lfs_file_t  lfs_fp  = {0};
     
-    /* Êı¾İ±£´æ */
+    /* æ•°æ®ä¿å­˜ */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_THRESHOLD_PARAMETER, LFS_O_RDWR | LFS_O_CREAT);
     if(err == 0)
     {
@@ -590,10 +596,10 @@ int8_t save_stroage_threshold_parameter(struct threshold_params *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_default_threshold_parameter
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Ä¬ÈÏãĞÖµ²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_default_threshold_parameter
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é»˜è®¤é˜ˆå€¼å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void save_read_default_threshold_parameter(struct threshold_params *param)
@@ -616,10 +622,10 @@ void save_read_default_threshold_parameter(struct threshold_params *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_threshold_parameter
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡ãĞÖµ²ÎÊı
-*    ĞÎ    ²Î: 20230720
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_threshold_parameter
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é˜ˆå€¼å‚æ•°
+*    å½¢    å‚: 20230720
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_read_threshold_parameter(struct threshold_params *param)
@@ -647,10 +653,10 @@ int8_t save_read_threshold_parameter(struct threshold_params *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_stroage_backups_function
-*    ¹¦ÄÜËµÃ÷: ´æ´¢±¸·İ²ÎÊı
-*    ĞÎ    ²Î: 20231022
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_stroage_backups_function
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨å¤‡ä»½å‚æ•°
+*    å½¢    å‚: 20231022
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_stroage_backups_function(sys_backups_t *param)
@@ -659,7 +665,7 @@ int8_t save_stroage_backups_function(sys_backups_t *param)
     int     err  = 0;
     lfs_file_t  lfs_fp     = {0};
     
-    /* Êı¾İ±£´æ */
+    /* æ•°æ®ä¿å­˜ */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_REMOTE_BACKUPS_NAME, LFS_O_RDWR | LFS_O_CREAT);
     if(err == 0)
     {
@@ -679,10 +685,10 @@ int8_t save_stroage_backups_function(sys_backups_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_backups_function
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡±¸·İ²ÎÊı
-*    ĞÎ    ²Î: 20231022
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_backups_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–å¤‡ä»½å‚æ•°
+*    å½¢    å‚: 20231022
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_read_backups_function(sys_backups_t *param)
@@ -699,7 +705,7 @@ int8_t save_read_backups_function(sys_backups_t *param)
     }
     else
     {
-        /* ¶ÁÈ¡Ä¬ÈÏÖµ */
+        /* è¯»å–é»˜è®¤å€¼ */
         err = lfs_file_close(&g_lfs_t, &lfs_fp);
         
         save_read_default_backups(param);
@@ -714,15 +720,15 @@ int8_t save_read_backups_function(sys_backups_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_default_backups
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Ä¬ÈÏÖµ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_default_backups
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é»˜è®¤å€¼
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void save_read_default_backups(sys_backups_t *param)
 {
-    /* Ô¶³Ì·şÎñÆ÷Êı¾İ */
+    /* è¿œç¨‹æœåŠ¡å™¨æ•°æ® */
     memset(param->remote.outside_iporname,0,sizeof(param->remote.outside_iporname));
     strcpy((char*)param->remote.outside_iporname,DEFALUT_LWIP_PLATFORM_URL);
     param->remote.outside_port  = DEFALUT_LWIP_PLATFORM_PORT;
@@ -735,10 +741,10 @@ void save_read_default_backups(sys_backups_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_stroage_http_ota_function
-*    ¹¦ÄÜËµÃ÷: ´æ´¢OTAµØÖ·
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_stroage_http_ota_function
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨OTAåœ°å€
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_stroage_http_ota_function(struct update_addr *param)
@@ -747,7 +753,7 @@ int8_t save_stroage_http_ota_function(struct update_addr *param)
     int         err     = 0;
     lfs_file_t  lfs_fp  = {0};
     
-    /* Êı¾İ±£´æ */
+    /* æ•°æ®ä¿å­˜ */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_HTTP_UPDATE_ADDR_NAME, LFS_O_RDWR | LFS_O_CREAT);
     if(err == 0)
     {
@@ -768,10 +774,10 @@ int8_t save_stroage_http_ota_function(struct update_addr *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_http_ota_function
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡OTAµØÖ·
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_http_ota_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–OTAåœ°å€
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_read_http_ota_function(struct update_addr *param)
@@ -800,10 +806,10 @@ int8_t save_read_http_ota_function(struct update_addr *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_default_http_ota
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Ä¬ÈÏÖµ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_default_http_ota
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é»˜è®¤å€¼
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void save_read_default_http_ota(struct update_addr *param)
@@ -818,18 +824,18 @@ void save_read_default_http_ota(struct update_addr *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_stroage_electricity_function
-*    ¹¦ÄÜËµÃ÷: ´æ´¢µçÁ÷
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_stroage_electricity_function
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨ç”µæµ
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_stroage_electricity_function(electricity_t *param)
 {
     int8_t      ret     = 0;    
     
-    /* Êı¾İ±£´æµ½ÄÚ²¿FLASH */
-    // ÒòÎª electricity_t µÄ´óĞ¡Èç¹û²»ÊÇ 4 ×Ö½ÚµÄÕûÊı±¶£¬¿ÉÄÜĞèÒª°´×ÖĞ´Èë£¬ÕâÀï¼ÙÉèËüÊÇ¿ÉÒÔÓÃ uint32_t Ğ´ÈëµÄ
+    /* æ•°æ®ä¿å­˜åˆ°å†…éƒ¨FLASH */
+    // å› ä¸º electricity_t çš„å¤§å°å¦‚æœä¸æ˜¯ 4 å­—èŠ‚çš„æ•´æ•°å€ï¼Œå¯èƒ½éœ€è¦æŒ‰å­—å†™å…¥ï¼Œè¿™é‡Œå‡è®¾å®ƒæ˜¯å¯ä»¥ç”¨ uint32_t å†™å…¥çš„
     uint32_t words_to_write = sizeof(electricity_t);
     bsp_WriteCpuFlash_Save(DEVICE_ELECTRICITY_ADDR, DEVICE_ELECTRICITY_ADDR, (uint8_t *)param, words_to_write);
     
@@ -838,22 +844,22 @@ int8_t save_stroage_electricity_function(electricity_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_electricity_function
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡µçÁ÷
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: save_read_electricity_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–ç”µæµ
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t save_read_electricity_function(electricity_t *param)
 {    
     int8_t      ret     = 0;
     
-    /* Êı¾İ´ÓÄÚ²¿FLASH¶ÁÈ¡ */
+    /* æ•°æ®ä»å†…éƒ¨FLASHè¯»å– */
     uint32_t words_to_read = (sizeof(electricity_t) + 3) / 4;
     bsp_ReadCpuFlash(DEVICE_ELECTRICITY_ADDR, (uint8_t *)param, words_to_read);
     
-    // ¶Ô¶ÁÈ¡µÄ¸¡µãÊı½øĞĞ NaN ¼ì²é£¬Èç¹û Flash ÊÇÒ»Æ¬¿Õ°×£¨0xFFFFFFFF£©»òÕßÊÇÒì³£Öµ£¬
-    // Ëü»á±»½âÎö³É NaN¡£ÕâÀïÊ¹ÓÃ isnan ÅĞ¶Ï£¬Èç¹ûÊÇ NaN ¾ÍÖØÖÃÎª 0¡£
+    // å¯¹è¯»å–çš„æµ®ç‚¹æ•°è¿›è¡Œ NaN æ£€æŸ¥ï¼Œå¦‚æœ Flash æ˜¯ä¸€ç‰‡ç©ºç™½ï¼ˆ0xFFFFFFFFï¼‰æˆ–è€…æ˜¯å¼‚å¸¸å€¼ï¼Œ
+    // å®ƒä¼šè¢«è§£ææˆ NaNã€‚è¿™é‡Œä½¿ç”¨ isnan åˆ¤æ–­ï¼Œå¦‚æœæ˜¯ NaN å°±é‡ç½®ä¸º 0ã€‚
     if (isnan(param->total)) {
         param->total = 0.0f;
     }
@@ -862,10 +868,10 @@ int8_t save_read_electricity_function(electricity_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_stroage_snmp_oid_parameter
-*    ¹¦ÄÜËµÃ÷: ±£´æ snmp_oid_t ²ÎÊı
-*    ĞÎ    ²Î: param: Ö¸Ïò snmp_oid_t ½á¹¹ÌåµÄÖ¸Õë
-*    ·µ »Ø Öµ: ³É¹¦·µ»Ø 0£¬Ê§°Ü·µ»Ø -1
+*    å‡½ æ•° å: save_stroage_snmp_oid_parameter
+*    åŠŸèƒ½è¯´æ˜: ä¿å­˜ snmp_oid_t å‚æ•°
+*    å½¢    å‚: param: æŒ‡å‘ snmp_oid_t ç»“æ„ä½“çš„æŒ‡é’ˆ
+*    è¿” å› å€¼: æˆåŠŸè¿”å› 0ï¼Œå¤±è´¥è¿”å› -1
 *********************************************************************************************************
 */
 int8_t save_stroage_snmp_oid_parameter(snmp_oid_t *param)
@@ -874,7 +880,7 @@ int8_t save_stroage_snmp_oid_parameter(snmp_oid_t *param)
     int         err     = 0;
     lfs_file_t  lfs_fp   = {0};
     
-    /* Êı¾İ±£´æ */
+    /* æ•°æ®ä¿å­˜ */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_SNMP_OID_PARAMETER, LFS_O_RDWR | LFS_O_CREAT);
     if(err == 0)
     {
@@ -895,10 +901,10 @@ int8_t save_stroage_snmp_oid_parameter(snmp_oid_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_default_snmp_oid_parameter
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡ snmp_oid_t Ä¬ÈÏ²ÎÊı
-*    ĞÎ    ²Î: param: Ö¸Ïò snmp_oid_t ½á¹¹ÌåµÄÖ¸Õë
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: save_read_default_snmp_oid_parameter
+*    åŠŸèƒ½è¯´æ˜: è¯»å– snmp_oid_t é»˜è®¤å‚æ•°
+*    å½¢    å‚: param: æŒ‡å‘ snmp_oid_t ç»“æ„ä½“çš„æŒ‡é’ˆ
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void save_read_default_snmp_oid_parameter(snmp_oid_t *param)
@@ -908,10 +914,10 @@ void save_read_default_snmp_oid_parameter(snmp_oid_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_snmp_oid_parameter
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡ snmp_oid_t ²ÎÊı
-*    ĞÎ    ²Î: param: Ö¸Ïò snmp_oid_t ½á¹¹ÌåµÄÖ¸Õë
-*    ·µ »Ø Öµ: ³É¹¦·µ»Ø 0£¬Ê§°Ü·µ»Ø -1
+*    å‡½ æ•° å: save_read_snmp_oid_parameter
+*    åŠŸèƒ½è¯´æ˜: è¯»å– snmp_oid_t å‚æ•°
+*    å½¢    å‚: param: æŒ‡å‘ snmp_oid_t ç»“æ„ä½“çš„æŒ‡é’ˆ
+*    è¿” å› å€¼: æˆåŠŸè¿”å› 0ï¼Œå¤±è´¥è¿”å› -1
 *********************************************************************************************************
 */
 int8_t save_read_snmp_oid_parameter(snmp_oid_t *param)
@@ -940,10 +946,10 @@ int8_t save_read_snmp_oid_parameter(snmp_oid_t *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_stroage_http_upload_function
-*    ¹¦ÄÜËµÃ÷: ´æ´¢ÎÄ¼şÉÏ´«·şÎñÆ÷µØÖ·
-*    ĞÎ    ²Î: param ÉÏ´«²ÎÊı½á¹¹Ìå
-*    ·µ »Ø Öµ: 0-³É¹¦ -1-Ê§°Ü
+*    å‡½ æ•° å: save_stroage_http_upload_function
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨æ–‡ä»¶ä¸Šä¼ æœåŠ¡å™¨åœ°å€
+*    å½¢    å‚: param ä¸Šä¼ å‚æ•°ç»“æ„ä½“
+*    è¿” å› å€¼: 0-æˆåŠŸ -1-å¤±è´¥
 *********************************************************************************************************
 */
 int8_t save_stroage_http_upload_function(struct upload_addr *param)
@@ -952,7 +958,7 @@ int8_t save_stroage_http_upload_function(struct upload_addr *param)
     int         err     = 0;
     lfs_file_t  lfs_fp  = {0};
     
-    /* Êı¾İ±£´æ */
+    /* æ•°æ®ä¿å­˜ */
     err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_HTTP_UPLOAD_ADDR_NAME, LFS_O_RDWR | LFS_O_CREAT);
     if(err == 0)
     {
@@ -973,10 +979,10 @@ int8_t save_stroage_http_upload_function(struct upload_addr *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_http_upload_function
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡ÎÄ¼şÉÏ´«·şÎñÆ÷µØÖ·
-*    ĞÎ    ²Î: param ÉÏ´«²ÎÊı½á¹¹Ìå
-*    ·µ »Ø Öµ: 0-³É¹¦ -1-Ê§°Ü(Ê¹ÓÃÄ¬ÈÏÖµ)
+*    å‡½ æ•° å: save_read_http_upload_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–æ–‡ä»¶ä¸Šä¼ æœåŠ¡å™¨åœ°å€
+*    å½¢    å‚: param ä¸Šä¼ å‚æ•°ç»“æ„ä½“
+*    è¿” å› å€¼: 0-æˆåŠŸ -1-å¤±è´¥(ä½¿ç”¨é»˜è®¤å€¼)
 *********************************************************************************************************
 */
 int8_t save_read_http_upload_function(struct upload_addr *param)
@@ -1005,10 +1011,10 @@ int8_t save_read_http_upload_function(struct upload_addr *param)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: save_read_default_http_upload
-*    ¹¦ÄÜËµÃ÷: ¶ÁÈ¡Ä¬ÈÏÎÄ¼şÉÏ´«µØÖ·
-*    ĞÎ    ²Î: param ÉÏ´«²ÎÊı½á¹¹Ìå
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: save_read_default_http_upload
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é»˜è®¤æ–‡ä»¶ä¸Šä¼ åœ°å€
+*    å½¢    å‚: param ä¸Šä¼ å‚æ•°ç»“æ„ä½“
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void save_read_default_http_upload(struct upload_addr *param)
@@ -1021,4 +1027,83 @@ void save_read_default_http_upload(struct upload_addr *param)
     param->port  = DEFALUT_UPLOAD_PORT;
 }
 
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: save_stroage_rs485_param_function
+*    åŠŸèƒ½è¯´æ˜: å­˜å‚¨485é€šä¿¡ç›¸å…³å‚æ•°
+*    å½¢    å‚: param é€šä¿¡å‚æ•°ç»“æ„ä½“
+*    è¿” å› å€¼: 0-æˆåŠŸ -1-å¤±è´¥
+*********************************************************************************************************
+*/
+int8_t save_stroage_rs485_param_function(rs485_config_t *param)
+{
+	int8_t      ret     = 0;
+    int         err	    = 0;
+	lfs_file_t  lfs_fp	= {0};
+	
+	/* æ•°æ®ä¿å­˜ */
+	err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_RS485_CONFIG, LFS_O_RDWR | LFS_O_CREAT);
+	if(err == 0)
+	{
+		err = lfs_file_rewind(&g_lfs_t, &lfs_fp);
+		err = lfs_file_write(&g_lfs_t, &lfs_fp, (uint8_t*)param, sizeof(rs485_config_t));
+		if(err != sizeof(rs485_config_t)) {
+			err = lfs_file_write(&g_lfs_t, &lfs_fp, (uint8_t*)param, sizeof(rs485_config_t));
+		}
+	}
+	else
+	{
+		ret = -1;
+	}
+	err = lfs_file_close(&g_lfs_t, &lfs_fp);
+	
+	return ret;
+}
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: save_read_default_rs485_param_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–é»˜è®¤485é€šä¿¡ç›¸å…³å‚æ•°
+*    å½¢    å‚: param é€šä¿¡å‚æ•°ç»“æ„ä½“
+*    è¿” å› å€¼: æ— 
+*********************************************************************************************************
+*/
+void save_read_default_rs485_param_function(rs485_config_t *param)
+{
+	param->baudrate		= DEFALUT_RS485_BAUDRATE;
+	param->data_bits	= DEFALUT_RS485_WORD_BITS;
+	param->parity       = DEFALUT_RS485_PARITY_BITS;
+	param->stop_bits	= DEFALUT_RS485_STOP_BITS;
+}
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: save_read_rs485_param_function
+*    åŠŸèƒ½è¯´æ˜: è¯»å–485é€šä¿¡ç›¸å…³å‚æ•°
+*    å½¢    å‚: param é€šä¿¡å‚æ•°ç»“æ„ä½“
+*    è¿” å› å€¼: 0-æˆåŠŸ -1-å¤±è´¥(ä½¿ç”¨é»˜è®¤å€¼)
+*********************************************************************************************************
+*/
+int8_t save_read_rs485_param_function(rs485_config_t *param)
+{
+	int8_t      ret     = 0;
+    int         err	    = 0;
+	lfs_file_t  lfs_fp  = {0};
+	
+	err = lfs_file_open(&g_lfs_t, &lfs_fp, SAVE_RS485_CONFIG, LFS_O_RDWR);
+	if(err == 0)
+	{
+		err = lfs_file_rewind(&g_lfs_t, &lfs_fp);
+		err = lfs_file_read(&g_lfs_t, &lfs_fp, param,sizeof(rs485_config_t));
+	}
+	else
+	{
+		err = lfs_file_close(&g_lfs_t, &lfs_fp);
+		save_read_default_rs485_param_function(param);
+		save_stroage_rs485_param_function(param);
+		ret = -1;
+	}
+	err = lfs_file_close(&g_lfs_t, &lfs_fp);
+	return ret;
+}
 

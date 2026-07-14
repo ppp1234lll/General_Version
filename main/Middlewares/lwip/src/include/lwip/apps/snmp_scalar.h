@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SNMP server MIB API to implement scalar nodes
  */

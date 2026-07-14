@@ -1,5 +1,5 @@
 /*
- * @Description: ÒÔÌ«ÍøÄ£¿éÔ´ÎÄ¼ş
+ * @Description: ä»¥å¤ªç½‘æ¨¡å—æºæ–‡ä»¶
  * @Version: v1.0.0
  * @Autor: gxf
  * @Date: 2022-02-05 22:07:46
@@ -11,12 +11,12 @@
 #include "bsp_enet.h"
 #include "lwipopts.h"
 
-// ÒÔÌ«Íø¸´Î»Òı½Å
+// ä»¥å¤ªç½‘å¤ä½å¼•è„š
 #define ENET_RESET_GPIO_CLK               RCU_GPIOA
 #define ENET_RESET_GPIO_PORT              GPIOA
 #define ENET_RESET_PIN                    GPIO_PIN_6
 
-// ÒÔÌ«ÍøµØÖ·Òı½Å
+// ä»¥å¤ªç½‘åœ°å€å¼•è„š
 #define ENET_ADDR_GPIO_CLK               RCU_GPIOB
 #define ENET_ADDR_GPIO_PORT              GPIOB
 #define ENET_ADDR_PIN                    GPIO_PIN_0
@@ -29,16 +29,16 @@ static void nvic_configuration(void);
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: enet_system_setup
-*    ¹¦ÄÜËµÃ÷: ³õÊ¼»¯ÒÔÌ«ÍøÏµÍ³GPIO¡¢Ê±ÖÓ¡¢MAC¡¢DMA¡¢SysTick.
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: enet_system_setup
+*    åŠŸèƒ½è¯´æ˜: åˆå§‹åŒ–ä»¥å¤ªç½‘ç³»ç»ŸGPIOã€æ—¶é’Ÿã€MACã€DMAã€SysTick.
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: 0 - åˆå§‹åŒ–å¤±è´¥; 1 - åˆå§‹åŒ–æˆåŠŸ
 *********************************************************************************************************
 */
-#define ENET_INIT_RETRY_MAX   1
-#define ENET_INIT_RETRY_DELAY_MS  100
+#define ENET_INIT_RETRY_MAX      3
+#define ENET_INIT_RETRY_DELAY_MS 300
 
-void enet_system_setup(void)
+uint8_t enet_system_setup(void)
 {
     uint8_t retry_count = 0;
     /* configure the NVIC for ENET */
@@ -48,10 +48,7 @@ void enet_system_setup(void)
     enet_gpio_config();
 
     /* configure the ethernet MAC/DMA */
-//    enet_mac_dma_config();
-    
     do {
-        /* configure the ethernet MAC/DMA */
         enet_mac_dma_config();
 
         if(enet_init_status != 0) {
@@ -60,16 +57,19 @@ void enet_system_setup(void)
 
         retry_count++;
         printf("Ethernet init failed, retrying (%d/%d)...\r\n", retry_count, ENET_INIT_RETRY_MAX);
+        
+        /* PHYç¡¬å¤ä½åé‡è¯•ï¼Œæ¯”å•çº¯è½¯ä»¶å¤ä½æ›´å¯é  */
+        gpio_bit_reset(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
+        delay_ms(50);
+        gpio_bit_set(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
         delay_ms(ENET_INIT_RETRY_DELAY_MS);
 
     } while(retry_count < ENET_INIT_RETRY_MAX);
 
     if(0 == enet_init_status) 
     {
-        printf("Ethernet init failed!!!\r\n");
-        // while(1) {
-        //     Error_Handler(__FILE__, __LINE__);
-        // }
+        printf("Ethernet init failed after %d retries!!!\r\n", ENET_INIT_RETRY_MAX + 1);
+        return 0;  /* åˆå§‹åŒ–å¤±è´¥ */
     }
 
     enet_interrupt_enable(ENET_DMA_INT_NIE);
@@ -79,14 +79,16 @@ void enet_system_setup(void)
     enet_desc_select_enhanced_mode();
 #endif /* SELECT_DESCRIPTORS_ENHANCED_MODE */
 
+    printf("Ethernet init success!\r\n");
+    return 1;  /* åˆå§‹åŒ–æˆåŠŸ */
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: enet_mac_dma_config
-*    ¹¦ÄÜËµÃ÷: ³õÊ¼»¯ÒÔÌ«ÍøMAC/DMA.
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: enet_mac_dma_config
+*    åŠŸèƒ½è¯´æ˜: åˆå§‹åŒ–ä»¥å¤ªç½‘MAC/DMA.
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 static void enet_mac_dma_config(void)
@@ -121,10 +123,10 @@ static void enet_mac_dma_config(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: nvic_configuration
-*    ¹¦ÄÜËµÃ÷: ³õÊ¼»¯NVIC.
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: nvic_configuration
+*    åŠŸèƒ½è¯´æ˜: åˆå§‹åŒ–NVIC.
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 static void nvic_configuration(void)
@@ -134,10 +136,10 @@ static void nvic_configuration(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: enet_gpio_config
-*    ¹¦ÄÜËµÃ÷: ³õÊ¼»¯GPIO.
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: enet_gpio_config
+*    åŠŸèƒ½è¯´æ˜: åˆå§‹åŒ–GPIO.
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 static void enet_gpio_config(void)
@@ -196,16 +198,16 @@ static void enet_gpio_config(void)
     gpio_af_set(GPIOC, GPIO_AF_11, GPIO_PIN_4);
     gpio_af_set(GPIOC, GPIO_AF_11, GPIO_PIN_5);
 
-    // ¸´Î»
+    // å¤ä½
     gpio_mode_set(ENET_RESET_GPIO_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE,ENET_RESET_PIN);
     gpio_output_options_set(ENET_RESET_GPIO_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ,ENET_RESET_PIN);
 
-    /* µØÖ· */
+    /* åœ°å€ */
     gpio_mode_set(ENET_ADDR_GPIO_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE,ENET_ADDR_PIN);
     gpio_output_options_set(ENET_ADDR_GPIO_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ,ENET_ADDR_PIN);
 
-    gpio_bit_reset(ENET_ADDR_GPIO_PORT, ENET_ADDR_PIN); // µØÖ·0
-    /* Ó²¸´Î» */
+    gpio_bit_reset(ENET_ADDR_GPIO_PORT, ENET_ADDR_PIN); // åœ°å€0
+    /* ç¡¬å¤ä½ */
     gpio_bit_reset(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
     delay_ms(50);    
     gpio_bit_set(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
@@ -214,10 +216,10 @@ static void enet_gpio_config(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: enet_hard_reset
-*    ¹¦ÄÜËµÃ÷: Ó²¼ş¸´Î»º¯Êı.
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: enet_hard_reset
+*    åŠŸèƒ½è¯´æ˜: ç¡¬ä»¶å¤ä½å‡½æ•°.
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void enet_hard_reset(void)
@@ -228,6 +230,41 @@ void enet_hard_reset(void)
     delay_ms(100);
 
     enet_mac_dma_config();
+}
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: enet_hard_reinit
+*    åŠŸèƒ½è¯´æ˜: è¿è¡Œæ—¶ç¡¬ä»¶é‡åˆå§‹åŒ–(PHYç¡¬å¤ä½ + MAC/DMAé‡é… + æè¿°ç¬¦é“¾é‡å»º + ä¸­æ–­ä½¿èƒ½).
+*              ç”¨äºç½‘ç»œå¼‚å¸¸æ¢å¤, è°ƒç”¨å‰éœ€å…ˆæ‰§è¡Œ lwip_stop_function() åœæ­¢ç½‘ç»œã€‚
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
+*********************************************************************************************************
+*/
+extern enet_descriptors_struct rxdesc_tab[ENET_RXBUF_NUM];
+
+void enet_hard_reinit(void)
+{
+    uint8_t i;
+
+    /* PHYç¡¬å¤ä½ + MAC/DMAé‡æ–°åˆå§‹åŒ– */
+    enet_hard_reset();
+
+    /* enet_hard_reset() -> enet_mac_dma_config() -> enet_deinit() æ¸…ç©ºäº†DMAæè¿°ç¬¦åŸºå€å¯„å­˜å™¨,
+       éœ€è¦é‡æ–°åˆå§‹åŒ–æè¿°ç¬¦é“¾(æè¿°ç¬¦ç»“æ„ä½“åœ¨RAMä¸­ä¿æŒæœ‰æ•ˆ, ä»…éœ€é‡å»ºé“¾è¡¨å¹¶å†™å…¥åŸºå€å¯„å­˜å™¨) */
+    enet_descriptors_chain_init(ENET_DMA_TX);
+    enet_descriptors_chain_init(ENET_DMA_RX);
+
+    /* é‡æ–°ä½¿èƒ½æ¯ä¸ªRxæè¿°ç¬¦çš„æ¥æ”¶å®Œæˆä¸­æ–­ */
+    for(i = 0; i < ENET_RXBUF_NUM; i++) {
+        enet_rx_desc_immediate_receive_complete_interrupt(&rxdesc_tab[i]);
+    }
+
+    /* ä½¿èƒ½ENET DMAä¸­æ–­ */
+    enet_interrupt_enable(ENET_DMA_INT_NIE);
+    enet_interrupt_enable(ENET_DMA_INT_RIE);
+
+    printf("Ethernet hardware reinit done.\r\n");
 }
 
 

@@ -1,4 +1,4 @@
-#ifndef __MD5_H
+﻿#ifndef __MD5_H
 #define __MD5_H
  
 typedef struct

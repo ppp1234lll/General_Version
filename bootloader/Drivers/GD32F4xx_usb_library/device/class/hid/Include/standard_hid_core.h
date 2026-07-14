@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    standard_hid_core.h
     \brief   definitions for HID core
 

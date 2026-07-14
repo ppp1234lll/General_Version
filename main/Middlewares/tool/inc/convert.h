@@ -1,10 +1,10 @@
-#ifndef __CONVERT_H__
+ï»¿#ifndef __CONVERT_H__
 #define __CONVERT_H__
 
 #include "./SYSTEM/sys/sys.h"
 
 
-/* º¯ÊýÉùÃ÷ */
+/* å‡½æ•°å£°æ˜Ž */
 uint32_t complement_to_original(uint32_t data);
 int8_t hex_to_dec(char c);
 uint8_t str_to_hex(uint8_t *buff);

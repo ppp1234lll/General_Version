@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_dac.h
     \brief   definitions for the DAC
 

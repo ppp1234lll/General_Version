@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    printer_core.c
     \brief   USB printer device class core functions
 

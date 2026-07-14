@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_sdio.h
     \brief   definitions for the SDIO
 

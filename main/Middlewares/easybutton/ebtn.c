@@ -1,4 +1,4 @@
-#include <string.h>
+﻿#include <string.h>
 #include "ebtn.h"
 
 #define EBTN_FLAG_ONPRESS_SENT ((uint8_t)0x01) /*!< Flag indicates that on-press event has been sent */

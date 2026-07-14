@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Common functions used throughout the stack.
  * These are reference implementations of the byte swapping functions.

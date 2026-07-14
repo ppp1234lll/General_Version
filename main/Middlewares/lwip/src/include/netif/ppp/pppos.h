@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Network Point to Point Protocol over Serial header file.
  */

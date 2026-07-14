@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_usart.h
     \brief   definitions for the USART
 

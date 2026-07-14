@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    dfu_mem.c
     \brief   USB DFU device media access layer functions
 

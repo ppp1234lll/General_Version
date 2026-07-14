@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usb_msc.h
     \brief   definitions for the USB MSC class
 

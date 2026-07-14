@@ -1,1169 +1,191 @@
 #include "./Upload/inc/upload_http.h"
+#include "./Upload/inc/upload.h"
 #include "main.h"
 
-/* multipart/form-data ·ÖÆ¬ÉÏ´«±ß½ç */
+/* multipart/form-data åˆ†ç‰‡ä¸Šä¼ è¾¹ç•Œ */
 #define UPLOAD_HTTP_BOUNDARY              "----FNLOG_UPLOAD_BOUNDARY"
-#define UPLOAD_HTTP_HEADER_MAX            512   /* HTTP ÇëÇóÍ·»º³å */
-#define UPLOAD_HTTP_FORM_HEAD_MAX         512   /* multipart ±íµ¥Í·»º³å */
-#define UPLOAD_HTTP_FORM_TAIL_MAX         64    /* multipart ½áÊø±ß½ç»º³å */
-/* chunk ÍêÕû body: form_head + file_data + form_tail,Óë Python build_chunk_body Ò»ÖÂ */
-#define UPLOAD_HTTP_CHUNK_BODY_MAX        (UPLOAD_HTTP_FORM_HEAD_MAX + UPLOAD_HTTP_CHUNK_SIZE + UPLOAD_HTTP_FORM_TAIL_MAX)
-#define UPLOAD_HTTP_CHUNK_REQUEST_MAX     (UPLOAD_HTTP_HEADER_MAX + UPLOAD_HTTP_CHUNK_BODY_MAX)
-#define UPLOAD_HTTP_RESP_MAX              1024  /* HTTP Ó¦´ğ»º³å */
-#define UPLOAD_HTTP_JSON_BODY_MAX         512   /* ½âÂëºóµÄ JSON ÕıÎÄ»º³å */
-#define UPLOAD_HTTP_RECV_TIMEOUT_MS       10000U /* µÈ´ıÓ¦´ğ³¬Ê±(ms) */
-#define UPLOAD_HTTP_GPRS_RECV_BUF         512   /* GPRS µ¥´Î¶ÁÈ¡»º³å */
-#define UPLOAD_HTTP_CHUNK_RETRY_MAX       3U    /* ·ÖÆ¬ÉÏ´«Ê§°ÜÖØÊÔ´ÎÊı */
-#define UPLOAD_HTTP_API_CODE_OK           200   /* ½Ó¿Ú JSON ³É¹¦ code Öµ */
-#define UPLOAD_HTTP_MD5_HEX_MAX           33U   /* MD5 Ê®Áù½øÖÆ×Ö·û´®³¤¶È(32+1) */
+#define UPLOAD_HTTP_HEADER_MAX            512    /* HTTP è¯·æ±‚å¤´ç¼“å†² */
+#define UPLOAD_HTTP_FORM_MAX              512    /* multipart è¡¨å•å¤´ç¼“å†² */
+#define UPLOAD_HTTP_TAIL_MAX              64     /* multipart ç»“æŸè¾¹ç•Œç¼“å†² */
+#define UPLOAD_HTTP_BODY_MAX              (UPLOAD_HTTP_FORM_MAX + UPLOAD_HTTP_CHUNK_SIZE + UPLOAD_HTTP_TAIL_MAX)
+#define UPLOAD_HTTP_RESP_MAX             1024    /* HTTP åº”ç­”ç¼“å†² */
+#define UPLOAD_HTTP_RECV_TIMEOUT_MS      10000U  /* ç­‰å¾…åº”ç­”è¶…æ—¶(ms) */
+#define UPLOAD_HTTP_CHUNK_RETRY_MAX      3       /* åˆ†ç‰‡ä¸Šä¼ å¤±è´¥é‡è¯•æ¬¡æ•° */
+#define UPLOAD_HTTP_API_CODE_OK          200     /* æ¥å£ JSON æˆåŠŸ code å€¼ */
+#define UPLOAD_HTTP_MD5_HEX_MAX          33U     /* MD5 åå…­è¿›åˆ¶å­—ç¬¦ä¸²é•¿åº¦(32+1) */
 
-/* ÓĞÏß TCP Á¬½Ó¾ä±ú */
-static struct netconn *s_upload_tcp = NULL;
-static uint8_t s_upload_http_chunk_request[UPLOAD_HTTP_CHUNK_REQUEST_MAX];
-static uint8_t s_upload_http_chunk_data[UPLOAD_HTTP_CHUNK_SIZE];
-////
+/*
+ * ä¸Šä¼ ä¼šè¯ä¸Šä¸‹æ–‡: é›†ä¸­ä¿å­˜ä¸€æ¬¡ä¸Šä¼ çš„æ‰€æœ‰å…±äº«çŠ¶æ€,
+ * ä½¿å„å‡½æ•°æ— éœ€å±‚å±‚ä¼ å‚(å‚ç…§ update_http.c çš„ sg_http_update_param)ã€‚
+ */
+typedef struct
+{
+    const upload_http_transport_t *tp; /* ä¼ è¾“å±‚å›è°ƒ */
+    char        host[16];              /* æœåŠ¡å™¨ IP(æ¥è‡ª sg_uploadparam_t) */
+    uint16_t    port;
+    const char *file_name;             /* ä¸Šä¼ æ—¥å¿—æ–‡ä»¶å(æ¥è‡ª log.c) */
+    uint8_t     md5_enable;            /* finish æ˜¯å¦æºå¸¦ md5 */
+    uint32_t    total_chunks;          /* æ€»åˆ†ç‰‡æ•° */
+    char        upload_id[UPLOAD_HTTP_UPLOAD_ID_MAX];
+    char        md5_hex[UPLOAD_HTTP_MD5_HEX_MAX];
+    char        resp[UPLOAD_HTTP_RESP_MAX]; /* HTTP åº”ç­”ç¼“å†² */
+    int         resp_len;                   /* å·²æ¥æ”¶å­—èŠ‚æ•° */
+    int         status;                     /* æœ€è¿‘ä¸€æ¬¡ HTTP çŠ¶æ€ç  */
+} upload_http_ctx_t;
 
-static const char *upload_http_safe_str(const char *str, const char *default_str);
-static upload_http_link_t upload_http_select_link(upload_http_link_t preferred_link);
-static void upload_http_dns_cb_server_ip(const char *name, const ip_addr_t *ipaddr, void *arg);
-static int upload_http_resolve_host_lwip(const char *host, ip_addr_t *out_ip);
-static int upload_http_connect_lwip(const char *host, uint16_t port);
-static int upload_http_connect_gprs(const char *host, uint16_t port);
-static void upload_http_close_link(upload_http_link_t link_type);
-static int upload_http_send_raw(upload_http_link_t link_type, const uint8_t *data, uint32_t len);
-static int upload_http_send_lwip_all(const uint8_t *data, uint32_t len);
-static int upload_http_lwip_drain_tx(void);
-static int upload_http_send_buffer(upload_http_link_t link_type, const uint8_t *data, uint32_t len);
-static int upload_http_get_file_size(const char *file_path, uint32_t *file_size);
-static void upload_http_get_device_id(const char *device_sn, char *device_id, uint32_t size);
-static int upload_http_response_is_chunked(const char *response);
-static int upload_http_response_chunked_complete(const char *body);
-static int upload_http_decode_chunked_body(const char *chunked_body, char *out, int out_size);
-static int upload_http_extract_json_body(const char *response, char *json_body, int json_body_size);
-static int upload_http_response_complete(const char *response);
-static int upload_http_parse_status_code(const char *response, int *http_status_code);
-static int upload_http_parse_json_int(const char *body, const char *key, int *out_value);
-static int upload_http_parse_json_string(const char *body, const char *key, char *out_str, uint32_t out_size);
-static int upload_http_parse_start_response(const char *response, char *upload_key, uint32_t upload_key_size);
-static int upload_http_parse_chunk_response(const char *response);
-static void upload_http_md5_to_hex(const unsigned char *digest, char *hex_out, uint32_t hex_size);
-static const char *upload_http_get_file_name(const char *file_path, const char *upload_file_name);
-static int upload_http_append_recv(char *response, int response_size, const uint8_t *data, int data_len);
-static int upload_http_recv_response_lwip(char *response, int response_size, int *http_status_code);
-static int upload_http_recv_response_gprs(char *response, int response_size, int *http_status_code);
-static int upload_http_recv_response(upload_http_link_t link_type, char *response, int response_size, int *http_status_code);
-static int upload_http_post_query(upload_http_link_t link_type,
-                                  const char *host,
-                                  uint16_t port,
-                                  const char *path_with_query,
-                                  uint8_t keep_alive,
-                                  char *response,
-                                  int response_size,
-                                  int *http_status_code);
-static int upload_http_post_chunk(upload_http_link_t link_type,
-                                  const char *host,
-                                  uint16_t port,
-                                  const char *upload_id,
-                                  const char *file_name,
-                                  uint32_t chunk_index,
-                                  const uint8_t *data,
-                                  uint16_t data_len,
-                                  uint8_t keep_alive,
-                                  char *response,
-                                  int response_size,
-                                  int *http_status_code);
-static int upload_http_post_finish(upload_http_link_t link_type,
-                                   const char *host,
-                                   uint16_t port,
-                                   const char *upload_id,
-                                   uint8_t finish_md5_enable,
-                                   const char *file_md5,
-                                   char *response,
-                                   int response_size,
-                                   int *http_status_code);
-static int upload_http_path_is_log(const char *path);
+static upload_http_ctx_t s_ctx;
+static uint8_t s_body[UPLOAD_HTTP_BODY_MAX]; /* chunk multipart body ç»„åŒ…ç¼“å†² */
+static uint8_t s_chunk[UPLOAD_HTTP_CHUNK_SIZE]; /* åˆ†ç‰‡æ–‡ä»¶è¯»ç¼“å†² */
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_safe_str
-*    ¹¦ÄÜËµÃ÷: È¡ÓĞĞ§×Ö·û´®,¿ÕÖ¸Õë»ò¿Õ´®Ê±·µ»ØÄ¬ÈÏÖµ¡£
-*    ĞÎ    ²Î: str / default_str
-*    ·µ »Ø Öµ: ÓĞĞ§×Ö·û´®Ö¸Õë¡£
+*    å‡½ æ•° å: upload_http_safe_str
+*    åŠŸèƒ½è¯´æ˜: å–æœ‰æ•ˆå­—ç¬¦ä¸²,ç©ºæŒ‡é’ˆæˆ–ç©ºä¸²æ—¶è¿”å›é»˜è®¤å€¼ã€‚
 *********************************************************************************************************
 */
-static const char *upload_http_safe_str(const char *str, const char *default_str)
+static const char *upload_http_safe_str(const char *str, const char *def)
 {
-    if ((str != NULL) && (str[0] != '\0'))
-    {
-        return str;
-    }
-
-    return default_str;
+    return ((str != NULL) && (str[0] != '\0')) ? str : def;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_select_link
-*    ¹¦ÄÜËµÃ÷: ¸ù¾İÅäÖÃºÍÍøÂç×´Ì¬Ñ¡Ôñ lwIP »ò GPRS Á´Â·¡£
-*    ĞÎ    ²Î: preferred_link ÓÅÏÈÁ´Â·(AUTO/LWIP/GPRS)
-*    ·µ »Ø Öµ: Êµ¼ÊÊ¹ÓÃµÄÁ´Â·ÀàĞÍ¡£
+*    å‡½ æ•° å: upload_http_get_device_id
+*    åŠŸèƒ½è¯´æ˜: ä»ç³»ç»Ÿå‚æ•°(sg_sysparam_t.device)è·å–è®¾å¤‡ç¼–å·å¹¶æ ¼å¼åŒ–ä¸ºåå…­è¿›åˆ¶å­—ç¬¦ä¸²ã€‚
 *********************************************************************************************************
 */
-static upload_http_link_t upload_http_select_link(upload_http_link_t preferred_link)
+static void upload_http_get_device_id(char *out, uint32_t size)
 {
-    uint8_t net_mode = app_get_network_mode();
+    struct device_param *dev = (struct device_param *)app_get_device_param_function();
+    uint32_t id = (dev != NULL) ? (dev->id.i & 0x00FFFFFFUL) : 0U;
 
-    if (preferred_link == UPLOAD_HTTP_LINK_LWIP)
+    if ((id == 0U) || (id == 0x00FFFFFFUL))
     {
-        return UPLOAD_HTTP_LINK_LWIP;
+        id = 3U;
     }
-
-    if (preferred_link == UPLOAD_HTTP_LINK_GPRS)
-    {
-        return UPLOAD_HTTP_LINK_GPRS;
-    }
-
-    if ((net_mode == SERVER_MODE_GPRS) || (g_lwipdev.netif_state == 0U))
-    {
-        return UPLOAD_HTTP_LINK_GPRS;
-    }
-
-    return UPLOAD_HTTP_LINK_LWIP;
+    snprintf(out, size, "%lX", (unsigned long)id);
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_path_is_log
-*    ¹¦ÄÜËµÃ÷: ÅĞ¶ÏÂ·¾¶ÊÇ·ñÊôÓÚ log Ä£¿é¹ÜÀíµÄÈÕÖ¾ÎÄ¼ş¡£
-*    ĞÎ    ²Î: path LittleFS Â·¾¶
-*    ·µ »Ø Öµ: 1 ÊÇÈÕÖ¾Â·¾¶,0 ·ñ¡£
+*    å‡½ æ•° å: upload_http_md5_to_hex
+*    åŠŸèƒ½è¯´æ˜: å°† 16 å­—èŠ‚ MD5 æ‘˜è¦è½¬ä¸º 32 ä½å°å†™åå…­è¿›åˆ¶å­—ç¬¦ä¸²ã€‚
 *********************************************************************************************************
 */
-static int upload_http_path_is_log(const char *path)
+static void upload_http_md5_to_hex(const unsigned char *digest, char *out)
 {
-    size_t root_len = 0U;
-
-    if (path == NULL)
-    {
-        return 0;
-    }
-
-    root_len = strlen(LOG_ROOT_DIR);
-    if (strncmp(path, LOG_ROOT_DIR, root_len) != 0)
-    {
-        return 0;
-    }
-
-    return (path[root_len] == '\0') || (path[root_len] == '/');
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_dns_cb_server_ip
-*    ¹¦ÄÜËµÃ÷: DNS ½âÎöÍê³É»Øµ÷,Ğ´Èë½âÎö½á¹û¡£
-*    ĞÎ    ²Î: name / ipaddr / arg
-*    ·µ »Ø Öµ: ÎŞ¡£
-*********************************************************************************************************
-*/
-static void upload_http_dns_cb_server_ip(const char *name, const ip_addr_t *ipaddr, void *arg)
-{
-    ip_addr_t *out_addr = (ip_addr_t *)arg;
-
-    (void)name;
-
-    if ((out_addr != NULL) && (ipaddr != NULL) && (ipaddr->addr != 0U))
-    {
-        memcpy(out_addr, ipaddr, sizeof(ip_addr_t));
-    }
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_resolve_host_lwip
-*    ¹¦ÄÜËµÃ÷: ½«Ö÷»úÃû»òÓòÃû½âÎöÎª IP µØÖ·(lwIP)¡£
-*    ĞÎ    ²Î: host Ö÷»úÃû»ò IP ×Ö·û´®; out_ip Êä³ö IP
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_resolve_host_lwip(const char *host, ip_addr_t *out_ip)
-{
-    err_t err = ERR_OK;
-    uint32_t begin_tick = 0U;
-
-    if ((host == NULL) || (out_ip == NULL))
-    {
-        return -1;
-    }
-
-    memset(out_ip, 0, sizeof(ip_addr_t));
-    if ((host[0] >= '0') && (host[0] <= '9'))
-    {
-        return (ipaddr_aton(host, out_ip) == 1) ? 0 : -1;
-    }
-
-    err = dns_gethostbyname(host, out_ip, upload_http_dns_cb_server_ip, out_ip);
-    if (err == ERR_OK)
-    {
-        return 0;
-    }
-
-    if (err != ERR_INPROGRESS)
-    {
-        return -1;
-    }
-
-    begin_tick = HAL_GetTick();
-    while ((HAL_GetTick() - begin_tick) < 5000U)
-    {
-        if (out_ip->addr != 0U)
-        {
-            return 0;
-        }
-        vTaskDelay(10);
-    }
-
-    return -1;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_connect_lwip
-*    ¹¦ÄÜËµÃ÷: Í¨¹ıÓĞÏßÍøÂç½¨Á¢ HTTP ÉÏ´« TCP Á¬½Ó¡£
-*    ĞÎ    ²Î: host ·şÎñÆ÷µØÖ·; port ¶Ë¿Ú
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_connect_lwip(const char *host, uint16_t port)
-{
-    ip_addr_t server_ip = {0};
-    err_t err = ERR_OK;
-    uint8_t retry = 0U;
-
-    if (upload_http_resolve_host_lwip(host, &server_ip) != 0)
-    {
-        return -1;
-    }
-
-    for (retry = 0U; retry < 3U; retry++)
-    {
-        s_upload_tcp = netconn_new(NETCONN_TCP);
-        if (s_upload_tcp == NULL)
-        {
-            continue;
-        }
-
-        err = netconn_connect(s_upload_tcp, &server_ip, port);
-        if (err == ERR_OK)
-        {
-            s_upload_tcp->recv_timeout = 10;
-            if (s_upload_tcp->pcb.tcp != NULL)
-            {
-                tcp_nagle_disable(s_upload_tcp->pcb.tcp);
-            }
-            return 0;
-        }
-
-        netconn_delete(s_upload_tcp);
-        s_upload_tcp = NULL;
-        vTaskDelay(50);
-    }
-
-    return -1;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_connect_gprs
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı GPRS Ä£¿é½¨Á¢ HTTP ÉÏ´« TCP Á¬½Ó(FILE Á´Â·)¡£
-*    ĞÎ    ²Î: host ·şÎñÆ÷µØÖ·; port ¶Ë¿Ú
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_connect_gprs(const char *host, uint16_t port)
-{
-    uint8_t retry = 0U;
-
-    for (retry = 0U; retry < 3U; retry++)
-    {
-        if (gprs_network_connect_function(host, port, GPRS_LINK_FILE) == GPRS_SEND_OK)
-        {
-            return 0;
-        }
-        vTaskDelay(50);
-    }
-
-    return -1;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_close_link
-*    ¹¦ÄÜËµÃ÷: ¹Ø±ÕÉÏ´«Á´Â·Á¬½Ó¡£
-*    ĞÎ    ²Î: link_type Á´Â·ÀàĞÍ
-*    ·µ »Ø Öµ: ÎŞ¡£
-*********************************************************************************************************
-*/
-static void upload_http_close_link(upload_http_link_t link_type)
-{
-    if (link_type == UPLOAD_HTTP_LINK_LWIP)
-    {
-        if (s_upload_tcp != NULL)
-        {
-            netconn_close(s_upload_tcp);
-            netconn_delete(s_upload_tcp);
-            s_upload_tcp = NULL;
-        }
-    }
-    else if (link_type == UPLOAD_HTTP_LINK_GPRS)
-    {
-        gprs_network_disconnect_function(GPRS_LINK_FILE);
-    }
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_send_raw
-*    ¹¦ÄÜËµÃ÷: °´Á´Â·ÀàĞÍ·¢ËÍÒ»¶ÎÔ­Ê¼Êı¾İ¡£
-*    ĞÎ    ²Î: link_type / data / len
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_send_raw(upload_http_link_t link_type, const uint8_t *data, uint32_t len)
-{
-    if ((data == NULL) || (len == 0U))
-    {
-        return 0;
-    }
-
-    if (link_type == UPLOAD_HTTP_LINK_LWIP)
-    {
-        if ((s_upload_tcp == NULL) || (netconn_write(s_upload_tcp, data, len, NETCONN_COPY) != ERR_OK))
-        {
-            return -1;
-        }
-        return 0;
-    }
-
-    if (link_type == UPLOAD_HTTP_LINK_GPRS)
-    {
-        return (gprs_send_data(data, (int)len, 5000, GPRS_LINK_FILE) == GPRS_SEND_OK) ? 0 : -1;
-    }
-
-    return -1;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_send_lwip_all
-*    ¹¦ÄÜËµÃ÷: ÓĞÏßÁ´Â·Ñ­»· netconn_write_partly Ö±ÖÁÈ«²¿Ğ´Èë TCP ·¢ËÍ»º³å¡£
-*********************************************************************************************************
-*/
-static int upload_http_send_lwip_all(const uint8_t *data, uint32_t len)
-{
-    uint32_t offset = 0U;
-    uint32_t stall = 0U;
-
-    if ((s_upload_tcp == NULL) || (data == NULL) || (len == 0U))
-    {
-        return -1;
-    }
-
-    while (offset < len)
-    {
-        size_t written = 0U;
-        err_t err = netconn_write_partly(s_upload_tcp,
-                                         data + offset,
-                                         (size_t)(len - offset),
-                                         NETCONN_COPY,
-                                         &written);
-
-        if (err != ERR_OK)
-        {
-            return -1;
-        }
-
-        if (written == 0U)
-        {
-            stall++;
-            if (stall > 500U)
-            {
-                return -1;
-            }
-            vTaskDelay(1);
-            continue;
-        }
-
-        stall = 0U;
-        offset += (uint32_t)written;
-    }
-
-    return 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_lwip_drain_tx
-*    ¹¦ÄÜËµÃ÷: µÈ´ı unsent ¶ÓÁĞÇå¿ÕºóÔÙ recv,±ÜÃâÖ»·¢³öÊ×¶Î TCP °ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_lwip_drain_tx(void)
-{
-    struct tcp_pcb *pcb = NULL;
-    uint32_t stall = 0U;
-
-    if (s_upload_tcp == NULL)
-    {
-        return -1;
-    }
-
-    while (stall < 500U)
-    {
-        pcb = s_upload_tcp->pcb.tcp;
-        if (pcb == NULL)
-        {
-            return -1;
-        }
-
-        if (pcb->unsent == NULL)
-        {
-            return 0;
-        }
-
-        stall++;
-        vTaskDelay(1);
-    }
-
-    return -1;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_send_buffer
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍÈÎÒâ³¤¶È»º³å,ÄÚ²¿·ÖÆ¬²»³¬¹ı 1KB¡£
-*    ĞÎ    ²Î: link_type / data / len
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_send_buffer(upload_http_link_t link_type, const uint8_t *data, uint32_t len)
-{
-    return upload_http_send_raw(link_type, data, len);
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_get_file_size
-*    ¹¦ÄÜËµÃ÷: »ñÈ¡ LittleFS ´ıÉÏ´«ÎÄ¼ş´óĞ¡¡£
-*    ĞÎ    ²Î: file_path ÎÄ¼şÂ·¾¶; file_size Êä³ö´óĞ¡
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_get_file_size(const char *file_path, uint32_t *file_size)
-{
-    lfs_file_t lfs_fp;
-    lfs_soff_t pos = 0;
-    int err = 0;
-
-    if ((file_path == NULL) || (file_size == NULL))
-    {
-        return -1;
-    }
-
-    err = lfs_file_open(&g_lfs_t, &lfs_fp, file_path, LFS_O_RDONLY);
-    if (err != 0)
-    {
-        return -1;
-    }
-
-    pos = lfs_file_seek(&g_lfs_t, &lfs_fp, 0, LFS_SEEK_END);
-    (void)lfs_file_close(&g_lfs_t, &lfs_fp);
-    if (pos < 0)
-    {
-        return -1;
-    }
-
-    *file_size = (uint32_t)pos;
-    return 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_get_device_id
-*    ¹¦ÄÜËµÃ÷: »ñÈ¡Éè±¸±àºÅ,ÓÅÏÈÊ¹ÓÃ´«ÈëÖµ,·ñÔò´Ó Flash ¶ÁÈ¡¡£
-*    ĞÎ    ²Î: device_sn Íâ²¿±àºÅ; device_id Êä³ö»º³å; size »º³å³¤¶È
-*    ·µ »Ø Öµ: ÎŞ¡£
-*********************************************************************************************************
-*/
-static void upload_http_get_device_id(const char *device_sn, char *device_id, uint32_t size)
-{
-    union
-    {
-        uint32_t value;
-        uint8_t raw[4];
-    } dev_id = {0};
-
-    if ((device_id == NULL) || (size == 0U))
-    {
-        return;
-    }
-
-    if ((device_sn != NULL) && (device_sn[0] != '\0'))
-    {
-        snprintf(device_id, size, "%s", device_sn);
-        return;
-    }
-
-    bsp_ReadCpuFlash(DEVICE_ID_ADDR, dev_id.raw, sizeof(dev_id.raw));
-    dev_id.value &= 0x00FFFFFFUL;
-    if ((dev_id.value == 0U) || (dev_id.value == 0x00FFFFFFUL))
-    {
-        dev_id.value = 3U;
-    }
-
-    snprintf(device_id, size, "%lX", (unsigned long)dev_id.value);
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_response_is_chunked
-*    ¹¦ÄÜËµÃ÷: ÅĞ¶Ï HTTP Ó¦´ğÍ·ÊÇ·ñÊ¹ÓÃ Transfer-Encoding: chunked¡£
-*********************************************************************************************************
-*/
-static int upload_http_response_is_chunked(const char *response)
-{
-    const char *head_end = NULL;
-    const char *pt = NULL;
-
-    if (response == NULL)
-    {
-        return 0;
-    }
-
-    head_end = strstr(response, "\r\n\r\n");
-    if (head_end == NULL)
-    {
-        return 0;
-    }
-
-    pt = strstr(response, "Transfer-Encoding:");
-    if ((pt == NULL) || (pt >= head_end))
-    {
-        return 0;
-    }
-
-    return (strstr(pt, "chunked") != NULL) ? 1 : 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_response_chunked_complete
-*    ¹¦ÄÜËµÃ÷: ÅĞ¶Ï chunked Ó¦´ğÌåÊÇ·ñÒÑÊÕµ½½áÊø¿é(0)¡£
-*********************************************************************************************************
-*/
-static int upload_http_response_chunked_complete(const char *body)
-{
-    if (body == NULL)
-    {
-        return 0;
-    }
-
-    return (strstr(body, "\r\n0\r\n\r\n") != NULL) ? 1 : 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_decode_chunked_body
-*    ¹¦ÄÜËµÃ÷: ½« chunked ±àÂëµÄ HTTP ÕıÎÄ½âÂëÎª´¿ JSON ×Ö·û´®¡£
-*              Àı: 39\r\n{"code":500,...}\r\n0\r\n\r\n -> {"code":500,...}
-*********************************************************************************************************
-*/
-static int upload_http_decode_chunked_body(const char *chunked_body, char *out, int out_size)
-{
-    const char *pt = chunked_body;
-    char *endptr = NULL;
-    unsigned long chunk_size = 0UL;
-    int out_len = 0;
-
-    if ((chunked_body == NULL) || (out == NULL) || (out_size <= 0))
-    {
-        return -1;
-    }
-
-    out[0] = '\0';
-
-    while (*pt != '\0')
-    {
-        while ((*pt == '\r') || (*pt == '\n'))
-        {
-            pt++;
-        }
-
-        if (*pt == '\0')
-        {
-            break;
-        }
-
-        chunk_size = strtoul(pt, &endptr, 16);
-        if (endptr == pt)
-        {
-            return -1;
-        }
-
-        pt = endptr;
-        if (*pt == '\r')
-        {
-            pt++;
-        }
-        if (*pt == '\n')
-        {
-            pt++;
-        }
-
-        if (chunk_size == 0UL)
-        {
-            break;
-        }
-
-        if ((out_len + (int)chunk_size) >= out_size)
-        {
-            return -1;
-        }
-
-        memcpy(out + out_len, pt, (size_t)chunk_size);
-        out_len += (int)chunk_size;
-        pt += chunk_size;
-
-        if (*pt == '\r')
-        {
-            pt++;
-        }
-        if (*pt == '\n')
-        {
-            pt++;
-        }
-    }
-
-    if (out_len <= 0)
-    {
-        return -1;
-    }
-
-    out[out_len] = '\0';
-    return 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_extract_json_body
-*    ¹¦ÄÜËµÃ÷: ´Ó¿ªÊ¼ÉÏ´«µÈ HTTP Ó¦´ğÖĞÌáÈ¡ JSON ÕıÎÄ(×Ô¶¯´¦Àí chunked)¡£
-*********************************************************************************************************
-*/
-static int upload_http_extract_json_body(const char *response, char *json_body, int json_body_size)
-{
-    const char *raw_body = NULL;
-
-    if ((response == NULL) || (json_body == NULL) || (json_body_size <= 0))
-    {
-        return -1;
-    }
-
-    raw_body = strstr(response, "\r\n\r\n");
-    if (raw_body == NULL)
-    {
-        return -1;
-    }
-    raw_body += 4;
-
-    if (upload_http_response_is_chunked(response))
-    {
-        return upload_http_decode_chunked_body(raw_body, json_body, json_body_size);
-    }
-
-    snprintf(json_body, (size_t)json_body_size, "%s", raw_body);
-    return (json_body[0] != '\0') ? 0 : -1;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_response_complete
-*    ¹¦ÄÜËµÃ÷: ÅĞ¶Ï HTTP Ó¦´ğÊÇ·ñ½ÓÊÕÍêÕû(Content-Length »ò chunked ½áÊø¿é)¡£
-*    ĞÎ    ²Î: response Ó¦´ğ»º³å
-*    ·µ »Ø Öµ: 1 ÍêÕû,0 Î´ÍêÕû¡£
-*********************************************************************************************************
-*/
-static int upload_http_response_complete(const char *response)
-{
-    const char *head_end = NULL;
-    const char *pt = NULL;
-    int body_size = 0;
-    int head_size = 0;
-    int recv_body = 0;
-
-    if ((response == NULL) || (response[0] == '\0'))
-    {
-        return 0;
-    }
-
-    head_end = strstr(response, "\r\n\r\n");
-    if (head_end == NULL)
-    {
-        return 0;
-    }
-
-    head_size = (int)(head_end - response + 4);
-
-    if (upload_http_response_is_chunked(response))
-    {
-        return upload_http_response_chunked_complete(head_end + 4);
-    }
-
-    pt = strstr(response, "Content-Length:");
-    if (pt == NULL)
-    {
-        return 1;
-    }
-
-    if (sscanf(pt, "Content-Length: %d", &body_size) != 1)
-    {
-        return 1;
-    }
-
-    recv_body = (int)strlen(response) - head_size;
-    return (recv_body >= body_size) ? 1 : 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_parse_status_code
-*    ¹¦ÄÜËµÃ÷: ´Ó HTTP Ó¦´ğÖĞ½âÎö×´Ì¬Âë¡£
-*    ĞÎ    ²Î: response Ó¦´ğ»º³å; http_status_code Êä³ö×´Ì¬Âë
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_parse_status_code(const char *response, int *http_status_code)
-{
-    const char *pt = NULL;
-    int status = 0;
-
-    if ((response == NULL) || (http_status_code == NULL))
-    {
-        return -1;
-    }
-
-    pt = strstr(response, "HTTP/");
-    if (pt == NULL)
-    {
-        return -1;
-    }
-
-    if (sscanf(pt, "HTTP/%*d.%*d %d", &status) != 1)
-    {
-        return -1;
-    }
-
-    *http_status_code = status;
-    return 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_get_file_name
-*    ¹¦ÄÜËµÃ÷: »ñÈ¡ÉÏ´«ÎÄ¼şÃû,ÓÅÏÈÊ¹ÓÃ upload_file_name,·ñÔò´ÓÂ·¾¶ÌáÈ¡¡£
-*    ĞÎ    ²Î: file_path / upload_file_name
-*    ·µ »Ø Öµ: ÎÄ¼şÃû×Ö·û´®Ö¸Õë¡£
-*********************************************************************************************************
-*/
-static const char *upload_http_get_file_name(const char *file_path, const char *upload_file_name)
-{
-    const char *name = NULL;
-
-    if ((upload_file_name != NULL) && (upload_file_name[0] != '\0'))
-    {
-        return upload_file_name;
-    }
-
-    if (file_path == NULL)
-    {
-        return "";
-    }
-
-    name = strrchr(file_path, '/');
-    if (name == NULL)
-    {
-        name = strrchr(file_path, '\\');
-    }
-
-    return (name != NULL) ? (name + 1) : file_path;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_parse_json_int
-*    ¹¦ÄÜËµÃ÷: ´Ó JSON ÎÄ±¾ÖĞ½âÎöÕûĞÍ×Ö¶Î¡£
-*    ĞÎ    ²Î: body JSON ÕıÎÄ; key ×Ö¶ÎÃû; out_value Êä³öÖµ
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_parse_json_int(const char *body, const char *key, int *out_value)
-{
-    char key_pattern[32] = {0};
-    const char *key_pos = NULL;
-    const char *start = NULL;
-    int value = 0;
-
-    if ((body == NULL) || (key == NULL) || (out_value == NULL))
-    {
-        return -1;
-    }
-
-    snprintf(key_pattern, sizeof(key_pattern), "\"%s\"", key);
-    key_pos = strstr(body, key_pattern);
-    if (key_pos == NULL)
-    {
-        return -1;
-    }
-
-    start = strchr(key_pos, ':');
-    if (start == NULL)
-    {
-        return -1;
-    }
-    start++;
-    while ((*start == ' ') || (*start == '\t'))
-    {
-        start++;
-    }
-
-    if (sscanf(start, "%d", &value) != 1)
-    {
-        return -1;
-    }
-
-    *out_value = value;
-    return 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_parse_json_string
-*    ¹¦ÄÜËµÃ÷: ´Ó JSON ÎÄ±¾ÖĞ½âÎö×Ö·û´®×Ö¶Î¡£
-*    ĞÎ    ²Î: body JSON ÕıÎÄ; key ×Ö¶ÎÃû; out_str Êä³ö»º³å; out_size »º³å³¤¶È
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_parse_json_string(const char *body, const char *key, char *out_str, uint32_t out_size)
-{
-    char key_pattern[32] = {0};
-    const char *key_pos = NULL;
-    const char *start = NULL;
-    const char *end = NULL;
-    int len = 0;
-
-    if ((body == NULL) || (key == NULL) || (out_str == NULL) || (out_size == 0U))
-    {
-        return -1;
-    }
-
-    snprintf(key_pattern, sizeof(key_pattern), "\"%s\"", key);
-    key_pos = strstr(body, key_pattern);
-    if (key_pos == NULL)
-    {
-        return -1;
-    }
-
-    start = strchr(key_pos, ':');
-    if (start == NULL)
-    {
-        return -1;
-    }
-    start++;
-    while ((*start == ' ') || (*start == '\t'))
-    {
-        start++;
-    }
-    if (*start == '\"')
-    {
-        start++;
-    }
-
-    end = start;
-    while ((*end != '\0') && (*end != '\"') && (*end != ',') && (*end != '}'))
-    {
-        end++;
-    }
-
-    len = (int)(end - start);
-    if ((len < 0) || (len >= (int)out_size))
-    {
-        return -1;
-    }
-
-    memcpy(out_str, start, (size_t)len);
-    out_str[len] = '\0';
-    return 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_parse_start_response
-*    ¹¦ÄÜËµÃ÷: ½âÎö start ½Ó¿Ú JSON Ó¦´ğ,Ğ£Ñé code==200 ²¢ÌáÈ¡ data.uploadId¡£
-*    ĞÎ    ²Î: response Ó¦´ğ»º³å; upload_key Êä³ö uploadId; upload_key_size »º³å³¤¶È
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_parse_start_response(const char *response, char *upload_key, uint32_t upload_key_size)
-{
-    char json_body[UPLOAD_HTTP_JSON_BODY_MAX] = {0};
-    char msg_buf[128] = {0};
-    int api_code = 0;
-
-    if ((response == NULL) || (upload_key == NULL) || (upload_key_size == 0U))
-    {
-        return -1;
-    }
-
-    if (upload_http_extract_json_body(response, json_body, (int)sizeof(json_body)) != 0)
-    {
-        return -1;
-    }
-
-    if (upload_http_parse_json_int(json_body, "code", &api_code) != 0)
-    {
-        return -1;
-    }
-
-    (void)upload_http_parse_json_string(json_body, "msg", msg_buf, sizeof(msg_buf));
-
-    if (api_code != UPLOAD_HTTP_API_CODE_OK)
-    {
-        return -1;
-    }
-
-    if (upload_http_parse_json_string(json_body, "uploadId", upload_key, upload_key_size) != 0)
-    {
-        return -1;
-    }
-    if (upload_key[0] == '\0')
-    {
-        return -1;
-    }
-
-    return 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_parse_chunk_response
-*    ¹¦ÄÜËµÃ÷: ½âÎö chunk/finish ½Ó¿Ú JSON Ó¦´ğ,Ğ£Ñé code==200¡£
-*    ĞÎ    ²Î: response HTTP Ó¦´ğ»º³å
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
-*********************************************************************************************************
-*/
-static int upload_http_parse_chunk_response(const char *response)
-{
-    char json_body[UPLOAD_HTTP_JSON_BODY_MAX] = {0};
-    int api_code = 0;
-
-    if (response == NULL)
-    {
-        return -1;
-    }
-
-    if (upload_http_extract_json_body(response, json_body, (int)sizeof(json_body)) != 0)
-    {
-        return -1;
-    }
-
-    if (upload_http_parse_json_int(json_body, "code", &api_code) != 0)
-    {
-        return -1;
-    }
-
-    return (api_code == UPLOAD_HTTP_API_CODE_OK) ? 0 : -1;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_md5_to_hex
-*    ¹¦ÄÜËµÃ÷: ½« 16 ×Ö½Ú MD5 ÕªÒª×ªÎª 32 Î»Ğ¡Ğ´Ê®Áù½øÖÆ×Ö·û´®¡£
-*    ĞÎ    ²Î: digest MD5 ÕªÒª; hex_out Êä³ö»º³å; hex_size »º³å³¤¶È(ÖÁÉÙ 33)
-*    ·µ »Ø Öµ: ÎŞ¡£
-*********************************************************************************************************
-*/
-static void upload_http_md5_to_hex(const unsigned char *digest, char *hex_out, uint32_t hex_size)
-{
-    static const char hex_tab[] = "0123456789abcdef";
-    uint32_t i = 0U;
-
-    if ((digest == NULL) || (hex_out == NULL) || (hex_size < UPLOAD_HTTP_MD5_HEX_MAX))
-    {
-        return;
-    }
+    static const char tab[] = "0123456789abcdef";
+    uint32_t i;
 
     for (i = 0U; i < 16U; i++)
     {
-        hex_out[i * 2U] = hex_tab[(digest[i] >> 4) & 0x0FU];
-        hex_out[(i * 2U) + 1U] = hex_tab[digest[i] & 0x0FU];
+        out[i * 2U]      = tab[(digest[i] >> 4) & 0x0FU];
+        out[i * 2U + 1U] = tab[digest[i] & 0x0FU];
     }
-    hex_out[32] = '\0';
+    out[32] = '\0';
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_append_recv
-*    ¹¦ÄÜËµÃ÷: ½«ĞÂÊÕµ½µÄÊı¾İ×·¼Óµ½Ó¦´ğ»º³åÄ©Î²¡£
-*    ĞÎ    ²Î: response / response_size / data / data_len
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
+*    å‡½ æ•° å: upload_http_save_response
+*    åŠŸèƒ½è¯´æ˜: ä¾›ä¼ è¾“å±‚ recv å›è°ƒè°ƒç”¨,å°†æ”¶åˆ°çš„æ•°æ®è¿½åŠ åˆ°åº”ç­”ç¼“å†²ã€‚
+*    è¿” å› å€¼: 0 æˆåŠŸ,-1 æº¢å‡º/æ— æ•ˆã€‚
 *********************************************************************************************************
 */
-static int upload_http_append_recv(char *response, int response_size, const uint8_t *data, int data_len)
+int upload_http_save_response(const uint8_t *data, int data_len)
 {
-    int recv_size = 0;
-    int copy_len = 0;
-
-    if ((response == NULL) || (response_size <= 0) || (data == NULL) || (data_len <= 0))
+    if ((data == NULL) || (data_len <= 0))
     {
         return -1;
     }
-
-    recv_size = (int)strlen(response);
-    copy_len = data_len;
-    if ((recv_size + copy_len) >= (response_size - 1))
+    if ((s_ctx.resp_len + data_len) >= (int)sizeof(s_ctx.resp))
     {
-        copy_len = (response_size - 1) - recv_size;
+        data_len = (int)sizeof(s_ctx.resp) - 1 - s_ctx.resp_len;
     }
-
-    if (copy_len <= 0)
+    if (data_len <= 0)
     {
         return -1;
     }
-
-    memcpy(response + recv_size, data, (size_t)copy_len);
-    response[recv_size + copy_len] = '\0';
+    memcpy(s_ctx.resp + s_ctx.resp_len, data, (size_t)data_len);
+    s_ctx.resp_len += data_len;
+    s_ctx.resp[s_ctx.resp_len] = '\0';
     return 0;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_recv_response_lwip
-*    ¹¦ÄÜËµÃ÷: Í¨¹ıÓĞÏßÁ´Â·½ÓÊÕ HTTP Ó¦´ğ²¢½âÎö×´Ì¬Âë¡£
-*    ĞÎ    ²Î: response / response_size / http_status_code
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
+*    å‡½ æ•° å: upload_http_response_complete
+*    åŠŸèƒ½è¯´æ˜: åˆ¤æ–­åº”ç­”æ˜¯å¦æ”¶å®Œ(chunked ç»“æŸå— æˆ– Content-Length æ»¡è¶³)ã€‚
 *********************************************************************************************************
 */
-static int upload_http_recv_response_lwip(char *response, int response_size, int *http_status_code)
+static int upload_http_response_complete(void)
 {
-    struct netbuf *recvbuf = NULL;
-    struct pbuf *q = NULL;
-    err_t recv_err = ERR_OK;
-    uint32_t begin_tick = HAL_GetTick();
+    const char *head_end;
+    const char *pt;
+    int body_size = 0;
 
-    if ((response == NULL) || (response_size <= 0) || (http_status_code == NULL))
+    head_end = strstr(s_ctx.resp, "\r\n\r\n");
+    if (head_end == NULL)
     {
-        return -1;
+        return 0;
     }
 
-    memset(response, 0, (size_t)response_size);
-    *http_status_code = 0;
-
-    while ((HAL_GetTick() - begin_tick) < UPLOAD_HTTP_RECV_TIMEOUT_MS)
+    pt = strstr(s_ctx.resp, "Transfer-Encoding:");
+    if ((pt != NULL) && (pt < head_end))
     {
-        recv_err = netconn_recv(s_upload_tcp, &recvbuf);
-        if (recv_err == ERR_OK)
-        {
-            for (q = recvbuf->p; q != NULL; q = q->next)
-            {
-                if (upload_http_append_recv(response, response_size,
-                                             (const uint8_t *)q->payload, q->len) != 0)
-                {
-                    netbuf_delete(recvbuf);
-                    return -1;
-                }
-            }
-
-            netbuf_delete(recvbuf);
-            recvbuf = NULL;
-            begin_tick = HAL_GetTick();
-
-            if (upload_http_response_complete(response))
-            {
-                break;
-            }
-            continue;
-        }
-
-        if (recv_err == ERR_TIMEOUT)
-        {
-            if (upload_http_response_complete(response))
-            {
-                break;
-            }
-            vTaskDelay(10);
-            continue;
-        }
-
-        break;
+        return (strstr(head_end, "\r\n0\r\n\r\n") != NULL) ? 1 : 0;
     }
 
-    if (recvbuf != NULL)
+    pt = strstr(s_ctx.resp, "Content-Length:");
+    if ((pt == NULL) || (sscanf(pt, "Content-Length: %d", &body_size) != 1))
     {
-        netbuf_delete(recvbuf);
+        return 1; /* æ— é•¿åº¦ä¿¡æ¯, è§†ä¸ºå·²æ”¶å®Œ */
     }
-
-    return upload_http_parse_status_code(response, http_status_code);
+    return ((s_ctx.resp_len - (int)(head_end - s_ctx.resp) - 4) >= body_size) ? 1 : 0;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_recv_response_gprs
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı GPRS FILE Á´Â·½ÓÊÕ HTTP Ó¦´ğ²¢½âÎö×´Ì¬Âë¡£
-*    ĞÎ    ²Î: response / response_size / http_status_code
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
+*    å‡½ æ•° å: upload_http_recv
+*    åŠŸèƒ½è¯´æ˜: å¾ªç¯è°ƒç”¨ transport->recv æ”¶å–åº”ç­”ç›´è‡³å®Œæ•´æˆ–è¶…æ—¶,å¹¶è§£æ HTTP çŠ¶æ€ç åˆ° s_ctx.statusã€‚
+*    è¿” å› å€¼: 0 æˆåŠŸ,-1 å¤±è´¥ã€‚
 *********************************************************************************************************
 */
-static int upload_http_recv_response_gprs(char *response, int response_size, int *http_status_code)
+static int upload_http_recv(void)
 {
-    uint8_t recv_buf[UPLOAD_HTTP_GPRS_RECV_BUF];
-    int recv_data_size = 0;
-    int ret = 0;
-    uint32_t begin_tick = HAL_GetTick();
+    uint32_t begin = HAL_GetTick();
+    const char *pt;
+    int got;
+    int r;
 
-    if ((response == NULL) || (response_size <= 0) || (http_status_code == NULL))
+    s_ctx.resp_len = 0;
+    s_ctx.resp[0] = '\0';
+    s_ctx.status = 0;
+
+    while ((HAL_GetTick() - begin) < UPLOAD_HTTP_RECV_TIMEOUT_MS)
     {
-        return -1;
-    }
-
-    memset(response, 0, (size_t)response_size);
-    *http_status_code = 0;
-
-    while ((HAL_GetTick() - begin_tick) < UPLOAD_HTTP_RECV_TIMEOUT_MS)
-    {
-        recv_data_size = 0;
-        ret = gprs_recv_data_file(recv_buf, (int)sizeof(recv_buf), &recv_data_size);
-        if (ret != GPRS_SEND_OK)
+        got = 0;
+        r = s_ctx.tp->recv_fn(&got);
+        if (r == -3)
         {
-            if (upload_http_response_complete(response))
-            {
-                break;
-            }
-            break;
+            break; /* é“¾è·¯æ–­å¼€,å°è¯•è§£æå·²æ”¶å†…å®¹ */
+        }
+        if (r != 0)
+        {
+            return -1;
         }
 
-        if (recv_data_size > 0)
+        if (got > 0)
         {
-            if (upload_http_append_recv(response, response_size, recv_buf, recv_data_size) != 0)
-            {
-                return -1;
-            }
-            begin_tick = HAL_GetTick();
-
-            if (upload_http_response_complete(response))
+            begin = HAL_GetTick();
+            if (upload_http_response_complete())
             {
                 break;
             }
         }
         else
         {
-            if (upload_http_response_complete(response))
+            if (upload_http_response_complete())
             {
                 break;
             }
@@ -1171,576 +193,420 @@ static int upload_http_recv_response_gprs(char *response, int response_size, int
         }
     }
 
-    return upload_http_parse_status_code(response, http_status_code);
+    pt = strstr(s_ctx.resp, "HTTP/");
+    if ((pt == NULL) || (sscanf(pt, "HTTP/%*d.%*d %d", &s_ctx.status) != 1))
+    {
+        return -1;
+    }
+    return 0;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_recv_response
-*    ¹¦ÄÜËµÃ÷: °´Á´Â·ÀàĞÍ·Ö·¢ HTTP Ó¦´ğ½ÓÊÕ¡£
-*    ĞÎ    ²Î: link_type / response / response_size / http_status_code
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü¡£
+*    å‡½ æ•° å: upload_http_json_int / upload_http_json_str
+*    åŠŸèƒ½è¯´æ˜: ä»åº”ç­”ä¸­æŒ‰ "key" æå–æ•´å‹/å­—ç¬¦ä¸²å­—æ®µ(ç›´æ¥åœ¨åŸå§‹åº”ç­”é‡Œæœç´¢,æ— éœ€å…ˆè§£ç )ã€‚
+*    è¿” å› å€¼: 0 æˆåŠŸ,-1 å¤±è´¥ã€‚
 *********************************************************************************************************
 */
-static int upload_http_recv_response(upload_http_link_t link_type,
-                                     char *response,
-                                     int response_size,
-                                     int *http_status_code)
+static int upload_http_json_int(const char *key, int *out)
 {
-    if (link_type == UPLOAD_HTTP_LINK_LWIP)
-    {
-        return upload_http_recv_response_lwip(response, response_size, http_status_code);
-    }
+    char pat[24];
+    const char *p;
 
-    if (link_type == UPLOAD_HTTP_LINK_GPRS)
+    snprintf(pat, sizeof(pat), "\"%s\"", key);
+    p = strstr(s_ctx.resp, pat);
+    if (p == NULL)
     {
-        return upload_http_recv_response_gprs(response, response_size, http_status_code);
+        return -1;
     }
+    p = strchr(p, ':');
+    if (p == NULL)
+    {
+        return -1;
+    }
+    return (sscanf(p + 1, "%d", out) == 1) ? 0 : -1;
+}
 
-    return -1;
+static int upload_http_json_str(const char *key, char *out, uint32_t size)
+{
+    char pat[24];
+    const char *p;
+    const char *e;
+    int len;
+
+    snprintf(pat, sizeof(pat), "\"%s\"", key);
+    p = strstr(s_ctx.resp, pat);
+    if (p == NULL)
+    {
+        return -1;
+    }
+    p = strchr(p, ':');
+    if (p == NULL)
+    {
+        return -1;
+    }
+    p++;
+    while ((*p == ' ') || (*p == '\t') || (*p == '\"'))
+    {
+        p++;
+    }
+    e = p;
+    while ((*e != '\0') && (*e != '\"') && (*e != ',') && (*e != '}'))
+    {
+        e++;
+    }
+    len = (int)(e - p);
+    if ((len <= 0) || (len >= (int)size))
+    {
+        return -1;
+    }
+    memcpy(out, p, (size_t)len);
+    out[len] = '\0';
+    return 0;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_post_query
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍ´ø query ²ÎÊı¡¢ÎŞÇëÇóÌåµÄ POST ÇëÇó(start ½Ó¿Ú)¡£
-*    ĞÎ    ²Î: link_type / host / port / path_with_query /
-*              keep_alive / response / response_size / http_status_code
-*    ·µ »Ø Öµ: 0 ³É¹¦(2xx),-1 Ê§°Ü¡£
+*    å‡½ æ•° å: upload_http_api_ok
+*    åŠŸèƒ½è¯´æ˜: æ ¡éªŒåº”ç­” JSON çš„ code å­—æ®µæ˜¯å¦ä¸º 200ã€‚
+*    è¿” å› å€¼: 0 æ˜¯,-1 å¦ã€‚
 *********************************************************************************************************
 */
-static int upload_http_post_query(upload_http_link_t link_type,
-                                  const char *host,
-                                  uint16_t port,
-                                  const char *path_with_query,
-                                  uint8_t keep_alive,
-                                  char *response,
-                                  int response_size,
-                                  int *http_status_code)
+static int upload_http_api_ok(void)
 {
-    char request_header[UPLOAD_HTTP_HEADER_MAX] = {0};
-    int header_len = 0;
-    int status_code = 0;
-
-    if ((host == NULL) || (path_with_query == NULL))
-    {
-        return -1;
-    }
-
-    header_len = snprintf(request_header, sizeof(request_header),
-                          "POST %s HTTP/1.1\r\n"
-                          "Host: %s:%u\r\n"
-                          "Content-Length: 0\r\n"
-                          "Connection: %s\r\n\r\n",
-                          path_with_query,
-                          host,
-                          (unsigned int)port,
-                          (keep_alive != 0U) ? "keep-alive" : "close");
-    if ((header_len < 0) || (header_len >= (int)sizeof(request_header)))
-    {
-        return -1;
-    }
-
-    if (upload_http_send_buffer(link_type, (const uint8_t *)request_header, (uint32_t)header_len) != 0)
-    {
-        return -1;
-    }
-
-    if (upload_http_recv_response(link_type, response, response_size, &status_code) != 0)
-    {
-        return -1;
-    }
-
-    if (http_status_code != NULL)
-    {
-        *http_status_code = status_code;
-    }
-
-    return ((status_code >= 200) && (status_code < 300)) ? 0 : -1;
+    int code = 0;
+    return ((upload_http_json_int("code", &code) == 0) && (code == UPLOAD_HTTP_API_CODE_OK)) ? 0 : -1;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_post_chunk
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍ·ÖÆ¬ÉÏ´«ÇëÇó¡£data ±ØĞëÊÇÒÑ´Ó Flash ¶ÁÈ¡³öµÄ±¾Æ¬ÎÄ¼şÊı¾İ¡£
-*              ±¾º¯ÊıÔÚÍ¬Ò»¸ö»º³åÇøÄÚÒ»´ÎĞÔ×éºÃÍêÕû HTTP °üºóÔÙ·¢ËÍ¡£
-*    ĞÎ    ²Î: link_type / host / port / upload_id / file_name / chunk_index /
-*              data / data_len / keep_alive / response / response_size / http_status_code
-*    ·µ »Ø Öµ: 0 ³É¹¦(HTTP 2xx ÇÒ code==200),-1 Ê§°Ü¡£
+*    å‡½ æ•° å: upload_http_post_query
+*    åŠŸèƒ½è¯´æ˜: å‘é€æ— è¯·æ±‚ä½“çš„ POST(start/finish),æ”¶åº”ç­”ã€‚
+*    è¿” å› å€¼: 0 æˆåŠŸ(HTTP 2xx),-1 å¤±è´¥ã€‚
 *********************************************************************************************************
 */
-static int upload_http_post_chunk(upload_http_link_t link_type,
-                                  const char *host,
-                                  uint16_t port,
-                                  const char *upload_id,
-                                  const char *file_name,
-                                  uint32_t chunk_index,
-                                  const uint8_t *data,
-                                  uint16_t data_len,
-                                  uint8_t keep_alive,
-                                  char *response,
-                                  int response_size,
-                                  int *http_status_code)
+static int upload_http_post_query(const char *path, int keep_alive)
 {
-    uint8_t *packet = s_upload_http_chunk_request;
-    uint32_t pos = 0U;
-    int n = 0;
-    int content_length = 0;
-    int status_code = 0;
+    char hdr[UPLOAD_HTTP_HEADER_MAX];
+    int n;
 
-    if ((host == NULL) || (upload_id == NULL) || (file_name == NULL) || (file_name[0] == '\0') ||
-        (data == NULL) || (data_len == 0U))
+    n = snprintf(hdr, sizeof(hdr),
+                 "POST %s HTTP/1.1\r\n"
+                 "Host: %s:%u\r\n"
+                 "Content-Length: 0\r\n"
+                 "Connection: %s\r\n\r\n",
+                 path, s_ctx.host, (unsigned int)s_ctx.port,
+                 keep_alive ? "keep-alive" : "close");
+    if ((n < 0) || (n >= (int)sizeof(hdr)))
     {
         return -1;
     }
+    if (s_ctx.tp->send_fn((const uint8_t *)hdr, (uint32_t)n) != 0)
+    {
+        return -1;
+    }
+    if (upload_http_recv() != 0)
+    {
+        return -1;
+    }
+    return ((s_ctx.status >= 200) && (s_ctx.status < 300)) ? 0 : -1;
+}
 
-    memset(packet, 0, UPLOAD_HTTP_CHUNK_REQUEST_MAX);
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: upload_http_post_chunk
+*    åŠŸèƒ½è¯´æ˜: ç»„ multipart åˆ†ç‰‡è¯·æ±‚(header ä¸ body åˆ†ä¸¤æ¬¡å‘é€),æ”¶åº”ç­”å¹¶æ ¡éªŒ code==200ã€‚
+*    è¿” å› å€¼: 0 æˆåŠŸ,-1 å¤±è´¥ã€‚
+*********************************************************************************************************
+*/
+static int upload_http_post_chunk(uint32_t index, const uint8_t *data, uint16_t len)
+{
+    char hdr[UPLOAD_HTTP_HEADER_MAX];
+    uint32_t pos;
+    int n;
 
-    n = snprintf((char *)packet, UPLOAD_HTTP_CHUNK_REQUEST_MAX,
-                    "--%s\r\n"
-                    "Content-Disposition: form-data; name=\"uploadId\"\r\n\r\n"
-                    "%s\r\n"
-                    "--%s\r\n"
-                    "Content-Disposition: form-data; name=\"chunkIndex\"\r\n\r\n"
-                    "%lu\r\n"
-                    "--%s\r\n"
-                    "Content-Disposition: form-data; name=\"file\"; filename=\"%s\"\r\n"
-                    "Content-Type: application/octet-stream\r\n\r\n",
-                    UPLOAD_HTTP_BOUNDARY,
-                    upload_id,
-                    UPLOAD_HTTP_BOUNDARY,
-                    (unsigned long)chunk_index,
-                    UPLOAD_HTTP_BOUNDARY,
-                    file_name);
-    if ((n < 0) || ((uint32_t)n >= UPLOAD_HTTP_CHUNK_REQUEST_MAX))
+    /* 1) multipart body */
+    n = snprintf((char *)s_body, UPLOAD_HTTP_BODY_MAX,
+                 "--%s\r\nContent-Disposition: form-data; name=\"uploadId\"\r\n\r\n%s\r\n"
+                 "--%s\r\nContent-Disposition: form-data; name=\"chunkIndex\"\r\n\r\n%lu\r\n"
+                 "--%s\r\nContent-Disposition: form-data; name=\"file\"; filename=\"%s\"\r\n"
+                 "Content-Type: application/octet-stream\r\n\r\n",
+                 UPLOAD_HTTP_BOUNDARY, s_ctx.upload_id,
+                 UPLOAD_HTTP_BOUNDARY, (unsigned long)index,
+                 UPLOAD_HTTP_BOUNDARY, s_ctx.file_name);
+    if ((n < 0) || (((uint32_t)n + len + UPLOAD_HTTP_TAIL_MAX) >= UPLOAD_HTTP_BODY_MAX))
     {
         return -1;
     }
     pos = (uint32_t)n;
-
-    if ((pos + (uint32_t)data_len) >= UPLOAD_HTTP_CHUNK_REQUEST_MAX)
-    {
-        return -1;
-    }
-    memcpy(packet + pos, data, (size_t)data_len);
-    pos += (uint32_t)data_len;
-
-    n = snprintf((char *)packet + pos, UPLOAD_HTTP_CHUNK_REQUEST_MAX - pos,
-                 "\r\n--%s--\r\n",
-                 UPLOAD_HTTP_BOUNDARY);
-    if ((n < 0) || ((pos + (uint32_t)n) >= UPLOAD_HTTP_CHUNK_REQUEST_MAX))
+    memcpy(s_body + pos, data, len);
+    pos += len;
+    n = snprintf((char *)s_body + pos, UPLOAD_HTTP_BODY_MAX - pos, "\r\n--%s--\r\n", UPLOAD_HTTP_BOUNDARY);
+    if (n < 0)
     {
         return -1;
     }
     pos += (uint32_t)n;
-    content_length = (int)pos;
 
-    memmove(packet + UPLOAD_HTTP_HEADER_MAX, packet, (size_t)content_length);
-
-    n = snprintf((char *)packet, UPLOAD_HTTP_HEADER_MAX,
+    /* 2) è¯·æ±‚å¤´(Content-Length = body é•¿åº¦) */
+    n = snprintf(hdr, sizeof(hdr),
                  "POST %s HTTP/1.1\r\n"
                  "Host: %s:%u\r\n"
                  "Content-Type: multipart/form-data; boundary=%s\r\n"
-                 "Content-Length: %d\r\n"
-                 "Connection: %s\r\n\r\n",
-                 UPLOAD_HTTP_PATH_CHUNK,
-                 host,
-                 (unsigned int)port,
-                 UPLOAD_HTTP_BOUNDARY,
-                 content_length,
-                 (keep_alive != 0U) ? "keep-alive" : "close");
-    if ((n < 0) || (n >= UPLOAD_HTTP_HEADER_MAX))
+                 "Content-Length: %lu\r\n"
+                 "Connection: keep-alive\r\n\r\n",
+                 UPLOAD_HTTP_PATH_CHUNK, s_ctx.host, (unsigned int)s_ctx.port,
+                 UPLOAD_HTTP_BOUNDARY, (unsigned long)pos);
+    if ((n < 0) || (n >= (int)sizeof(hdr)))
     {
         return -1;
     }
 
-    pos = (uint32_t)n;
-    if ((pos + (uint32_t)content_length) > UPLOAD_HTTP_CHUNK_REQUEST_MAX)
+    /* 3) å…ˆå‘ header å†å‘ body,ç„¶åæ”¶åº”ç­” */
+    if (s_ctx.tp->send_fn((const uint8_t *)hdr, (uint32_t)n) != 0)
     {
         return -1;
     }
-    memmove(packet + pos, packet + UPLOAD_HTTP_HEADER_MAX, (size_t)content_length);
-    pos += (uint32_t)content_length;
-
-    if (link_type == UPLOAD_HTTP_LINK_LWIP)
-    {
-        if (upload_http_send_lwip_all(packet, pos) != 0)
-        {
-            return -1;
-        }
-        if (upload_http_lwip_drain_tx() != 0)
-        {
-            return -1;
-        }
-    }
-    else if (upload_http_send_buffer(link_type, packet, pos) != 0)
+    if (s_ctx.tp->send_fn(s_body, pos) != 0)
     {
         return -1;
     }
-
-    if (upload_http_recv_response(link_type, response, response_size, &status_code) != 0)
+    if (upload_http_recv() != 0)
     {
         return -1;
     }
-
-    if (http_status_code != NULL)
-    {
-        *http_status_code = status_code;
-    }
-
-    if ((status_code < 200) || (status_code >= 300))
+    if ((s_ctx.status < 200) || (s_ctx.status >= 300))
     {
         return -1;
     }
-
-    return upload_http_parse_chunk_response(response);
+    return upload_http_api_ok();
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_post_finish
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍ finish ½Ó¿Ú POST ÇëÇó,query ²ÎÊı uploadId,¿ÉÑ¡ md5,Ğ£ÑéÓ¦´ğ code==200¡£
-*    ĞÎ    ²Î: link_type / host / port / upload_id / finish_md5_enable /
-*              file_md5 / response / response_size / http_status_code
-*    ·µ »Ø Öµ: 0 ³É¹¦(HTTP 2xx ÇÒ code==200),-1 Ê§°Ü¡£
+*    å‡½ æ•° å: upload_http_do_start
+*    åŠŸèƒ½è¯´æ˜: ç¬¬ 1 æ­¥â€”â€”POST start ä¸ŠæŠ¥è®¾å¤‡/æ–‡ä»¶ä¿¡æ¯,è§£æè·å– uploadIdã€‚
+*    è¿” å› å€¼: UPLOAD_HTTP_OK æˆ–é”™è¯¯ç ã€‚
 *********************************************************************************************************
 */
-static int upload_http_post_finish(upload_http_link_t link_type,
-                                   const char *host,
-                                   uint16_t port,
-                                   const char *upload_id,
-                                   uint8_t finish_md5_enable,
-                                   const char *file_md5,
-                                   char *response,
-                                   int response_size,
-                                   int *http_status_code)
+static int8_t upload_http_do_start(const upload_http_request_t *request, uint32_t file_size)
 {
-    char query_path[UPLOAD_HTTP_QUERY_PATH_MAX] = {0};
-    int query_len = 0;
+    char device_id[16] = {0};
+    char query[UPLOAD_HTTP_QUERY_PATH_MAX];
+    int n;
 
-    if (host == NULL || upload_id == NULL)
+    upload_http_get_device_id(device_id, sizeof(device_id));
+
+    n = snprintf(query, sizeof(query),
+                 "%s?deviceSn=%s&totalSize=%lu&totalChunks=%lu&fileName=%s&logType=%s",
+                 UPLOAD_HTTP_PATH_START, device_id,
+                 (unsigned long)file_size, (unsigned long)s_ctx.total_chunks,
+                 s_ctx.file_name, upload_http_safe_str(request->log_type, "SYSTEM"));
+    if ((n < 0) || (n >= (int)sizeof(query)))
     {
-        return -1;
+        return UPLOAD_HTTP_ERR_PARAM;
     }
 
-    if (finish_md5_enable != UPLOAD_HTTP_FINISH_MD5_DISABLE)
+    if (upload_http_post_query(query, 1) != 0)
     {
-        if ((file_md5 == NULL) || (file_md5[0] == '\0'))
+        return (s_ctx.status == 0) ? UPLOAD_HTTP_ERR_RESPONSE : UPLOAD_HTTP_ERR_STATUS;
+    }
+    if ((upload_http_api_ok() != 0) ||
+        (upload_http_json_str("uploadId", s_ctx.upload_id, sizeof(s_ctx.upload_id)) != 0) ||
+        (s_ctx.upload_id[0] == '\0'))
+    {
+        return UPLOAD_HTTP_ERR_RESPONSE;
+    }
+    return UPLOAD_HTTP_OK;
+}
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: upload_http_upload_chunks
+*    åŠŸèƒ½è¯´æ˜: ç¬¬ 2 æ­¥â€”â€”ä»æ—¥å¿—æ˜æ–‡æµæŒ‰ 1KB åˆ†ç‰‡å¾ªç¯è¯»å–å¹¶ä¸Šä¼ (å¸¦é‡è¯•),æŒ‰éœ€ç´¯è®¡å¹¶ç”Ÿæˆ MD5ã€‚
+*    è¿” å› å€¼: UPLOAD_HTTP_OK æˆ–é”™è¯¯ç ã€‚
+*********************************************************************************************************
+*/
+static int8_t upload_http_upload_chunks(void)
+{
+    MD5_CTX md5;
+    unsigned char digest[16];
+    uint32_t idx;
+    uint32_t done = 0U;
+    int read_len;
+    int retry;
+
+    if (log_open_pending_text_stream() != LOG_OK)
+    {
+        return UPLOAD_HTTP_ERR_FILE;
+    }
+
+    if (s_ctx.md5_enable)
+    {
+        MD5Init(&md5);
+    }
+
+    for (idx = 0U; idx < s_ctx.total_chunks; idx++)
+    {
+        read_len = 0;
+        if (log_read_pending_text_stream(s_chunk, UPLOAD_HTTP_CHUNK_SIZE, &read_len) != LOG_OK)
         {
-            return -1;
+            log_close_pending_text_stream();
+            return UPLOAD_HTTP_ERR_FILE;
+        }
+        if (read_len == 0)
+        {
+            break;
         }
 
-        query_len = snprintf(query_path, sizeof(query_path),
-                             "%s?uploadId=%s&md5=%s",
-                             UPLOAD_HTTP_PATH_FINISH,
-                             upload_id,
-                             file_md5);
+        if (s_ctx.md5_enable)
+        {
+            MD5Update(&md5, s_chunk, (unsigned int)read_len);
+        }
+
+        for (retry = 0; retry < UPLOAD_HTTP_CHUNK_RETRY_MAX; retry++)
+        {
+            if (upload_http_post_chunk(idx, s_chunk, (uint16_t)read_len) == 0)
+            {
+                break;
+            }
+            if ((retry + 1) < UPLOAD_HTTP_CHUNK_RETRY_MAX)
+            {
+                vTaskDelay(50);
+            }
+        }
+        if (retry >= UPLOAD_HTTP_CHUNK_RETRY_MAX)
+        {
+            log_close_pending_text_stream();
+            return (s_ctx.status == 0) ? UPLOAD_HTTP_ERR_SEND : UPLOAD_HTTP_ERR_STATUS;
+        }
+
+        done++;
+    }
+
+    log_close_pending_text_stream();
+
+    if (done != s_ctx.total_chunks)
+    {
+        return UPLOAD_HTTP_ERR_FILE;
+    }
+
+    if (s_ctx.md5_enable)
+    {
+        MD5Final(&md5, digest);
+        upload_http_md5_to_hex(digest, s_ctx.md5_hex);
+    }
+    return UPLOAD_HTTP_OK;
+}
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: upload_http_do_finish
+*    åŠŸèƒ½è¯´æ˜: ç¬¬ 3 æ­¥â€”â€”POST finish(å¯é€‰ md5),æ ¡éªŒ code==200ã€‚
+*    è¿” å› å€¼: UPLOAD_HTTP_OK æˆ–é”™è¯¯ç ã€‚
+*********************************************************************************************************
+*/
+static int8_t upload_http_do_finish(void)
+{
+    char query[UPLOAD_HTTP_QUERY_PATH_MAX];
+    int n;
+
+    if (s_ctx.md5_enable)
+    {
+        n = snprintf(query, sizeof(query), "%s?uploadId=%s&md5=%s",
+                     UPLOAD_HTTP_PATH_FINISH, s_ctx.upload_id, s_ctx.md5_hex);
     }
     else
     {
-        query_len = snprintf(query_path, sizeof(query_path),
-                             "%s?uploadId=%s",
-                             UPLOAD_HTTP_PATH_FINISH,
-                             upload_id);
+        n = snprintf(query, sizeof(query), "%s?uploadId=%s",
+                     UPLOAD_HTTP_PATH_FINISH, s_ctx.upload_id);
     }
-    if ((query_len < 0) || (query_len >= (int)sizeof(query_path)))
+    if ((n < 0) || (n >= (int)sizeof(query)))
     {
-        return -1;
+        return UPLOAD_HTTP_ERR_PARAM;
     }
 
-    if (upload_http_post_query(link_type, host, port, query_path,
-                               0U, response, response_size, http_status_code) != 0)
+    if (upload_http_post_query(query, 0) != 0)
     {
-        return -1;
+        return (s_ctx.status == 0) ? UPLOAD_HTTP_ERR_RESPONSE : UPLOAD_HTTP_ERR_STATUS;
     }
-
-    return upload_http_parse_chunk_response(response);
+    return (upload_http_api_ok() == 0) ? UPLOAD_HTTP_OK : UPLOAD_HTTP_ERR_RESPONSE;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: upload_http_file_function
-*    ¹¦ÄÜËµÃ÷: HTTP Èı²½·ÖÆ¬ÉÏ´«Èë¿Ú,Ö§³Ö lwIP Óë GPRS Á´Â·¡£
-*              1. POST /fnwlw/oss/log/upload/start  ÉÏ±¨Éè±¸±àºÅ¡¢ÎÄ¼ş³¤¶È¡¢×Ü·ÖÆ¬Êı,»ñÈ¡ uploadId
-*              2. POST /fnwlw/oss/log/upload/chunk  °´Æ¬ÉÏ´«Êı¾İ(/log Â·¾¶½öÉÏ´« payload Ã÷ÎÄ)
-*              3. POST /fnwlw/oss/log/upload/finish Í¨Öª·şÎñ¶ËºÏ²¢Íê³É
-*    ĞÎ    ²Î: request ÉÏ´«ÇëÇó²ÎÊı; http_status_code Êä³ö×îºóÒ»´Î HTTP ×´Ì¬Âë(¿ÉÎª NULL)
-*    ·µ »Ø Öµ: UPLOAD_HTTP_OK ³É¹¦,ÆäËûÎª´íÎóÂë¡£
+*    å‡½ æ•° å: upload_http_file_function
+*    åŠŸèƒ½è¯´æ˜: HTTP ä¸‰æ­¥åˆ†ç‰‡ä¸Šä¼ å…¥å£(ä¼ è¾“æ— å…³): start -> chunk -> finishã€‚
+*    å½¢    å‚: request ä¸Šä¼ è¯·æ±‚; transport ä¼ è¾“å›è°ƒ; http_status_code è¾“å‡ºçŠ¶æ€ç (å¯ä¸º NULL)
+*    è¿” å› å€¼: UPLOAD_HTTP_OK æˆåŠŸ,å…¶ä»–ä¸ºé”™è¯¯ç ã€‚
 *********************************************************************************************************
 */
-int8_t upload_http_file_function(const upload_http_request_t *request, int *http_status_code)
+int8_t upload_http_file_function(const upload_http_request_t *request,
+                                 const upload_http_transport_t *transport,
+                                 int *http_status_code)
 {
-    upload_http_link_t link_type;
-    const char *host = NULL;
-    const char *upload_file_name = NULL;
-    uint16_t port = 0U;
-    char device_id[16] = {0};
-    char upload_id[UPLOAD_HTTP_UPLOAD_ID_MAX] = {0};
-    char query_path[UPLOAD_HTTP_QUERY_PATH_MAX] = {0};
-    char response[UPLOAD_HTTP_RESP_MAX] = {0};
-    char file_md5_hex[UPLOAD_HTTP_MD5_HEX_MAX] = {0};
-    lfs_file_t lfs_fp;
-    MD5_CTX md5_ctx;
-    unsigned char md5_digest[16] = {0};
-    uint8_t finish_md5_enable = UPLOAD_HTTP_FINISH_MD5_DISABLE;
-    uint8_t *chunk_buf = s_upload_http_chunk_data;
     uint32_t file_size = 0U;
-    uint32_t total_chunks = 0U;
-    uint32_t chunk_index = 0U;
-    uint32_t uploaded_chunks = 0U;
-    uint8_t chunk_retry = 0U;
-    int use_log_text = 0;
-    int read_len = 0;
-    int once_len = 0;
-    int err = 0;
-    int status_code = 0;
-    int query_len = 0;
+    upload_param_t *param;
+    int8_t ret;
+
+    /* æ¯æ¬¡ä¸Šä¼ å‰ä»ç³»ç»Ÿé…ç½®åŒæ­¥æœ€æ–° IPã€ç«¯å£ */
+    upload_set_upload_addr();
+    param = (upload_param_t *)upload_get_infor_function();
 
     if (http_status_code != NULL)
     {
         *http_status_code = 0;
     }
 
-    if ((request == NULL) || (request->file_path == NULL) || (request->file_path[0] == '\0'))
+    if ((request == NULL) ||
+        (request->upload_file_name == NULL) || (request->upload_file_name[0] == '\0') ||
+        (transport == NULL) || (transport->connect_fn == NULL) || (transport->send_fn == NULL) ||
+        (transport->recv_fn == NULL) || (transport->close_fn == NULL))
     {
         return UPLOAD_HTTP_ERR_PARAM;
     }
 
-    host = upload_http_safe_str(request->host, UPLOAD_HTTP_DEFAULT_HOST);
-    port = (request->port != 0U) ? request->port : UPLOAD_HTTP_DEFAULT_PORT;
-    upload_file_name = upload_http_get_file_name(request->file_path, request->upload_file_name);
-    if ((upload_file_name == NULL) || (upload_file_name[0] == '\0'))
-    {
-        return UPLOAD_HTTP_ERR_PARAM;
-    }
-    link_type = upload_http_select_link(request->preferred_link);
-    finish_md5_enable = (request->finish_md5_enable != UPLOAD_HTTP_FINISH_MD5_DISABLE) ?
-                        UPLOAD_HTTP_FINISH_MD5_ENABLE : UPLOAD_HTTP_FINISH_MD5_DISABLE;
-    use_log_text = upload_http_path_is_log(request->file_path);
+    /* åˆå§‹åŒ–ä¼šè¯ä¸Šä¸‹æ–‡(åªä¸Šä¼ æ—¥å¿—æ˜æ–‡æµ) */
+    memset(&s_ctx, 0, sizeof(s_ctx));
+    s_ctx.tp = transport;
+    snprintf(s_ctx.host, sizeof(s_ctx.host), "%u.%u.%u.%u",
+             (unsigned int)param->ip[0], (unsigned int)param->ip[1],
+             (unsigned int)param->ip[2], (unsigned int)param->ip[3]);
+    s_ctx.port = (uint16_t)param->port;
+    s_ctx.file_name = request->upload_file_name;
+    s_ctx.md5_enable = (request->finish_md5_enable != UPLOAD_HTTP_FINISH_MD5_DISABLE) ? 1U : 0U;
 
-    if (use_log_text != 0)
-    {
-        if (log_get_pending_text_size(&file_size) != LOG_OK)
-        {
-            return UPLOAD_HTTP_ERR_FILE;
-        }
-    }
-    else if (upload_http_get_file_size(request->file_path, &file_size) != 0)
+    /* æ—¥å¿—æ˜æ–‡æ€»é•¿åº¦ -> æ€»åˆ†ç‰‡æ•°(è‡³å°‘ 1 ç‰‡) */
+    if (log_get_pending_text_size(&file_size) != LOG_OK)
     {
         return UPLOAD_HTTP_ERR_FILE;
     }
-
-    total_chunks = (file_size + UPLOAD_HTTP_CHUNK_SIZE - 1U) / UPLOAD_HTTP_CHUNK_SIZE;
-    if (total_chunks == 0U)
+    s_ctx.total_chunks = (file_size + UPLOAD_HTTP_CHUNK_SIZE - 1U) / UPLOAD_HTTP_CHUNK_SIZE;
+    if (s_ctx.total_chunks == 0U)
     {
-        total_chunks = 1U;
+        s_ctx.total_chunks = 1U;
     }
 
-    upload_http_get_device_id(request->device_sn, device_id, sizeof(device_id));
-
-    if (link_type == UPLOAD_HTTP_LINK_LWIP)
+    if (transport->connect_fn(s_ctx.host, s_ctx.port) != 0)
     {
-        if (upload_http_connect_lwip(host, port) != 0)
-        {
-            return UPLOAD_HTTP_ERR_CONNECT;
-        }
-    }
-    else if (link_type == UPLOAD_HTTP_LINK_GPRS)
-    {
-        if (upload_http_connect_gprs(host, port) != 0)
-        {
-            return UPLOAD_HTTP_ERR_CONNECT;
-        }
-    }
-    else
-    {
-        return UPLOAD_HTTP_ERR_LINK;
+        return UPLOAD_HTTP_ERR_CONNECT;
     }
 
-    /* 1. ¿ªÊ¼ÉÏ´«: POST query ²ÎÊı,ÎŞÇëÇóÌå */
-    query_len = snprintf(query_path, sizeof(query_path),
-                         "%s?deviceSn=%s&totalSize=%lu&totalChunks=%lu&fileName=%s&logType=%s",
-                         UPLOAD_HTTP_PATH_START,
-                         device_id,
-                         (unsigned long)file_size,
-                         (unsigned long)total_chunks,
-                         upload_file_name,
-                         upload_http_safe_str(request->log_type, "SYSTEM"));
-    if ((query_len < 0) || (query_len >= (int)sizeof(query_path)))
+    ret = upload_http_do_start(request, file_size);
+    if (ret == UPLOAD_HTTP_OK)
     {
-        upload_http_close_link(link_type);
-        return UPLOAD_HTTP_ERR_PARAM;
+        ret = upload_http_upload_chunks();
+    }
+    if (ret == UPLOAD_HTTP_OK)
+    {
+        ret = upload_http_do_finish();
     }
 
-    memset(response, 0, sizeof(response));
-    if (upload_http_post_query(link_type, host, port, query_path,
-                               1U, response, (int)sizeof(response), &status_code) != 0)
-    {
-        upload_http_close_link(link_type);
-        if (http_status_code != NULL)
-        {
-            *http_status_code = status_code;
-        }
-        return (status_code == 0) ? UPLOAD_HTTP_ERR_RESPONSE : UPLOAD_HTTP_ERR_STATUS;
-    }
-
-    if (upload_http_parse_start_response(response, upload_id, sizeof(upload_id)) != 0)
-    {
-        upload_http_close_link(link_type);
-        if (http_status_code != NULL)
-        {
-            *http_status_code = status_code;
-        }
-        return UPLOAD_HTTP_ERR_RESPONSE;
-    }
-
-    /* 2. ÉÏ´«·ÖÆ¬,°´ĞèÀÛ¼Æ MD5 */
-    if (use_log_text != 0)
-    {
-        if (log_open_pending_text_stream() != LOG_OK)
-        {
-            upload_http_close_link(link_type);
-            return UPLOAD_HTTP_ERR_FILE;
-        }
-    }
-    else
-    {
-        err = lfs_file_open(&g_lfs_t, &lfs_fp, request->file_path, LFS_O_RDONLY);
-        if (err != 0)
-        {
-            upload_http_close_link(link_type);
-            return UPLOAD_HTTP_ERR_FILE;
-        }
-    }
-
-    if (finish_md5_enable != UPLOAD_HTTP_FINISH_MD5_DISABLE)
-    {
-        MD5Init(&md5_ctx);
-    }
-
-    for (chunk_index = 0U; chunk_index < total_chunks; chunk_index++)
-    {
-        read_len = 0;
-
-        if (use_log_text != 0)
-        {
-            if (log_read_pending_text_stream(chunk_buf, UPLOAD_HTTP_CHUNK_SIZE, &read_len) != LOG_OK)
-            {
-                log_close_pending_text_stream();
-                upload_http_close_link(link_type);
-                return UPLOAD_HTTP_ERR_FILE;
-            }
-        }
-        else
-        {
-            while (read_len < (int)UPLOAD_HTTP_CHUNK_SIZE)
-            {
-                once_len = lfs_file_read(&g_lfs_t, &lfs_fp,
-                                         chunk_buf + read_len,
-                                         UPLOAD_HTTP_CHUNK_SIZE - (uint32_t)read_len);
-                if (once_len < 0)
-                {
-                    (void)lfs_file_close(&g_lfs_t, &lfs_fp);
-                    upload_http_close_link(link_type);
-                    return UPLOAD_HTTP_ERR_FILE;
-                }
-
-                if (once_len == 0)
-                {
-                    break;
-                }
-
-                read_len += once_len;
-            }
-        }
-        printf("lfs_file_read: read_len = %d\n, chunk_buf = %s\n", read_len, chunk_buf);
-        if (read_len == 0)
-        {
-            break;
-        }
-
-        if (finish_md5_enable != UPLOAD_HTTP_FINISH_MD5_DISABLE)
-        {
-            MD5Update(&md5_ctx, chunk_buf, (unsigned int)read_len);
-        }
-
-        memset(response, 0, sizeof(response));
-        for (chunk_retry = 0U; chunk_retry < UPLOAD_HTTP_CHUNK_RETRY_MAX; chunk_retry++)
-        {
-            if (upload_http_post_chunk(link_type, host, port, upload_id, upload_file_name,
-                                       chunk_index, chunk_buf, (uint16_t)read_len, 1U,
-                                       response, (int)sizeof(response), &status_code) == 0)
-            {
-                break;
-            }
-
-            if ((chunk_retry + 1U) < UPLOAD_HTTP_CHUNK_RETRY_MAX)
-            {
-                vTaskDelay(50);
-            }
-        }
-
-        if (chunk_retry >= UPLOAD_HTTP_CHUNK_RETRY_MAX)
-        {
-            if (use_log_text != 0)
-            {
-                log_close_pending_text_stream();
-            }
-            else
-            {
-                (void)lfs_file_close(&g_lfs_t, &lfs_fp);
-            }
-            upload_http_close_link(link_type);
-            if (http_status_code != NULL)
-            {
-                *http_status_code = status_code;
-            }
-            return (status_code == 0) ? UPLOAD_HTTP_ERR_SEND : UPLOAD_HTTP_ERR_STATUS;
-        }
-
-        uploaded_chunks++;
-    }
-
-    if (use_log_text != 0)
-    {
-        log_close_pending_text_stream();
-    }
-    else
-    {
-        (void)lfs_file_close(&g_lfs_t, &lfs_fp);
-    }
-    if (uploaded_chunks != total_chunks)
-    {
-        upload_http_close_link(link_type);
-        return UPLOAD_HTTP_ERR_FILE;
-    }
-
-    if (finish_md5_enable != UPLOAD_HTTP_FINISH_MD5_DISABLE)
-    {
-        MD5Final(&md5_ctx, md5_digest);
-        upload_http_md5_to_hex(md5_digest, file_md5_hex, sizeof(file_md5_hex));
-    }
-
-    /* 3. ½áÊøÉÏ´«: POST query ²ÎÊı uploadId,¿ÉÑ¡ md5 */
-    memset(response, 0, sizeof(response));
-    if (upload_http_post_finish(link_type, host, port, upload_id, finish_md5_enable,
-                                (finish_md5_enable != UPLOAD_HTTP_FINISH_MD5_DISABLE) ? file_md5_hex : NULL,
-                                response, (int)sizeof(response), &status_code) != 0)
-    {
-        upload_http_close_link(link_type);
-        if (http_status_code != NULL)
-        {
-            *http_status_code = status_code;
-        }
-        return (status_code == 0) ? UPLOAD_HTTP_ERR_RESPONSE : UPLOAD_HTTP_ERR_STATUS;
-    }
-
-    upload_http_close_link(link_type);
+    transport->close_fn();
 
     if (http_status_code != NULL)
     {
-        *http_status_code = status_code;
+        *http_status_code = s_ctx.status;
     }
-
-    return UPLOAD_HTTP_OK;
+    return ret;
 }

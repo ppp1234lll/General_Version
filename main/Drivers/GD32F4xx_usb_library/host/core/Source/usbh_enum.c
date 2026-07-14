@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_enum.c
     \brief   USB host mode enumeration driver
 

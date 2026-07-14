@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Multicast listener discovery for IPv6. Aims to be compliant with RFC 2710.
  * No support for MLDv2.

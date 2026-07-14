@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_core.h
     \brief   header file for the usbh_core.c
 

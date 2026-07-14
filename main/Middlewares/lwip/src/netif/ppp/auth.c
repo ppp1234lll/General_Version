@@ -1,4 +1,4 @@
-/*
+﻿/*
  * auth.c - PPP authentication and phase control.
  * Copyright (c) 1993-2002 Paul Mackerras. All rights reserved.
  * Redistribution and use in source and binary forms, with or without

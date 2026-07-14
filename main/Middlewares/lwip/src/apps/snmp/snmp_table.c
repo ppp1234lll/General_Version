@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SNMP table support implementation.
  */

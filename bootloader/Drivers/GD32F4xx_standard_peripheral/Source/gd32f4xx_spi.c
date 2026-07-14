@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_spi.c
     \brief   SPI driver
 

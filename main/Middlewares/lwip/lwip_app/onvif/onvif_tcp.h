@@ -1,4 +1,4 @@
-#ifndef __ONVIF_TCP_H
+ï»¿#ifndef __ONVIF_TCP_H
 #define __ONVIF_TCP_H
 
 #include "./SYSTEM/sys/sys.h"
@@ -22,15 +22,15 @@
 #define SET_TIME_ERROR      0x40
 #define TOKEN_ERROR          0x80
 
-// ÃüÁî
+// å‘½ä»¤
 #define READ_DEVICE_INFO  1
 #define IPC_REBOOT        2
 #define IPC_TIME_SYNC     3
 
 #define ERROR_MAX_NUM         3
 
-#define TCP_TEST_HOST    "192.168.2.245"  /* ÊäÈëÄãµÄ TCP server ÓòÃû»òÕß ip µØÖ· */
-#define TCP_TEST_PORT    80                 /* ÊäÈëÄãµÄ TCP Server ¶Ï¿ÚºÅ */
+#define TCP_TEST_HOST    "192.168.2.245"  /* è¾“å…¥ä½ çš„ TCP server åŸŸåæˆ–è€… ip åœ°å€ */
+#define TCP_TEST_PORT    80                 /* è¾“å…¥ä½ çš„ TCP Server æ–­å£å· */
 
 typedef enum
 {
@@ -54,15 +54,16 @@ typedef struct
 
 typedef struct
 {
-    uint8_t cmd;     // ÃüÁî
+    uint8_t cmd;     // å‘½ä»¤
     uint8_t tcp_status;
     int8_t status;
 }onvif_tcp_t;
 
 extern onvif_tcp_t sg_onvif_tcp;
 
-unsigned char onvif_tcp_client_init(void);  //tcp¿Í»§¶Ë³õÊ¼»¯(´´½¨tcp¿Í»§¶ËÏß³Ì)
+unsigned char onvif_tcp_client_init(void);  //tcpå®¢æˆ·ç«¯åˆå§‹åŒ–(åˆ›å»ºtcpå®¢æˆ·ç«¯çº¿ç¨‹)
 void onvif_tcp_client_stop(void);
+void onvif_tcp_delete(void);   /* åœ¨ eth ä»»åŠ¡ä¸Šä¸‹æ–‡åŒæ­¥åˆ é™¤å·²åœæ­¢çš„ONVIF TCPæŸ¥è¯¢ä»»åŠ¡ */
 
 int onvif_tcp_link_carema(int sockt,char *ip,int port);
 

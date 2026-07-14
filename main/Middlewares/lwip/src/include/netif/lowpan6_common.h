@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Common 6LowPAN routines for IPv6. Uses ND tables for link-layer addressing. Fragments packets to 6LowPAN units.
  */

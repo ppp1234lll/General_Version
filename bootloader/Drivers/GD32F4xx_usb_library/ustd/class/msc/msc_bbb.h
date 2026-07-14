@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    msc_bbb.h
     \brief   definitions for the USB MSC BBB(bulk/bulk/bulk) protocol
 

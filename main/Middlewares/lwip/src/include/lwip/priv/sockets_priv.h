@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Sockets API internal implementations (do not use in application code)
  */

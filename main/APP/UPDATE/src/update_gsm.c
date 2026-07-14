@@ -1,876 +1,487 @@
 #include "main.h"
 #include "./UPDATE/inc/update.h"
 #include "./UPDATE/inc/update_http.h"
-#include <stdbool.h>
 
 /*
 *********************************************************************************************************
-*    ÎÄ ¼ş Ãû: update_gsm.c
-*    ¹¦ÄÜËµÃ÷: ÎŞÏß(GPRS) OTA Éı¼¶ HTTP ´«ÊäÓë FreeRTOS ºóÌ¨ÈÎÎñ
-*    Ëµ    Ã÷: HTTP Ó¦´ğ½âÎöµÈ¹«¹²Âß¼­¼û update_http.c,±¾ÎÄ¼ş¸ºÔğ GPRS Á´Â·Á¬½Ó/ÊÕ·¢
+*    æ–‡ ä»¶ å: update_gsm.c
+*    åŠŸèƒ½è¯´æ˜: æ— çº¿(GPRS) OTA å‡çº§ HTTP ä¼ è¾“ä¸ FreeRTOS åå°ä»»åŠ¡
+*    è¯´    æ˜: HTTP åº”ç­”è§£æç­‰å…¬å…±é€»è¾‘è§ update_http.c,æœ¬æ–‡ä»¶è´Ÿè´£ GPRS é“¾è·¯è¿æ¥/æ”¶å‘
 *********************************************************************************************************
 */
+#define UPDATE_GSM_TASK_PRIO            (9U)
+#define UPDATE_GSM_TASK_STK             (4096U)
+static TaskHandle_t s_update_gsm_task = NULL;
+static volatile uint8_t s_update_gsm_exit_req = 0;  /* 1: ä»»åŠ¡å·²åœåˆ°å®‰å…¨ç‚¹, å¾…å¤–éƒ¨åŒæ­¥åˆ é™¤ */
 
-/* GPRS HTTP Ó¦´ğ»º³åÉÏÏŞ: 206 ¿é = HTTPÍ·(~512) + UPDATE_CHUNK_SIZE(1026) */
-#define HTTP_GPRS_RSP_MAX          (UPDATE_CHUNK_SIZE + 2048)
-#define HTTP_GPRS_BODY_WAIT_MS     (5 * configTICK_RATE_HZ)  /* µÈ´ı HTTP ÌåÎ²°ü³¬Ê± */
-
-/* ======================== ÎŞÏß OTA HTTP ======================== */
-
-static int http_update_connect_server_by_gprs(ip_addr_t *ip, unsigned short port);
-static int http_update_connect_server_by_gprs2(const char *host, unsigned short port);
+/* GPRS æ¨¡å—å†…éƒ¨é™æ€å‡½æ•°å£°æ˜ */
+static int http_update_connect_server_by_gprs(const char *host, unsigned short port, unsigned int retry_delay_ms);
 static int http_update_send_request_for_info_txt_by_gprs(ip_addr_t *server_ipaddr, uint16_t server_port);
 static int http_update_recv_reponse_by_gprs(int *out_recv_size);
-static int http_update_drain_gprs_response(int *out_recv_size);
-static void http_update_discard_gprs_ota_pending(void);
 static int http_update_send_request_for_crcbin_file_size_by_gprs(const char *host, uint16_t server_port);
 static int http_update_send_request_for_crcbin_data_by_gprs(const char *host, uint16_t server_port);
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_get_info_txt_by_gprs
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı GPRS »ñÈ¡ info.txt,Ğ£Ñé°æ±¾²¢ÌáÈ¡¹Ì¼şÏÂÔØ URL
-*    ĞÎ    ²Î: server_ipaddr Éı¼¶·şÎñÆ÷ IP; server_port ¶Ë¿Ú
-*    ·µ »Ø Öµ: 1-Ğè¸üĞÂ 2-°æ±¾ÏàÍ¬ <0-³ö´í(-1Á¬½Ó -2·¢ËÍ -3/-4½ÓÊÕ -5°æ±¾ -6URL)
+*    å‡½ æ•° å: update_gsm_task
+*    åŠŸèƒ½è¯´æ˜: GPRS æ— çº¿ OTA FreeRTOS åå°ä»»åŠ¡,æ‰§è¡Œå‡çº§æµç¨‹åè‡ªåˆ é™¤
+*    å½¢    å‚: pvParameters æœªä½¿ç”¨
+*    è¿” å› å€¼: æ— 
+*    å¤‡    æ³¨: å…ˆæ–­å¼€æ—§ GPRS è¿æ¥é‡æ–°å¼€å§‹ï¼Œå¤±è´¥æ—¶å†™å…¥å¤±è´¥çŠ¶æ€åˆ° Boot å‚æ•°åŒº
 *********************************************************************************************************
 */
-int http_update_get_info_txt_by_gprs(ip_addr_t *server_ipaddr, uint16_t server_port)
+static void update_gsm_task(void *pvParameters)
 {
-    int ret = 0, res;
-    int cur_recv_size = 0;
-    bool be_timing = false;
-    unsigned int begin_ticks = 0, end_ticks = 0;
-    ////
+	struct update_addr *param = app_get_http_ota_function();
+	int8_t ret = 0;
+	ip_addr_t server_ipaddr;
+	uint16_t server_port;
 
-    // Á¬½Ó·şÎñÆ÷
-    printf("\nÎŞÏßÁ¬½Ó·şÎñÆ÷ %s:%d ...\n", ipaddr_ntoa(server_ipaddr), server_port);
-    ret = http_update_connect_server_by_gprs(server_ipaddr, server_port);
-    if(ret){ return(-1); }
+	(void)pvParameters;
 
-    led_control_function(LD_GPRS, LD_FLICKER);
+	/* æ¯æ¬¡æ›´æ–°å‰ä»ç³»ç»Ÿé…ç½®åŒæ­¥æœ€æ–° IPã€ç«¯å£ */
+	update_set_update_addr();
 
-    gprs_reset_ota_rx_stream();
+	/* æ£€æŸ¥ GPRS æ¨¡å—æ˜¯å¦å°±ç»ª */
+	if(gprs_get_module_status_function() != 1)
+	{
+		goto UPDATE_END;
+	}
 
-    // ·¢ËÍhttpÇëÇó
-    ret = http_update_send_request_for_info_txt_by_gprs(server_ipaddr, server_port);
-    if(ret != GPRS_SEND_OK)
-    {
-        http_update_close_connect_by_gprs();
-        return(-2);
-    }
+	/* æ–­å¼€æ—§è¿æ¥ï¼Œå…³é—­ GPRS æŒ‡ç¤ºç¯ */
+	gprs_network_disconnect_function(GPRS_LINK_OTA);
+	led_control_function(LD_GPRS,LD_OFF);
 
-    // ½ÓÊÕÍêÕûµÄhttpÓ¦´ğÊı¾İ
-    sg_http_update_param.http_response_recv_size = 0;
-    if(sg_http_update_param.http_response_buff){ sg_http_update_param.http_response_buff[0] = 0; }
-    while(true)
-    {
-        // ½ÓÊÕÊı¾İ(Ïû»¯µ±Ç°ÒÑµ½´ïµÄËùÓĞ GPRS ·ÖÆ¬)
-        ret = http_update_drain_gprs_response(&cur_recv_size);
-        if(ret == -3)
-        {
-            int complete = http_update_info_txt_response_ready();
-            if(complete == 2){ break; }
-            /* Í·ÒÑÆëÌåÎ´µ½: disconn ¿ÉÄÜÔçÓÚÎ²°ü,¼ÌĞøµÈ´ı(´ø³¬Ê±±£»¤) */
-            if(complete == 1)
-            {
-                if(!be_timing)
-                {
-                    be_timing = true;
-                    begin_ticks = HAL_GetTick();
-                }
-                else
-                {
-                    end_ticks = HAL_GetTick();
-                    if( (end_ticks - begin_ticks) >= (10 * configTICK_RATE_HZ) )
-                    {
-                        http_update_close_connect_by_gprs();
-                        return(-3);
-                    }
-                }
-                vTaskDelay(10);
-                continue;
-            }
-            http_update_close_connect_by_gprs();
-            return(-3);
-        }
-        else if(ret)
-        {
-            http_update_close_connect_by_gprs();
-            return(-3);
-        }
+	server_port = param->port;
+	IP4_ADDR(&server_ipaddr, param->ip[0], param->ip[1], param->ip[2], param->ip[3]);
 
-        // ÔİÊ±ÎŞÊı¾İ
-        if(!cur_recv_size)
-        {
-            /* HTTP Í·ÒÑµ½¡¢Ìå·Ö°üÎ´Æë: ²»×ß"ÎŞÊı¾İ"10s ³¬Ê±,¼ÌĞøµÈÎ²°ü */
-            if(http_update_info_txt_response_ready() == 1)
-            {
-                if(!be_timing)
-                {
-                    be_timing = true;
-                    begin_ticks = HAL_GetTick();
-                }
-                else
-                {
-                    end_ticks = HAL_GetTick();
-                    if( (end_ticks - begin_ticks) >= (10 * configTICK_RATE_HZ) )
-                    {
-                        http_update_close_connect_by_gprs();
-                        return(-4);
-                    }
-                }
-                vTaskDelay(10);
-                continue;
-            }
+	/* åˆå§‹åŒ–åˆ†å—å‚æ•° */
+	sg_http_update_param.section_len = (UPDATE_CHUNK_SIZE - 2);
+	sg_http_update_param.http_response_recv_size = 0;
 
-            if(!be_timing) // ·Ç¼ÆÊ±×´Ì¬
-            {
-                be_timing = true; // ¿ªÊ¼¼ÆÊ±
-                begin_ticks = HAL_GetTick();
-            }
-            else // ¼ÆÊ±×´Ì¬
-            {
-                end_ticks = HAL_GetTick();
-                if( (end_ticks - begin_ticks) >= (10 * configTICK_RATE_HZ) ) // ³¬Ê±10Ãë
-                {
-                    //printf("\nhttp¸üĞÂ,ÎŞÊı¾İ½ÓÊÕ³¬Ê±....\n");
-                    http_update_close_connect_by_gprs();
-                    return(-4);
-                }
-            }
-            vTaskDelay(10);
-            continue;
-        }
-        else{ be_timing = false; } // Í£Ö¹¼ÆÊ±
+	/* æ­¥éª¤1: é€šè¿‡ GPRS è·å– info.txtï¼Œæ¯”å¯¹ç‰ˆæœ¬å· */
+	ret = http_update_get_info_txt_by_gprs(&server_ipaddr, server_port);
+	if( (ret < 0) || (ret == 2) )
+	{
+		if(ret < 0){ printf("\nGet info.txt failed! ret: %d\n", ret); }
+		else{ printf("\nAlready latest version, no update needed!\n"); }
+		goto UPDATE_END;
+	}
 
-        // ÅĞ¶ÏhttpÓ¦´ğÍêÕûĞÔ(Ğëº¬ info.txt µÄ version ×Ö¶Î,¼æÈİÍ·/Ìå·Ö°ü)
-        ret = http_update_info_txt_response_ready();
-        if(ret != 2){ vTaskDelay(10); continue; }
-        else
-        {
-            //printf("\nhttpÓ¦´ğ:\n%s\n", (char *)(sg_http_update_param.http_response_buff));
-            break;
-        }
-    } //while()
-    ////
+	/* æ­¥éª¤2: é€šè¿‡ GPRS è·å– crc.bin æ–‡ä»¶å¤§å° */
+	ret = http_update_get_crc_bin_file_size_by_gprs();
+	if(ret < 0)
+	{
+		printf("\nGet crc_bin file size failed! ret: %d\n", ret);
+		goto UPDATE_END;
+	}
 
-    // ÏÈ¹Ø±ÕÁ¬½Ó
-    http_update_close_connect_by_gprs();
-    led_control_function(LD_LAN, LD_OFF);
+	/* æ­¥éª¤3: é€šè¿‡ GPRS åˆ†å—ä¸‹è½½ crc.bin æ–‡ä»¶æ•°æ® */
+	ret = http_update_get_crc_bin_file_data_by_gprs();
+	if(ret < 0)
+	{
+		printf("\nGet crc_bin file content failed! ret: %d\n", ret);
+		goto UPDATE_END;
+	}
 
-    // ÅĞ¶Ï°æ±¾
-    ret = http_update_chack_version();
-    if(ret < 0){ return(-5); }
+	/* å‡çº§å®Œæˆï¼Œä¿å­˜å‚æ•°å¹¶é‡å¯ */
+	printf("\nUpdate done, restarting device...\n");
+	http_update_success_reboot();
 
-    // ÌáÈ¡url
-    if(ret == 1) // ĞèÒª¸üĞÂ
-    {
-        res = http_update_get_url();
-        if(res){ return(-6); }
-    }
+	ret = 0;
 
-    return(ret);
+UPDATE_END:
+	if(ret < 0){ 
+		http_update_failed(); 
+		app_set_reply_parameters_function(CONFIGURE_UPDATE_SYSTEM, 0x00);  // ç«‹å³é€šçŸ¥å¹³å°å‡çº§å¤±è´¥
+		http_update_clear_param();  // æ¸…é™¤FlashçŠ¶æ€, é˜²æ­¢é‡å¯å update_status_detection é‡å¤å‘é€
+	}
+
+	/* ä»»åŠ¡ç»“æŸï¼šæ¸…é™¤æ¨¡å¼ã€é‡Šæ”¾å¥æŸ„ã€è‡ªåˆ é™¤ */
+	if(update_get_mode_function() != UPDATE_MODE_NULL)
+	{
+		update_set_update_mode(UPDATE_MODE_NULL);
+	}
+	/* ä¸è‡ªåˆ é™¤(è‡ªåˆ é™¤çš„æ ˆ/TCB ä¼šæ¨è¿Ÿåˆ°ç©ºé—²ä»»åŠ¡å›æ”¶, é¢‘ç¹é‡å»ºæ˜“å †ç§¯/ç¢ç‰‡, æœ€ç»ˆ
+	 * xTaskCreate å†…å­˜ä¸è¶³)ã€‚æ”¹ä¸ºç½®é€€å‡ºè¯·æ±‚å¹¶æŒ‚èµ·, ç”± gsm ä»»åŠ¡è°ƒç”¨ update_gsm_delete()
+	 * åœ¨å…¶å®ƒä»»åŠ¡ä¸Šä¸‹æ–‡åŒæ­¥åˆ é™¤, ç«‹å³å›æ”¶æ ˆ/TCB */
+	s_update_gsm_exit_req = 1;
+	for(;;)
+	{
+		vTaskSuspend(NULL);
+	}
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_connect_server_by_gprs
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı GPRS ÒÔ IP Á¬½Ó OTA ·şÎñÆ÷,×î¶àÖØÊÔ 3 ´Î
-*    ĞÎ    ²Î: ip ·şÎñÆ÷ IP; port ¶Ë¿Ú
-*    ·µ »Ø Öµ: 0-³É¹¦ -1-Ê§°Ü
+*                               GPRS HTTP åº•å±‚å‡½æ•°
 *********************************************************************************************************
 */
-static int http_update_connect_server_by_gprs(ip_addr_t *ip, unsigned short port)
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: http_update_connect_server_by_gprs
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡ GPRS è¿æ¥æœåŠ¡å™¨ï¼Œæ”¯æŒé‡è¯•
+*    å½¢    å‚: host            æœåŠ¡å™¨åœ°å€(IP æˆ–åŸŸå)
+*              port            æœåŠ¡å™¨ç«¯å£
+*              retry_delay_ms  é‡è¯•é—´éš”(ms)
+*    è¿” å› å€¼:  0  è¿æ¥æˆåŠŸ
+*              -1  3æ¬¡é‡è¯•åä»å¤±è´¥
+*********************************************************************************************************
+*/
+static int http_update_connect_server_by_gprs(const char *host, unsigned short port, unsigned int retry_delay_ms)
 {
-    update_param_t *updateparam = NULL;
-    unsigned char index = 0;
-    int ret = 0;
-    ////
+	update_param_t *updateparam = NULL;
+	unsigned char index = 0;
+	int ret = 0;
 
-    updateparam = update_get_infor_data_function();
-    for(index=0; index<3; index++)
-    {
-        ret = gprs_network_connect_function(ipaddr_ntoa(ip), port, GPRS_LINK_OTA);
-        if(ret == GPRS_SEND_OK)
-        {
-            updateparam->gprs_t.connect = 1;
-            return 0;
-        }
-        vTaskDelay(1000);
-    } // for()
+	updateparam = update_get_infor_data_function();
 
-    updateparam->gprs_t.connect = 0;
+	/* å…ˆæ–­å¼€æ—§è¿æ¥ï¼Œç¡®ä¿å¹²å‡€çŠ¶æ€å†é‡è¯• */
+	gprs_network_disconnect_function(GPRS_LINK_OTA);
+	updateparam->gprs_t.connect = 0;
 
-    return(-1);
+	/* æœ€å¤šé‡è¯• 3 æ¬¡ */
+	for(index=0; index<3; index++)
+	{
+		ret = gprs_network_connect_server((uint8_t *)host, port, GPRS_LINK_OTA);
+		if(ret == GPRS_SEND_OK)
+		{
+			updateparam->gprs_t.connect = 1;
+			return 0;
+		}
+		GPRS_DELAY_MS(retry_delay_ms);
+	}
+	updateparam->gprs_t.connect = 0;
+	return(-1);
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_connect_server_by_gprs2
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı GPRS ÒÔÖ÷»úÃû/IP Á¬½Ó OTA ·şÎñÆ÷,×î¶àÖØÊÔ 3 ´Î
-*    ĞÎ    ²Î: host ·şÎñÆ÷µØÖ·(ÓòÃû»ò IP ×Ö·û´®); port ¶Ë¿Ú
-*    ·µ »Ø Öµ: 0-³É¹¦ -1-Ê§°Ü
-*********************************************************************************************************
-*/
-static int http_update_connect_server_by_gprs2(const char *host, unsigned short port)
-{
-    update_param_t *updateparam = NULL;
-    unsigned char index = 0;
-    int ret = 0;
-    ////
-
-    updateparam = update_get_infor_data_function();
-    for(index=0; index<3; index++)
-    {
-        ret = gprs_network_connect_function(host, port, GPRS_LINK_OTA);
-        if(ret == GPRS_SEND_OK)
-        {
-            updateparam->gprs_t.connect = 1;
-            return 0;
-        }
-
-        vTaskDelay(50);
-    } // for()
-
-    updateparam->gprs_t.connect = 0;
-
-    return(-1);
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: http_update_send_request_for_info_txt_by_gprs
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍ GET ÇëÇó»ñÈ¡ info.txt
-*    ĞÎ    ²Î: server_ipaddr ·şÎñÆ÷ IP; server_port ¶Ë¿Ú
-*    ·µ »Ø Öµ: gprs_send_data ·µ»ØÖµ(GPRS_SEND_OK Îª³É¹¦)
-*********************************************************************************************************
-*/
-static int http_update_send_request_for_info_txt_by_gprs(ip_addr_t *server_ipaddr, uint16_t server_port)
-{
-    char send_buf[256]={0};
-    char *append_pt = send_buf;
-    int ret = 0;
-    ////
-
-    sprintf(append_pt, "GET /%s/info.txt HTTP/1.1\r\n", HARD_NO_STR);
-    append_pt += strlen(append_pt);
-    sprintf(append_pt, "Host: %s:%d\r\n\r\n", ipaddr_ntoa(server_ipaddr), server_port);
-    append_pt += strlen(append_pt);
-
-    //printf("\nhttpÇëÇó:\n%s\n", send_buf);
-    ret = gprs_send_data( (uint8_t *)send_buf, (append_pt - send_buf), 1000, GPRS_LINK_OTA );
-
-    return(ret);
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: http_update_close_connect_by_gprs
-*    ¹¦ÄÜËµÃ÷: ¶Ï¿ª GPRS OTA Á´Â·²¢Çå³ıÁ¬½Ó×´Ì¬
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: http_update_close_connect_by_gprs
+*    åŠŸèƒ½è¯´æ˜: æ–­å¼€ GPRS OTA è¿æ¥å¹¶æ¸…é™¤è¿æ¥çŠ¶æ€
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void http_update_close_connect_by_gprs(void)
 {
-    update_param_t *updateparam = NULL;
-    ////
-
-    gprs_network_disconnect_function(GPRS_LINK_OTA);
-
-    updateparam = update_get_infor_data_function();
-    updateparam->gprs_t.connect = 0;
+	update_param_t *updateparam = NULL;
+	gprs_network_disconnect_function(GPRS_LINK_OTA);
+	updateparam = update_get_infor_data_function();
+	updateparam->gprs_t.connect = 0;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_recv_reponse_by_gprs
-*    ¹¦ÄÜËµÃ÷: ´Ó GPRS OTA Á÷¶ÁÈ¡Ò»´ÎÊı¾İ²¢×·¼Óµ½ HTTP Ó¦´ğ»º³å
-*    ĞÎ    ²Î: out_recv_size Êä³ö±¾´Î¶ÁÈ¡×Ö½ÚÊı(¿ÉÎª NULL)
-*    ·µ »Ø Öµ: 0-³É¹¦ -2-ÄÚÈİ³¬´ó -3-Á¬½Ó¶Ï¿ª
+*    å‡½ æ•° å: http_update_recv_reponse_by_gprs
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡ GPRS æ¥æ”¶ HTTP å“åº”æ•°æ®å¹¶ä¿å­˜åˆ°ç¼“å†²åŒº
+*    å½¢    å‚: out_recv_size  è¾“å‡º æœ¬æ¬¡æ¥æ”¶æ•°æ®å¤§å°
+*    è¿” å› å€¼:  0  æˆåŠŸ(å«æš‚æ— æ•°æ®)
+*              -3  é“¾è·¯æ–­å¼€
+*              -2  ä¿å­˜æ•°æ®å¤±è´¥
 *********************************************************************************************************
 */
 static int http_update_recv_reponse_by_gprs(int *out_recv_size)
 {
-    int ret = 0;
-    /* ĞëÄÜÒ»´Î¶Á³ö HTTPÍ·(~300) + Ìå(1026); ÎğÓÃ 1024 ÒÔÃâ²ğ°ü¶ª×Ö½Ú */
-    static uint8_t recv_buf[HTTP_GPRS_RSP_MAX];
-    int recv_data_size = 0;
-    ////
+	int ret = 0;
+	const unsigned char *recv_data = NULL;
+	int recv_data_size = 0;
 
-    if(out_recv_size){ (*out_recv_size) = 0; }
+	if(out_recv_size){ (*out_recv_size) = 0; }
 
-    ret = gprs_recv_data_ota(recv_buf, (int)sizeof(recv_buf), &recv_data_size);
-    if(ret != GPRS_SEND_OK){ return(-3); }
+	/* ä» GPRS æ¨¡å—è¯»å–æ•°æ®ï¼›æš‚æ— æ•°æ®æ—¶ gprs_recv_data è¿”å› GPRS_SEND_ERRORï¼Œéœ€ç»§ç»­è½®è¯¢ */
+	ret = gprs_recv_data(GPRS_LINK_OTA, &recv_data, &recv_data_size);
+	if(ret == GPRS_SEND_DISCONN){ return(-3); }
+	if(ret != GPRS_SEND_OK){ return(0); }
 
-    // ±£´æÊı¾İ
-    if(recv_data_size == 0){ return(0); }
+	if(!recv_data || !recv_data_size){ return(0); }
 
-    if(recv_data_size > (int)sizeof(recv_buf)){ recv_data_size = (int)sizeof(recv_buf); }
-    ret = http_update_save_response(recv_buf, recv_data_size);
-    if(ret){ return(-2); }
+	/* å°†æ•°æ®è¿½åŠ åˆ° HTTP åº”ç­”ç¼“å†²åŒº */
+	ret = http_update_save_response(recv_data, recv_data_size);
+	if(ret){ return(-2); }
 
-    printf("ÌáÈ¡: %d bytes, HTTPÀÛ¼Æ: %u bytes (Í·~283 + Ìå1026 = 1309)\n",
-    recv_data_size, sg_http_update_param.http_response_recv_size);
-
-    if(out_recv_size){ (*out_recv_size) = recv_data_size; }
-
-    return(0);
+	if(out_recv_size){ (*out_recv_size) = recv_data_size; }
+	return(0);
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_discard_gprs_ota_pending
-*    ¹¦ÄÜËµÃ÷: Ó¦´ğÒÑÆëºó¶ªÆú OTA Á÷ÖĞ keep-alive Î²°ü,±ÜÃâÎÛÈ¾ÏÂ´Î½ÓÊÕ
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*                               GPRS HTTP ä¸šåŠ¡å‡½æ•°
 *********************************************************************************************************
 */
-static void http_update_discard_gprs_ota_pending(void)
-{
-    static uint8_t tmp[512];
-    int n = 0;
-    int guard = 0;
-
-    while(guard++ < 64)
-    {
-        if(gprs_recv_data_ota(tmp, (int)sizeof(tmp), &n) != GPRS_SEND_OK){ break; }
-        if(n <= 0){ break; }
-    }
-}
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_drain_gprs_response
-*    ¹¦ÄÜËµÃ÷: Á¬Ğø¶ÁÈ¡ GPRS OTA »º³åÖ±ÖÁÔİÎŞĞÂÊı¾İ,Æ´Æë HTTP Í·/Ìå·Ö°ü
-*    ĞÎ    ²Î: out_recv_size Êä³ö±¾´ÎÀÛ¼Æ¶ÁÈ¡×Ö½ÚÊı(¿ÉÎª NULL)
-*    ·µ »Ø Öµ: 0-³É¹¦ -2-ÄÚÈİ³¬´ó -3-Á¬½Ó¶Ï¿ª(ÌåÎ´ÆëÊ±¿ÉÄÜ×ªÎª 0 ¼ÌĞøµÈ´ı)
+*    å‡½ æ•° å: http_update_send_request_for_info_txt_by_gprs
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡ GPRS å‘é€è·å– info.txt çš„ HTTP GET è¯·æ±‚
+*    å½¢    å‚: server_ipaddr  æœåŠ¡å™¨ IP åœ°å€
+*              server_port    æœåŠ¡å™¨ç«¯å£
+*    è¿” å› å€¼: GPRS_SEND_OK  å‘é€æˆåŠŸ
+*              å…¶ä»–          å‘é€å¤±è´¥
 *********************************************************************************************************
 */
-static int http_update_drain_gprs_response(int *out_recv_size)
+static int http_update_send_request_for_info_txt_by_gprs(ip_addr_t *server_ipaddr, uint16_t server_port)
 {
-    int ret = 0;
-    int chunk = 0;
-    int total = 0;
+	char send_buf[256]={0};
+	int len = 0;
 
-    if(out_recv_size){ (*out_recv_size) = 0; }
+	len = http_update_build_info_txt_request(send_buf, sizeof(send_buf), ipaddr_ntoa(server_ipaddr), server_port);
+	if(len < 0){ return(GPRS_SEND_ERROR); }
 
-    for(;;)
-    {
-        chunk = 0;
-        ret = http_update_recv_reponse_by_gprs(&chunk);
-        if(ret == -3)
-        {
-            /* disconn Ê±Èô HTTP ÌåÉĞÎ´ÊÕÆë,²»ÏòÉÏÅ×¶Ï¿ª,¼ÌĞøµÈÎ²°ü */
-            if(http_update_check_response_completed() == 1){ ret = 0; }
-            break;
-        }
-        if(ret != 0){ break; }
-        if(chunk <= 0){ break; }
-        total += chunk;
-        if(http_update_check_response_completed() == 2)
-        {
-            /* Ó¦´ğÒÑÆë,ÅÅ¿Õ OTA Á÷ÖĞ keep-alive Î²°ü,±ÜÃâÎÛÈ¾ÏÂÒ»´Î drain */
-            http_update_discard_gprs_ota_pending();
-            break;
-        }
-    }
-
-    if(out_recv_size){ (*out_recv_size) = total; }
-    return ret;
+	return gprs_send_data( (uint8_t *)send_buf, len, GPRS_LINK_OTA, 1000 );
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_get_crc_bin_file_size_by_gprs
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı GPRS ·¢ËÍ HEAD ÇëÇó»ñÈ¡ crc_bin ÎÄ¼ş´óĞ¡
-*    ĞÎ    ²Î: ÎŞ(Ê¹ÓÃ sg_http_update_param ÖĞµÄ host/port/url)
-*    ·µ »Ø Öµ: 0-³É¹¦ <0-³ö´í
+*    å‡½ æ•° å: http_update_get_info_txt_by_gprs
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡ GPRS è·å– info.txt å¹¶è§£æç‰ˆæœ¬ä¿¡æ¯
+*    å½¢    å‚: server_ipaddr  æœåŠ¡å™¨ IP åœ°å€
+*              server_port    æœåŠ¡å™¨ç«¯å£
+*    è¿” å› å€¼:  0/1  æˆåŠŸ(1=éœ€å‡çº§)
+*              2    ç‰ˆæœ¬å·²æ˜¯æœ€æ–°
+*             -1    è¿æ¥æœåŠ¡å™¨å¤±è´¥
+*             -2    å‘é€è¯·æ±‚å¤±è´¥
+*             -3/-6 æ¥æ”¶è¶…æ—¶
+*             -5    ç‰ˆæœ¬è§£æå¤±è´¥
+*             -6    URL è§£æå¤±è´¥
 *********************************************************************************************************
 */
-int http_update_get_crc_bin_file_size_by_gprs(void)
+int http_update_get_info_txt_by_gprs(ip_addr_t *server_ipaddr, uint16_t server_port)
 {
-    int ret = 0;
-    int cur_recv_size = 0;
-    bool be_timing = false;
-    unsigned int begin_ticks = 0, end_ticks = 0;
-    ////
+	int ret = 0;
 
-    // Á¬½Ó·şÎñÆ÷
-    printf("\nÎŞÏßÁ¬½Ó·şÎñÆ÷ %s:%d ...\n", sg_http_update_param.http_host, sg_http_update_param.http_port);
-    ret = http_update_connect_server_by_gprs2(sg_http_update_param.http_host, sg_http_update_param.http_port);
-    if(ret){ return(-1); }
-    led_control_function(LD_GPRS, LD_FLICKER);
+	/* è¿æ¥æœåŠ¡å™¨ */
+	printf("\nGPRS connecting server %s:%d ...\n", ipaddr_ntoa(server_ipaddr), server_port);
+	ret = http_update_connect_server_by_gprs(ipaddr_ntoa(server_ipaddr), server_port, 1000);
+	if(ret){ return(-1); }
 
-    // ·¢ËÍhttpÇëÇó(HEADÇëÇó)
-    ret = http_update_send_request_for_crcbin_file_size_by_gprs( sg_http_update_param.http_host, sg_http_update_param.http_port );
-    if(ret != GPRS_SEND_OK)
-    {
-        http_update_close_connect_by_gprs();
-        return(-4);
-    }
+	led_control_function(LD_GPRS, LD_FLICKER);
 
-    // ½ÓÊÕÍêÕûµÄhttpÓ¦´ğÊı¾İ
-    sg_http_update_param.http_response_recv_size = 0;
-    if(sg_http_update_param.http_response_buff){ sg_http_update_param.http_response_buff[0] = 0; }
-    while(true)
-    {
-        // ½ÓÊÕÊı¾İ(Ïû»¯µ±Ç°ÒÑµ½´ïµÄËùÓĞ GPRS ·ÖÆ¬)
-        ret = http_update_drain_gprs_response(&cur_recv_size);
-        if(ret == -3)
-        {
-            int complete = http_update_check_response_completed();
-            if(complete >= 1){ break; } /* HEAD: Í·Æë¼´¿É,ÎŞ body */
-            http_update_close_connect_by_gprs();
-            return(-5);
-        }
-        else if(ret)
-        {
-            http_update_close_connect_by_gprs();
-            return(-5);
-        }
+	/* å‘é€ HTTP è¯·æ±‚ */
+	ret = http_update_send_request_for_info_txt_by_gprs(server_ipaddr, server_port);
+	if(ret != GPRS_SEND_OK)
+	{
+		http_update_close_connect_by_gprs();
+		return(-2);
+	}
 
-        // ÔİÊ±ÎŞÊı¾İ
-        if(!cur_recv_size)
-        {
-            if(!be_timing) // ·Ç¼ÆÊ±×´Ì¬
-            {
-                be_timing = true; // ¿ªÊ¼¼ÆÊ±
-                begin_ticks = HAL_GetTick();
-            }
-            else // ¼ÆÊ±×´Ì¬
-            {
-                end_ticks = HAL_GetTick();
-                if( (end_ticks - begin_ticks) >= (10 * configTICK_RATE_HZ) ) // ³¬Ê±10Ãë
-                {
-                    //printf("\nhttp¸üĞÂ,ÎŞÊı¾İ½ÓÊÕ³¬Ê±....\n");
-                    http_update_close_connect_by_gprs();
-                    return(-6);
-                }
-            }
-            vTaskDelay(10); continue;
-        }
-        else{ be_timing = false; } // Í£Ö¹¼ÆÊ±
-
-        // ÅĞ¶ÏhttpÓ¦´ğÍêÕûĞÔ
-        ret = http_update_check_response_completed();
-        if(ret == 0){ vTaskDelay(10); continue; } // Ö»½ÓÊÕhttpÍ·
-        else
-        {
-            //printf("\nhttpÓ¦´ğ:\n%s\n", (char *)(sg_http_update_param.http_response_buff));
-            break;
-        }
-    } //while()
-    ////
-
-    // ÏÈ¹Ø±ÕÁ¬½Ó
-    http_update_close_connect_by_gprs();
-    led_control_function(LD_LAN, LD_OFF);
-
-    // »ñµÃ crc_bin ÎÄ¼şµÄ´óĞ¡
-    ret = http_update_get_crc_bin_size(NULL);
-    if(ret < 0){ return(-7); }
-
-    return(0);
+	ret = http_update_finish_get_info_txt(http_update_recv_reponse_by_gprs,
+	                                       http_update_close_connect_by_gprs);
+	led_control_function(LD_LAN, LD_OFF);
+	return(ret);
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_send_request_for_crcbin_file_size_by_gprs
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍ HEAD ÇëÇó²éÑ¯ crc_bin ÎÄ¼ş Content-Length
-*    ĞÎ    ²Î: host ·şÎñÆ÷µØÖ·; server_port ¶Ë¿Ú
-*    ·µ »Ø Öµ: gprs_send_data ·µ»ØÖµ(GPRS_SEND_OK Îª³É¹¦)
+*    å‡½ æ•° å: http_update_send_request_for_crcbin_file_size_by_gprs
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡ GPRS å‘é€ HEAD è¯·æ±‚è·å– crc.bin æ–‡ä»¶å¤§å°
+*    å½¢    å‚: host        æœåŠ¡å™¨åœ°å€
+*              server_port æœåŠ¡å™¨ç«¯å£
+*    è¿” å› å€¼: GPRS_SEND_OK  å‘é€æˆåŠŸ
+*              å…¶ä»–          å‘é€å¤±è´¥
 *********************************************************************************************************
 */
 static int http_update_send_request_for_crcbin_file_size_by_gprs(const char *host, uint16_t server_port)
 {
-    char send_buf[256]={0};
-    char *append_pt = send_buf;
-    int ret = 0;
-    ////
+	char send_buf[256]={0};
+	int len = 0;
 
-    sprintf(append_pt, "HEAD %s HTTP/1.1\r\n", sg_http_update_param.http_url); append_pt += strlen(append_pt);
-    sprintf(append_pt, "Host: %s:%d\r\n\r\n", host, server_port); append_pt += strlen(append_pt); // ÌîĞ´IPµØÖ·(×îºÃ²»ÒªÌîĞ´ÓòÃû )
+	len = http_update_build_head_request(send_buf, sizeof(send_buf), host, server_port);
+	if(len < 0){ return(GPRS_SEND_ERROR); }
 
-    //printf("\nhttpÇëÇó:\n%s\n", send_buf);
-    ret = gprs_send_data( (uint8_t *)send_buf, (append_pt - send_buf), 1000, GPRS_LINK_OTA );
-
-    return(ret);
+	return gprs_send_data( (uint8_t *)send_buf, len, GPRS_LINK_OTA, 1000 );
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_get_crc_bin_file_data_by_gprs
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı GPRS ·Ö¿éÏÂÔØ crc_bin ¹Ì¼ş²¢Ğ´Èë SPI Flash
-*    ĞÎ    ²Î: ÎŞ(Ê¹ÓÃ sg_http_update_param ÖĞµÄ·Ö°ü²ÎÊı)
-*    ·µ »Ø Öµ: 0-³É¹¦ <0-³ö´í(-1Á¬½Ó -2·¢ËÍ/½ÓÊÕ -3 CRC -4½âÎö)
+*    å‡½ æ•° å: http_update_get_crc_bin_file_size_by_gprs
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡ GPRS è·å– crc.bin æ–‡ä»¶å¤§å°å¹¶è®¡ç®—åˆ†å—ä¿¡æ¯
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼:  0  æˆåŠŸ
+*              -1  è¿æ¥å¤±è´¥
+*              -4  å‘é€è¯·æ±‚å¤±è´¥
+*              -5/-6 æ¥æ”¶è¶…æ—¶
+*              -7  è§£æ Content-Length å¤±è´¥
 *********************************************************************************************************
 */
-int http_update_get_crc_bin_file_data_by_gprs(void)
+int http_update_get_crc_bin_file_size_by_gprs(void)
 {
-    int ret = 0;
-    int cur_recv_size = 0;
-    bool be_timing = false;
-    unsigned int begin_ticks = 0, end_ticks = 0;
-    unsigned int crc_check_err_times = 0, connect_times = 0;
-    ////
+	int ret = 0;
 
-    sg_http_update_param.section_current = 0;
+	/* è¿æ¥æœåŠ¡å™¨ */
+	printf("\nGPRS connecting server %s:%d ...\n", sg_http_update_param.http_host, sg_http_update_param.http_port);
+	ret = http_update_connect_server_by_gprs(sg_http_update_param.http_host, sg_http_update_param.http_port, 50);
+	if(ret){ return(-1); }
+	led_control_function(LD_GPRS, LD_FLICKER);
 
-RECONNECT:
-    printf("OTAÖØÁ¬ section=%u HTTPÀÛ¼Æ=%u\n",
-           sg_http_update_param.section_current,
-           sg_http_update_param.http_response_recv_size);
+	/* å‘é€ HEAD è¯·æ±‚ */
+	ret = http_update_send_request_for_crcbin_file_size_by_gprs( sg_http_update_param.http_host, sg_http_update_param.http_port );
+	if(ret != GPRS_SEND_OK)
+	{
+		http_update_close_connect_by_gprs();
+		return(-4);
+	}
 
-    // Á¬½Ó·şÎñÆ÷
-    printf("\nÎŞÏßÁ¬½Ó·şÎñÆ÷ %s:%d ...\n", sg_http_update_param.http_host, sg_http_update_param.http_port);
-    ret = http_update_connect_server_by_gprs2(sg_http_update_param.http_host, sg_http_update_param.http_port);
-    if(ret)
-    {
-        vTaskDelay(1000);
-        printf("close15\n");
-        http_update_close_connect_by_gprs();
-        connect_times++; // Á¬ĞøÁ¬½ÓÊ§°ÜµÄ´ÎÊı
-        if(connect_times > 10){ return(-1); }
-        goto RECONNECT;
-    }
-    connect_times = 0;
-    led_control_function(LD_GPRS, LD_FLICKER);
-
-    // Ñ­»·ÇëÇó¡¢½ÓÊÕÊı¾İ¿é
-    while(sg_http_update_param.section_current < sg_http_update_param.section_total)
-    {
-        /* Ã¿¿é¿ªÊ¼Ç°Çå¿Õ OTA Á÷,±ÜÃâÖØÊÔ/keep-alive ÏÂÁ½°üÏìÓ¦µşÈë»º³åµ¼ÖÂ save Òç³ö(ret:-2) */
-        gprs_reset_ota_rx_stream();
-        sg_http_update_param.http_response_recv_size = 0;
-        if(sg_http_update_param.http_response_buff){ sg_http_update_param.http_response_buff[0] = 0; }
-
-        // ·¢ËÍhttpÇëÇó(GETÇëÇó)
-        ret = http_update_send_request_for_crcbin_data_by_gprs( sg_http_update_param.http_host, sg_http_update_param.http_port );
-        if(ret != GPRS_SEND_OK)
-        {
-            printf("close9:%d\n",ret);
-            http_update_close_connect_by_gprs();
-            goto RECONNECT;
-        }
-
-        be_timing = false;
-        begin_ticks = 0;
-        end_ticks = 0;
-        while(true)
-        {
-            // ½ÓÊÕÊı¾İ(Ïû»¯µ±Ç°ÒÑµ½´ïµÄËùÓĞ GPRS ·ÖÆ¬)
-            ret = http_update_drain_gprs_response(&cur_recv_size);
-            if(ret == -3)
-            {
-                int complete = http_update_check_response_completed();
-                if(complete == 2){ break; }
-                /* Í·ÒÑÆëÌåÎ´µ½: disconn ¿ÉÄÜÔçÓÚÎ²°ü,¼ÌĞøµÈ´ı(´ø³¬Ê±±£»¤) */
-                if(complete == 1)
-                {
-                    if(!be_timing)
-                    {
-                        be_timing = true;
-                        begin_ticks = HAL_GetTick();
-                    }
-                    else
-                    {
-                        end_ticks = HAL_GetTick();
-                        if( (end_ticks - begin_ticks) >= HTTP_GPRS_BODY_WAIT_MS )
-                        {
-                            http_update_close_connect_by_gprs();
-                            goto RECONNECT;
-                        }
-                    }
-                    vTaskDelay(10);
-                    continue;
-                }
-                http_update_close_connect_by_gprs();
-                goto RECONNECT;
-            }
-            else if(ret) // ÆäËüÒì³£
-            {
-                http_update_close_connect_by_gprs();
-                return(-2);
-            }
-
-            // ÔİÊ±ÎŞÊı¾İ
-            if(!cur_recv_size)
-            {
-                /* HTTP Í·ÒÑµ½¡¢Ìå·Ö°üÎ´Æë: ²»×ß"ÎŞÊı¾İ"10s ³¬Ê±,¼ÌĞøµÈÎ²°ü */
-                if(http_update_check_response_completed() == 1)
-                {
-                    if(!be_timing)
-                    {
-                        be_timing = true;
-                        begin_ticks = HAL_GetTick();
-                    }
-                    else
-                    {
-                        end_ticks = HAL_GetTick();
-                        if( (end_ticks - begin_ticks) >= HTTP_GPRS_BODY_WAIT_MS )
-                        {
-                            http_update_close_connect_by_gprs();
-                            goto RECONNECT;
-                        }
-                    }
-                    vTaskDelay(10);
-                    continue;
-                }
-
-                if(!be_timing) // ·Ç¼ÆÊ±×´Ì¬
-                {
-                    be_timing = true; // ¿ªÊ¼¼ÆÊ±
-                    begin_ticks = HAL_GetTick();
-                }
-                else // ¼ÆÊ±×´Ì¬
-                {
-                    end_ticks = HAL_GetTick();
-                    if( (end_ticks - begin_ticks) >= HTTP_GPRS_BODY_WAIT_MS )
-                    {
-                        http_update_close_connect_by_gprs();
-                        goto RECONNECT;
-                    }
-                }
-                vTaskDelay(10);
-                continue;
-            }
-            else{ be_timing = false; } // Í£Ö¹¼ÆÊ±
-
-            // ÅĞ¶ÏhttpÓ¦´ğÍêÕûĞÔ
-            ret = http_update_check_response_completed();
-            if(ret != 2){ vTaskDelay(10); continue; }
-            else
-            {
-                //printf("\nhttpÓ¦´ğ:\n%s\n", (char *)(sg_http_update_param.http_response_buff));
-                printf("\n¶Î: %u/%u\n", sg_http_update_param.section_current, sg_http_update_param.section_total);
-                /* Ó¦´ğÒÑÆë,Çå OTA Á÷ÖĞÎ²°ü/keep-alive ²ĞÁô,±ÜÃâÓ°ÏìÏÂÒ»¿éÆ´°ü */
-                gprs_reset_ota_rx_stream();
-                break;
-            }
-        } //while(½ÓÊÕÍêÕûµÄhttpÓ¦´ğÊı¾İ)
-
-        // ½âÎö¡¢±£´æÊı¾İ
-        ret = http_update_parse_crc_bin_data();
-        if(ret)
-        {
-            if(ret == -5) // Å¼¶û»á³öÏÖĞ£Ñé´íÎó,´ËÊ±ÖØĞÂÏÂÔØ¼´¿É
-            {
-                printf("OTA CRCĞ£ÑéÊ§°Ü section=%u\n", sg_http_update_param.section_current);
-                crc_check_err_times++; // Á¬ĞøĞ£Ñé´íÎóµÄ´ÎÊı
-                if(crc_check_err_times > 10){ return(-3); }
-                gprs_reset_ota_rx_stream();
-                continue;
-            }
-            else
-            {
-                printf("OTA½âÎöÊ§°Ü ret=%d section=%u HTTPÀÛ¼Æ=%u\n",
-                       ret, sg_http_update_param.section_current,
-                       sg_http_update_param.http_response_recv_size);
-                return(-4);
-            }
-        }
-
-        crc_check_err_times = 0;
-    } // while(Ñ­»·ÇëÇó¡¢½ÓÊÕÊı¾İ¿é)
-    ////
-
-    // ÏÈ¹Ø±ÕÁ¬½Ó
-    http_update_close_connect_by_gprs();
-    led_control_function(LD_GPRS, LD_OFF);
-
-    return(0);
+	ret = http_update_finish_get_crc_bin_size(http_update_recv_reponse_by_gprs,
+	                                           http_update_close_connect_by_gprs);
+	led_control_function(LD_LAN, LD_OFF);
+	return(ret);
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_send_request_for_crcbin_data_by_gprs
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍ´ø Range µÄ GET ÇëÇóÏÂÔØµ±Ç°¹Ì¼ş·Ö¿é
-*    ĞÎ    ²Î: host ·şÎñÆ÷µØÖ·; server_port ¶Ë¿Ú
-*    ·µ »Ø Öµ: gprs_send_data ·µ»ØÖµ(GPRS_SEND_OK Îª³É¹¦)
+*    å‡½ æ•° å: http_update_send_request_for_crcbin_data_by_gprs
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡ GPRS å‘é€ Range åˆ†å—ä¸‹è½½è¯·æ±‚è·å– crc.bin æŒ‡å®šæ•°æ®æ®µ
+*    å½¢    å‚: host        æœåŠ¡å™¨åœ°å€
+*              server_port æœåŠ¡å™¨ç«¯å£
+*    è¿” å› å€¼: GPRS_SEND_OK  å‘é€æˆåŠŸ
+*              å…¶ä»–          å‘é€å¤±è´¥
+*    å¤‡    æ³¨: ä½¿ç”¨ HTTP Range å¤´éƒ¨å®ç°æ–­ç‚¹ç»­ä¼ å¼åˆ†å—ä¸‹è½½
 *********************************************************************************************************
 */
 static int http_update_send_request_for_crcbin_data_by_gprs(const char *host, uint16_t server_port)
 {
-    char send_buf[256]={0};
-    char *append_pt = send_buf;
-    int ret = 0;
-    unsigned int download_start = 0, download_end = 0;
-    ////
+	char send_buf[256]={0};
+	int len = 0;
 
-    sprintf(append_pt, "GET %s HTTP/1.1\r\n", sg_http_update_param.http_url); append_pt += strlen(append_pt);
-    sprintf(append_pt, "Host: %s:%d\r\n", host, server_port); append_pt += strlen(append_pt);
+	len = http_update_build_range_request(send_buf, sizeof(send_buf), host, server_port);
+	if(len < 0){ return(GPRS_SEND_ERROR); }
 
-    download_start = (sg_http_update_param.section_current * UPDATE_CHUNK_SIZE);
-    download_end = (download_start + UPDATE_CHUNK_SIZE - 1);
-    sprintf(append_pt, "Range: bytes=%d-%d\r\n\r\n", download_start, download_end); append_pt += strlen(append_pt);
-
-    //printf("\nhttpÇëÇó:\n%s\n", send_buf);
-    ret = gprs_send_data( (uint8_t *)send_buf, (append_pt - send_buf), 5000, GPRS_LINK_OTA ); // Õâ¸öµØ·½¶àµÈ´ıÒ»»á¶ù
-
-    return(ret);
-}
-
-/* ======================== ÎŞÏß OTA ºóÌ¨ÈÎÎñ ======================== */
-
-#define UPDATE_GSM_TASK_PRIO            (7U)
-#define UPDATE_GSM_TASK_STK             (4096U)
-static TaskHandle_t s_update_gsm_task = NULL;
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: update_gsm_task_done
-*    ¹¦ÄÜËµÃ÷: OTA ºóÌ¨ÈÎÎñ½áÊø,Çå³ıÈÎÎñ¾ä±ú
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
-*********************************************************************************************************
-*/
-static void update_gsm_task_done(void)
-{
-    s_update_gsm_task = NULL;
+	return gprs_send_data( (uint8_t *)send_buf, len, GPRS_LINK_OTA, 1000 );
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: update_gsm_bg_task
-*    ¹¦ÄÜËµÃ÷: FreeRTOS ÎŞÏß OTA ºóÌ¨ÈÎÎñ,Ö´ĞĞÉı¼¶²¢ÇåÀíÄ£Ê½ºó×ÔÉ¾³ı
-*    ĞÎ    ²Î: pvParameters Î´Ê¹ÓÃ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: http_update_get_crc_bin_file_data_by_gprs
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡ GPRS å¾ªç¯åˆ†å—ä¸‹è½½ crc.bin å…¨éƒ¨æ•°æ®
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼:  0  ä¸‹è½½æˆåŠŸ
+*              -1  è¿æ¥é‡è¯•è¶…è¿‡ 10 æ¬¡
+*              -2  æ¥æ”¶æ•°æ®å¼‚å¸¸
+*              -3  CRC æ ¡éªŒè¿ç»­å¤±è´¥è¶…è¿‡ 10 æ¬¡
+*              -4  æ•°æ®è§£æå¤±è´¥
+*    å¤‡    æ³¨: æ”¯æŒæ–­çº¿é‡è¿(RECONNECT)ï¼ŒCRC æ ¡éªŒå¤±è´¥æ—¶é‡è¯•å½“å‰åˆ†å—
 *********************************************************************************************************
 */
-static void update_gsm_bg_task(void *pvParameters)
+int http_update_get_crc_bin_file_data_by_gprs(void)
 {
-    (void)pvParameters;
-    FeedFwdgt();
-    (void)update_gsm_task_function();
+	int ret = 0;
+	unsigned int crc_check_err_times = 0, connect_times = 0;
 
-    if (update_get_mode_function() != UPDATE_MODE_NULL)
-    {
-        update_set_update_mode(UPDATE_MODE_NULL);
-    }
-    update_gsm_task_done();
-    vTaskDelete(NULL);
+	sg_http_update_param.section_current = 0;
+
+RECONNECT:
+	/* è¿æ¥æœåŠ¡å™¨ï¼Œæ”¯æŒæ–­çº¿é‡è¿(æœ€å¤š 10 æ¬¡) */
+	printf("\nGPRS connecting server %s:%d ...\n", sg_http_update_param.http_host, sg_http_update_param.http_port);
+	ret = http_update_connect_server_by_gprs(sg_http_update_param.http_host, sg_http_update_param.http_port, 50);
+	if(ret)
+	{
+		connect_times++;
+		if(connect_times > 10){ return(-1); }
+
+		/* æ£€æŸ¥ CEREG ç½‘ç»œæ³¨å†ŒçŠ¶æ€ï¼Œè‹¥ä¸æ­£å¸¸åˆ™ç­‰å¾…æ¢å¤(æœ€å¤š 20s) */
+		{
+			unsigned int cereg_wait_s = 0;
+
+			while(gprs_network_status_monitoring_function() != 0)
+			{
+				GPRS_DELAY_MS(1000);
+				cereg_wait_s++;
+				if(cereg_wait_s >= 20){ return(-1); }
+			}
+		}
+
+		goto RECONNECT;
+	}
+	connect_times = 0;
+	led_control_function(LD_GPRS, LD_FLICKER);
+
+	/* å¾ªç¯ä¸‹è½½æ¯ä¸ªåˆ†å— */
+	while(sg_http_update_param.section_current < sg_http_update_param.section_total)
+	{
+		ret = http_update_send_request_for_crcbin_data_by_gprs( sg_http_update_param.http_host, sg_http_update_param.http_port );
+		if(ret != GPRS_SEND_OK)
+		{
+			http_update_close_connect_by_gprs();
+			goto RECONNECT;
+		}
+
+		ret = http_update_recv_parse_one_chunk(http_update_recv_reponse_by_gprs,
+		                                        http_update_close_connect_by_gprs);
+		if(ret == -1)
+		{
+			goto RECONNECT;
+		}
+		else if(ret == -2)
+		{
+			return(-2);
+		}
+		else if(ret == 1)
+		{
+			crc_check_err_times++;
+			if(crc_check_err_times > 10){ return(-3); }
+			continue;
+		}
+
+		crc_check_err_times = 0;
+	}
+
+	http_update_close_connect_by_gprs();
+	led_control_function(LD_GPRS, LD_OFF);
+
+	return(0);
+}
+
+/* ======================== æ— çº¿ OTA åå°ä»»åŠ¡ç®¡ç† ======================== */
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: update_gsm_task_create
+*    åŠŸèƒ½è¯´æ˜: æ— çº¿ OTA åå°ä»»åŠ¡åˆ›å»º(ç”±ä¸»å¾ªç¯è°ƒç”¨)
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
+*    å¤‡    æ³¨: æ£€æµ‹åˆ° GPRS å‡çº§æ¨¡å¼ä¸”ä»»åŠ¡æœªè¿è¡Œæ—¶,åˆ›å»ºåå°ä»»åŠ¡
+*********************************************************************************************************
+*/
+void update_gsm_task_create(void)
+{
+	BaseType_t ret;
+
+	if(update_get_mode_function() != UPDATE_MODE_GPRS){ return; }
+	if(s_update_gsm_exit_req){ return; }   /* æœ‰ä»»åŠ¡å¾…å›æ”¶, æœ¬è½®å…ˆä¸åˆ›å»º */
+	if(s_update_gsm_task != NULL){ return; }
+
+	ret = xTaskCreate(  update_gsm_task,
+						"ota_gprs",
+						UPDATE_GSM_TASK_STK,
+						NULL,
+						UPDATE_GSM_TASK_PRIO,
+						&s_update_gsm_task);
+	if(ret != pdPASS){ s_update_gsm_task = NULL; }
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: update_gsm_task_function
-*    ¹¦ÄÜËµÃ÷: ÎŞÏß OTA ºóÌ¨ÈÎÎñÈë¿Ú
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü
+*    å‡½ æ•° å: update_gsm_delete
+*    åŠŸèƒ½è¯´æ˜: å›æ”¶å·²å®Œæˆå¹¶åœåˆ°å®‰å…¨ç‚¹çš„æ— çº¿OTAä»»åŠ¡; é¡»ç”± gsm ä»»åŠ¡ç­‰å…¶å®ƒä»»åŠ¡ä¸Šä¸‹æ–‡å‘¨æœŸè°ƒç”¨,
+*              ä»¥åœ¨å¤–éƒ¨ä¸Šä¸‹æ–‡ vTaskDelete, ç«‹å³å›æ”¶æ ˆ/TCB, é¿å…è‡ªåˆ é™¤å»¶è¿Ÿå›æ”¶å¯¼è‡´å†…å­˜ä¸è¶³
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
-int8_t update_gsm_task_function(void)
+void update_gsm_delete(void)
 {
-    struct update_addr *param = app_get_http_ota_function();
-    update_param_t *updateparam = NULL;
-    int8_t ret = 0;
-    ip_addr_t server_ipaddr;
-    uint16_t server_port;
+	TaskHandle_t h;
 
-    updateparam = update_get_infor_data_function();
+	if(s_update_gsm_exit_req == 0){ return; }
 
-    if (gprs_get_module_status_function() != 1)
-    {
-        updateparam->mode = UPDATE_MODE_NULL;
-        return -1;
-    }
+	taskENTER_CRITICAL();
+	h = s_update_gsm_task;
+	s_update_gsm_task = NULL;
+	s_update_gsm_exit_req = 0;
+	taskEXIT_CRITICAL();
 
-    gprs_network_disconnect_function(GPRS_LINK_OTA);
-    led_control_function(LD_GPRS, LD_OFF);
-
-    server_port = param->port;
-    IP4_ADDR(&server_ipaddr, param->ip[0], param->ip[1], param->ip[2], param->ip[3]);
-
-    sg_http_update_param.section_len = (UPDATE_CHUNK_SIZE - 2);
-    sg_http_update_param.http_response_recv_size = 0;
-
-    ret = http_update_get_info_txt_by_gprs(&server_ipaddr, server_port);
-    if ((ret < 0) || (ret == 2))
-    {
-        if (ret < 0)
-        {
-            printf("\n»ñµÃinfo.txtĞÅÏ¢,Ê§°Ü! ret: %d\n", ret);
-        }
-        else
-        {
-            printf("\n°æ±¾ÊÇ×îĞÂ°æ±¾,ÎŞĞè¸üĞÂ!\n");
-        }
-        goto UPDATE_END;
-    }
-
-    ret = http_update_get_crc_bin_file_size_by_gprs();
-    if (ret < 0)
-    {
-        printf("\n»ñµÃcrc_binÎÄ¼ş´óĞ¡,Ê§°Ü! ret: %d\n", ret);
-        goto UPDATE_END;
-    }
-
-    ret = http_update_get_crc_bin_file_data_by_gprs();
-    if (ret < 0)
-    {
-        printf("\n»ñµÃcrc_binÎÄ¼şÄÚÈİ,Ê§°Ü! ret: %d\n", ret);
-        goto UPDATE_END;
-    }
-    printf("\nÉı¼¶Íê³É,ÖØÆôÉè±¸...\n");
-    http_update_success_reboot();
-    ret = 0;
-
-UPDATE_END:
-
-    updateparam->mode = UPDATE_MODE_NULL;
-    printf("update end\n");
-    if (ret < 0)
-    {
-        http_update_failed();
-        return -1;
-    }
-    return 0;
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: update_gsm_poll
-*    ¹¦ÄÜËµÃ÷: ÎŞÏß OTA ºóÌ¨ÈÎÎñÂÖÑ¯
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
-*********************************************************************************************************
-*/
-void update_gsm_poll(void)
-{
-    BaseType_t ret;
-    if (update_get_mode_function() != UPDATE_MODE_GPRS)
-    {
-        return;
-    }
-
-    if (s_update_gsm_task != NULL)
-    {
-        return;
-    }
-
-    ret = xTaskCreate(  update_gsm_bg_task,
-                        "ota_gprs",
-                        UPDATE_GSM_TASK_STK,
-                        NULL,
-                        UPDATE_GSM_TASK_PRIO,
-                        &s_update_gsm_task);
-    if (ret != pdPASS)
-    {
-        s_update_gsm_task = NULL;
-    }
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: update_gsm_is_running
-*    ¹¦ÄÜËµÃ÷: ÎŞÏß OTA ºóÌ¨ÈÎÎñÊÇ·ñÔËĞĞÖĞ
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: 1-ÔËĞĞÖĞ 0-¿ÕÏĞ
-*********************************************************************************************************
-*/
-uint8_t update_gsm_is_running(void)
-{
-    return (uint8_t)(s_update_gsm_task != NULL);
+	if(h != NULL){ vTaskDelete(h); }
 }
 

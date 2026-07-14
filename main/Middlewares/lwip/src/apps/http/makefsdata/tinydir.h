@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (c) 2013-2021, tinydir authors:
 - Cong Xu
 - Lautis Sun

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_transc.c
     \brief   USB host mode transactions driver
 

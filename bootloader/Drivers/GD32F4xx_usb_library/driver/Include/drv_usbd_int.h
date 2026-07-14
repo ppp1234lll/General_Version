@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    drv_usbd_int.h
     \brief   USB device mode interrupt header file
 

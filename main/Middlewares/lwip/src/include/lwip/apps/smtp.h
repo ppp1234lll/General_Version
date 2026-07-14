@@ -1,4 +1,4 @@
-#ifndef LWIP_HDR_APPS_SMTP_H
+﻿#ifndef LWIP_HDR_APPS_SMTP_H
 #define LWIP_HDR_APPS_SMTP_H
 
 #ifdef __cplusplus

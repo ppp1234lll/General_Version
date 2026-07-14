@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * TCP internal implementations (do not use in application code)
  */

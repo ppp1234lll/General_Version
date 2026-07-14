@@ -1,4 +1,4 @@
-/*
+﻿/*
  * magic.c - PPP Magic Number routines.
  * Copyright (c) 1984-2000 Carnegie Mellon University. All rights reserved.
  * Redistribution and use in source and binary forms, with or without

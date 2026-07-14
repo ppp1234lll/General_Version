@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Statistics module
  */

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_core.c
     \brief   USB host core state machine driver
 

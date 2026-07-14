@@ -1,4 +1,4 @@
-/*
+﻿/*
  * lfs utility functions
  * Copyright (c) 2022, The littlefs authors.
  * Copyright (c) 2017, Arm Limited. All rights reserved.

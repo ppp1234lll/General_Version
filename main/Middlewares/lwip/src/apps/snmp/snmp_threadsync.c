@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SNMP thread synchronization implementation.
  */

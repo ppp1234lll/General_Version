@@ -1,4 +1,4 @@
-/**
+﻿/**
  * \file            lwrb.c
  * \brief           Lightweight ring buffer
  */

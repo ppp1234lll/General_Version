@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SNMP message processing (RFC1157).
  */

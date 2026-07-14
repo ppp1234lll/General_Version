@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * ICMP6 protocol definitions
  */

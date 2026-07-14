@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    audio_out_itf.c
     \brief   audio OUT (playback) interface functions
 

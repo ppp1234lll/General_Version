@@ -80,7 +80,7 @@
             <nStopB2X>0</nStopB2X>
           </BeforeMake>
           <AfterMake>
-            <RunUserProg1>0</RunUserProg1>
+            <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
             <UserProg1Name>..\..\HexBin.bat $K !L @L $L</UserProg1Name>
             <UserProg2Name></UserProg2Name>
@@ -412,11 +412,6 @@
               <FileName>systick.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\User\systick.c</FilePath>
-            </File>
-            <File>
-              <FileName>demo_spi_flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\User\demo_spi_flash.c</FilePath>
             </File>
           </Files>
         </Group>

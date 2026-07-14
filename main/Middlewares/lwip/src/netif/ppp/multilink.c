@@ -1,4 +1,4 @@
-/*
+﻿/*
  * multilink.c - support routines for multilink.
  * Copyright (c) 2000-2002 Paul Mackerras. All rights reserved.
  * Redistribution and use in source and binary forms, with or without

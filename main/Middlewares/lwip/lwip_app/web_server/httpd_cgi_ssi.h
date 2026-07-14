@@ -1,55 +1,57 @@
-#ifndef _HTTPD_CGI_SSI_H_
+ï»¿#ifndef _HTTPD_CGI_SSI_H_
 #define _HTTPD_CGI_SSI_H_
 
 #include "./SYSTEM/sys/sys.h"
 
-/* ÍøÂç²ÎÊı */
+/* ç½‘ç»œå‚æ•° */
 #define INCORRECT_ACCOUNT_OR_PASSWORD_NUM (401)
-#define INCORRECT_ACCOUNT_OR_PASSWORD_STR ("\"incorrect account or password!\"") // ÃÜÂë»òÕËºÅÃû³Æ´íÎó
+#define INCORRECT_ACCOUNT_OR_PASSWORD_STR ("\"incorrect account or password!\"") // å¯†ç æˆ–è´¦å·åç§°é”™è¯¯
 
 #define PARAMETER_ERROR_NUM (101)
-#define PARAMETER_ERROR_STR ("\"parameter error!\"") // ²ÎÊı´íÎó
+#define PARAMETER_ERROR_STR ("\"parameter error!\"") // å‚æ•°é”™è¯¯
 
 
-#define HTTP_DEBUG  0  // ´òÓ¡µ÷ÊÔ
+#define HTTP_DEBUG  0  // æ‰“å°è°ƒè¯•
 #define CODE_MAX_NUM (12)
 
 void set_return_status_function(uint16_t flag,uint8_t *buff);
 
 /* httpd_cgi */
-int8_t httpd_cgi_login_function(int iNumParams, char *pcParam[], char *pcValue[]);           // ÍøÒ³µÇÂ¼
-int8_t httpd_cgi_login_mod_function(int iNumParams, char *pcParam[], char *pcValue[]);       // ÃÜÂëĞŞ¸Ä
-int8_t httpd_cgi_select_function(char *pcValue[]);                                            // ÏÂÀ­¿ò×´Ì¬
-int8_t httpd_cgi_switch_function(int iNumParams, char *pcParam[], char *pcValue[]);          // ¿ª¹Ø×´Ì¬
-int8_t httpd_cgi_set_threshold_function(int iNumParams, char *pcParam[], char *pcValue[]);   // ãĞÖµÉèÖÃ
-int8_t httpd_cgi_set_system_function(int iNumParams, char *pcParam[], char *pcValue[]);      // ÏµÍ³ÉèÖÃ
-int8_t httpd_cgi_set_network_function(int iNumParams, char *pcParam[], char *pcValue[]);     // ±¾µØÍøÂçÉèÖÃ
-int8_t httpd_cgi_set_camera_ip_function(int iNumParams, char *pcParam[], char *pcValue[]);   // ÉãÏñ»úIP
-int8_t httpd_cgi_set_remote_ip_function(int iNumParams, char *pcParam[], char *pcValue[]);   // Ô¶¶Ë·şÎñÆ÷ÉèÖÃ
-int8_t httpd_cgi_set_update_addr_function(int iNumParams, char *pcParam[], char *pcValue[]); // ¸üĞÂµØÖ·
-int8_t httpd_cgi_snmp_function(int iNumParams, char *pcParam[], char *pcValue[]);            // SNMPÉèÖÃ
-int8_t httpd_cgi_snmp_test_function(int iNumParams, char *pcParam[], char *pcValue[]);       // SNMP²âÊÔ
-int8_t httpd_cgi_update_function(int iNumParams, char *pcParam[], char *pcValue[]);          // ÏµÍ³¸üĞÂ
-int8_t httpd_cgi_system_function(int iNumParams, char *pcParam[], char *pcValue[]);          // ÏµÍ³¿ØÖÆ
-int8_t httpd_cgi_show_function(char *pcValue[], uint16_t *data, uint8_t *buff);              // ÏÔÊ¾¸üĞÂ
+int8_t httpd_cgi_login_function(int iNumParams, char *pcParam[], char *pcValue[]);           // ç½‘é¡µç™»å½•
+int8_t httpd_cgi_login_mod_function(int iNumParams, char *pcParam[], char *pcValue[]);       // å¯†ç ä¿®æ”¹
+int8_t httpd_cgi_select_function(char *pcValue[]);                                            // ä¸‹æ‹‰æ¡†çŠ¶æ€
+int8_t httpd_cgi_switch_function(int iNumParams, char *pcParam[], char *pcValue[]);          // å¼€å…³çŠ¶æ€
+int8_t httpd_cgi_set_threshold_function(int iNumParams, char *pcParam[], char *pcValue[]);   // é˜ˆå€¼è®¾ç½®
+int8_t httpd_cgi_set_system_function(int iNumParams, char *pcParam[], char *pcValue[]);      // ç³»ç»Ÿè®¾ç½®
+int8_t httpd_cgi_set_network_function(int iNumParams, char *pcParam[], char *pcValue[]);     // æœ¬åœ°ç½‘ç»œè®¾ç½®
+int8_t httpd_cgi_set_camera_ip_function(int iNumParams, char *pcParam[], char *pcValue[]);   // æ‘„åƒæœºIP
+int8_t httpd_cgi_set_camera_user_function(int iNumParams, char *pcParam[], char *pcValue[]); // æ‘„åƒæœºè´¦å·
+int8_t httpd_cgi_set_remote_ip_function(int iNumParams, char *pcParam[], char *pcValue[]);   // è¿œç«¯æœåŠ¡å™¨è®¾ç½®
+int8_t httpd_cgi_set_update_addr_function(int iNumParams, char *pcParam[], char *pcValue[]); // æ›´æ–°åœ°å€
+int8_t httpd_cgi_snmp_function(int iNumParams, char *pcParam[], char *pcValue[]);            // SNMPè®¾ç½®
+int8_t httpd_cgi_snmp_test_function(int iNumParams, char *pcParam[], char *pcValue[]);       // SNMPæµ‹è¯•
+int8_t httpd_cgi_update_function(int iNumParams, char *pcParam[], char *pcValue[]);          // ç³»ç»Ÿæ›´æ–°
+int8_t httpd_cgi_system_function(int iNumParams, char *pcParam[], char *pcValue[]);          // ç³»ç»Ÿæ§åˆ¶
+int8_t httpd_cgi_show_function(char *pcValue[], uint16_t *data, uint8_t *buff);              // æ˜¾ç¤ºæ›´æ–°
 
 /* httpd_ssi */
-void httpd_ssi_system_status_function(char *pcInsert);            // ÏµÍ³×´Ì¬
-void httpd_ssi_volt_cur_data_collection_function(char *pcInsert); // µçÄÜ½çÃæ¸üĞÂ
-void httpd_ssi_switch_status_function(char *pcInsert);            // ¿ª¹Ø×´Ì¬
-void httpd_ssi_sensor_data_collection_function(char *pcInsert);   // ´«¸ĞÆ÷Êı¾İ½çÃæ¸üĞÂ
-void httpd_ssi_threshold_seting_function(char *pcInsert);         // ãĞÖµĞÅÏ¢¸üĞÂ
-void httpd_ssi_bd_data_collection_function(char *pcInsert);       // BDÊı¾İ¸üĞÂ
-void httpd_ssi_system_seting_function(char *pcInsert);            // ÏµÍ³ÉèÖÃ
-void httpd_ssi_nework_gprs_show_function(char *pcInsert);         // ÎŞÏßÍøÂçĞÅÏ¢
-void httpd_ssi_network_setting_function(char *pcInsert);          // ÍøÂçĞÅÏ¢
-void httpd_ssi_other_setting_function(char *pcInsert);            // ÆäËûÉèÖÃ-ÉãÏñÍ·
-void http_ssi_server_setting_function(char *pcInsert);            // Ô¶¶Ë·şÎñÆ÷ĞÅÏ¢
-void httpd_ssi_carema_user_function(char *pcInsert);              // ÉãÏñ»úÕËºÅ
-void http_ssi_update_addr_function(char *pcInsert);               // ¸üĞÂµØÖ·
+void httpd_ssi_system_status_function(char *pcInsert);            // ç³»ç»ŸçŠ¶æ€
+void httpd_ssi_volt_cur_data_collection_function(char *pcInsert); // ç”µèƒ½ç•Œé¢æ›´æ–°
+void httpd_ssi_switch_status_function(char *pcInsert);            // å¼€å…³çŠ¶æ€
+void httpd_ssi_sensor_data_collection_function(char *pcInsert);   // ä¼ æ„Ÿå™¨æ•°æ®ç•Œé¢æ›´æ–°
+void httpd_ssi_threshold_seting_function(char *pcInsert);         // é˜ˆå€¼ä¿¡æ¯æ›´æ–°
+void httpd_ssi_bd_data_collection_function(char *pcInsert);       // BDæ•°æ®æ›´æ–°
+void httpd_ssi_system_seting_function(char *pcInsert);            // ç³»ç»Ÿè®¾ç½®
+void httpd_ssi_nework_gprs_show_function(char *pcInsert);         // æ— çº¿ç½‘ç»œä¿¡æ¯
+void httpd_ssi_network_setting_function(char *pcInsert);          // ç½‘ç»œä¿¡æ¯
+void httpd_ssi_carema_setting_function(char *pcInsert);           // æ‘„åƒå¤´
+void http_ssi_server_setting_function(char *pcInsert);            // è¿œç«¯æœåŠ¡å™¨ä¿¡æ¯
+void httpd_ssi_carema_user_function(char *pcInsert);              // æ‘„åƒæœºè´¦å·
+void httpd_ssi_snmp_oid_function(char *pcInsert);                 // SNMP OID é…ç½®
+void http_ssi_update_addr_function(char *pcInsert);               // æ›´æ–°åœ°å€
 
 
 void Get_Total_Energy_Handler(char *pcInsert, uint8_t num);
-void Get_Output_Energy_Handler(char *pcInsert, uint8_t channel, uint8_t num); // Êä³öµçÄÜ½çÃæ¸üĞÂ
+void Get_Output_Energy_Handler(char *pcInsert, uint8_t channel, uint8_t num); // è¾“å‡ºç”µèƒ½ç•Œé¢æ›´æ–°
 
 #endif

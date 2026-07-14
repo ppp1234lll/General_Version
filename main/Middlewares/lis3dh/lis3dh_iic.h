@@ -1,11 +1,11 @@
-#ifndef _LIS3DHIIC_H
+ï»¿#ifndef _LIS3DHIIC_H
 #define _LIS3DHIIC_H
 
 #include "./SYSTEM/sys/sys.h"
 #include <stdbool.h> 
 
-//IICËùÓĞ²Ù×÷º¯Êı
-void LIS3DH_IIC_Init(void);                //³õÊ¼»¯IICµÄIO¿Ú                 
+//IICæ‰€æœ‰æ“ä½œå‡½æ•°
+void LIS3DH_IIC_Init(void);                //åˆå§‹åŒ–IICçš„IOå£                 
 
 bool HAL_IIC_EMU_Read(uint8_t Addr,uint8_t *pBuf,uint32_t Len);
 bool HAL_IIC_EMU_Write(uint8_t Addr,uint8_t *pBuf,uint32_t Len);

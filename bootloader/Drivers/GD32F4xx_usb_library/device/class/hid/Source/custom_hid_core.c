@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    custom_hid_core.c
     \brief   custom HID class driver
 

@@ -1,4 +1,4 @@
-/******************** (C) COPYRIGHT 2012 STMicroelectronics ********************
+﻿/******************** (C) COPYRIGHT 2012 STMicroelectronics ********************
 * File Name          : lis3dh_driver.h
 * Author             : MSH Application Team
 * Author             : Abhishek Anand, Fabio Tota

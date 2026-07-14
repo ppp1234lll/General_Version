@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_spi.h
     \brief   definitions for the SPI
 

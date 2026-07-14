@@ -1,41 +1,41 @@
 #include "./Task/inc/print.h"
 #include "main.h"
 
-/* ·¢ËÍ×´Ì¬ */
-#define SEND_TIME_MAX     (3000) // 3sÉÏ±¨
-#define PRINT_BUFF_LEN    (500) // 3sÉÏ±¨
+/* å‘é€çŠ¶æ€ */
+#define SEND_TIME_MAX     (3000) // 3sä¸ŠæŠ¥
+#define PRINT_BUFF_LEN    (500) // 3sä¸ŠæŠ¥
 
-__attribute__((section (".RAM_D1"))) uint8_t  print_buff[PRINT_BUFF_LEN];  // ½ÓÊÕ»º´æ
+__attribute__((section (".RAM_D1"))) uint8_t  print_buff[PRINT_BUFF_LEN];  // æ¥æ”¶ç¼“å­˜
     
 typedef struct
 {
-    uint8_t recv_flag;  // ½ÓÊÕµ½Êı¾İ±êÖ¾
+    uint8_t recv_flag;  // æ¥æ”¶åˆ°æ•°æ®æ ‡å¿—
     struct
     {
-        uint8_t return_cmd;      // »Ø¸´ÃüÁî
-        uint8_t return_result; // »Ø¸´ÄÚÈİ
-        uint32_t    report_time;     // ÉÏ±¨Ê±¼ä
+        uint8_t return_cmd;      // å›å¤å‘½ä»¤
+        uint8_t return_result; // å›å¤å†…å®¹
+        uint32_t    report_time;     // ä¸ŠæŠ¥æ—¶é—´
     } send;
     struct
     {
-        uint8_t search;            // ËÑË÷
-        uint8_t inquiry;            // ²éÑ¯ÅäÖÃ
-        uint8_t update_mac;        // ÅäÖÃMAC
-        uint8_t update_relay;    // ÅäÖÃ¼ÌµçÆ÷
-        uint8_t update_ip;        // ÅäÖÃIP
-        uint8_t config_return;        // »Ø¸´
+        uint8_t search;            // æœç´¢
+        uint8_t inquiry;            // æŸ¥è¯¢é…ç½®
+        uint8_t update_mac;        // é…ç½®MAC
+        uint8_t update_relay;    // é…ç½®ç»§ç”µå™¨
+        uint8_t update_ip;        // é…ç½®IP
+        uint8_t config_return;        // å›å¤
     } send_flag; 
     
 }sys_print_t;
 
 typedef struct
 {
-    uint8_t   mac[6];          // ÍøÂç²ÎÊı
-    uint8_t   net_ip[IP_ALL][4];  // ±¾»úÍøÂç²ÎÊı
-    uint32_t  id;                          // Éè±¸ID
-    uint8_t     adapter[RELAY_ALL];  // ÊÊÅäÆ÷
-    char           types[15];          // ÃüÁîÀàĞÍ
-    char           password[64];    // ÃÜÂë
+    uint8_t   mac[6];          // ç½‘ç»œå‚æ•°
+    uint8_t   net_ip[IP_ALL][4];  // æœ¬æœºç½‘ç»œå‚æ•°
+    uint32_t  id;                          // è®¾å¤‡ID
+    uint8_t     adapter[RELAY_ALL];  // é€‚é…å™¨
+    char           types[15];          // å‘½ä»¤ç±»å‹
+    char           password[64];    // å¯†ç 
     uint32_t  addr;
 
     char      username[64];
@@ -73,32 +73,32 @@ __attribute__((section (".RAM_D1"))) print_param_t print_param;
 __attribute__((section (".RAM_D1"))) sys_print_t     print_status;
 
 __attribute__((section (".RAM_D1"))) uint8_t   print_send_buff[1000];
-__attribute__((section (".RAM_D1"))) uint16_t    print_send_size          = 0;     // ·¢ËÍÊı¾İ³¤¶È
+__attribute__((section (".RAM_D1"))) uint16_t    print_send_size          = 0;     // å‘é€æ•°æ®é•¿åº¦
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_task_function
-*    ¹¦ÄÜËµÃ÷: ¼ì²âÈÎÎñ£º°üÀ¨adc²É¼¯¡¢¿ª¹ØÁ¿Êı¾İµÈ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_task_function
+*    åŠŸèƒ½è¯´æ˜: æ£€æµ‹ä»»åŠ¡ï¼šåŒ…æ‹¬adcé‡‡é›†ã€å¼€å…³é‡æ•°æ®ç­‰
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_task_function(void)
 {
     while(1)
     {
-        print_buff_deal_function();     // ´¦Àí½ÓÊÕÊı¾İ
-        print_udp_send_function();    // Êı¾İ·¢ËÍ
+        print_buff_deal_function();     // å¤„ç†æ¥æ”¶æ•°æ®
+        print_udp_send_function();    // æ•°æ®å‘é€
         FeedFwdgt();
-        vTaskDelay(50);           // ÑÓÊ±5ms
+        vTaskDelay(50);           // å»¶æ—¶5ms
     }
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_stroage_queue_data
-*    ¹¦ÄÜËµÃ÷: ½«Êı¾İ´æ´¢µ½»º´æÇø
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_stroage_queue_data
+*    åŠŸèƒ½è¯´æ˜: å°†æ•°æ®å­˜å‚¨åˆ°ç¼“å­˜åŒº
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_stroage_queue_data(uint8_t *buff,uint16_t len)
@@ -106,15 +106,15 @@ void print_stroage_queue_data(uint8_t *buff,uint16_t len)
     print_status.recv_flag = 0;
     memset(print_buff,0,PRINT_BUFF_LEN);
     memcpy(print_buff,buff,len);
-    print_status.recv_flag = 1;  // ±êÖ¾Î»ÖÃ1
+    print_status.recv_flag = 1;  // æ ‡å¿—ä½ç½®1
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_getparam_fun
-*    ¹¦ÄÜËµÃ÷: ¸ù¾İstr È¡³öxmlÖĞÏàÓ¦µÄ²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_getparam_fun
+*    åŠŸèƒ½è¯´æ˜: æ ¹æ®str å–å‡ºxmlä¸­ç›¸åº”çš„å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int print_getparam_fun(char *data,char *sStr)
@@ -130,10 +130,10 @@ int print_getparam_fun(char *data,char *sStr)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_queue_find_msg
-*    ¹¦ÄÜËµÃ÷: »ñÈ¡»º´æÇøÖĞµÄÊı¾İ,²¢¸ù¾İÃØÔ¿½âÎö
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_queue_find_msg
+*    åŠŸèƒ½è¯´æ˜: è·å–ç¼“å­˜åŒºä¸­çš„æ•°æ®,å¹¶æ ¹æ®ç§˜é’¥è§£æ
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int print_queue_find_msg(void)
@@ -148,7 +148,7 @@ int print_queue_find_msg(void)
         memset(&print_param,0,sizeof(print_param_t));
         print_status.recv_flag = 0;
         
-        if((str = strstr((char *)print_buff,DEVICE_ID)) != NULL)   //     »ñÈ¡Éè±¸ID
+        if((str = strstr((char *)print_buff,DEVICE_ID)) != NULL)   //     è·å–è®¾å¤‡ID
         {
             str = strstr((char *)str,":");
             sscanf((char*)str,"%*[^\"]\"%[^\"]",id_str); 
@@ -157,15 +157,15 @@ int print_queue_find_msg(void)
         else
             return -1;
         
-        if((str = strstr((char *)print_buff,DEVICE_TYPES)) != NULL) // »ñÈ¡ÃüÁîÀàĞÍ
+        if((str = strstr((char *)print_buff,DEVICE_TYPES)) != NULL) // è·å–å‘½ä»¤ç±»å‹
         {
             str = strstr((char *)str,":");
-            sscanf((char*)str,"%*[^\"]\"%[^\"]",print_param.types); // %*Ìø¹ı£¬[^>]Ö±µ½Æ¥Åäµ½µÚÒ»¸ö:"£¬>%´Ó:"¿ªÊ¼£¬[^</]Ö±µ½Æ¥Åäµ½",½áÊø
+            sscanf((char*)str,"%*[^\"]\"%[^\"]",print_param.types); // %*è·³è¿‡ï¼Œ[^>]ç›´åˆ°åŒ¹é…åˆ°ç¬¬ä¸€ä¸ª:"ï¼Œ>%ä»:"å¼€å§‹ï¼Œ[^</]ç›´åˆ°åŒ¹é…åˆ°",ç»“æŸ
         }
         else
             return -2;    
 
-        if((str = strstr((char *)print_buff,DEVICE_MAC)) != NULL) // »ñÈ¡MACµØÖ·
+        if((str = strstr((char *)print_buff,DEVICE_MAC)) != NULL) // è·å–MACåœ°å€
         {
             memset(id_str,0,sizeof(id_str));
             str = strstr((char *)str,":");
@@ -184,13 +184,13 @@ int print_queue_find_msg(void)
                 return -3;                    
         }
         
-        if((str = strstr((char *)print_buff,DEVICE_PWD)) != NULL)   // »ñÈ¡ÃÜÂë
+        if((str = strstr((char *)print_buff,DEVICE_PWD)) != NULL)   // è·å–å¯†ç 
         {
             str = strstr((char *)str,":");
             sscanf((char*)str,"%*[^\"]\"%[^\"]",print_param.password); 
         }
         
-        if((str = strstr((char *)print_buff,DEVICE_NAME)) != NULL)   // »ñÈ¡ÓÃ»§Ãû
+        if((str = strstr((char *)print_buff,DEVICE_NAME)) != NULL)   // è·å–ç”¨æˆ·å
         {
             str = strstr((char *)str,":");
             sscanf((char*)str,"%*[^\"]\"%[^\"]",print_param.username); 
@@ -246,10 +246,10 @@ int print_queue_find_msg(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_buff_deal_function
-*    ¹¦ÄÜËµÃ÷: »º´æ½ÓÊÕ´¦Àíº¯Êı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_buff_deal_function
+*    åŠŸèƒ½è¯´æ˜: ç¼“å­˜æ¥æ”¶å¤„ç†å‡½æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t print_buff_deal_function(void)
@@ -258,39 +258,39 @@ int8_t print_buff_deal_function(void)
 
     if(print_queue_find_msg() == 0)
     {
-        /* IDÑéÖ¤ */
+        /* IDéªŒè¯ */
         if(print_param.id == 0 && (strcmp(print_param.types, CMD_SEARCH)==0)) 
         {
-            print_status.send_flag.search =1;  // ËÑË÷ÃüÁî
+            print_status.send_flag.search =1;  // æœç´¢å‘½ä»¤
             return 0;
         }
         
-        /* ID´íÎó */
+        /* IDé”™è¯¯ */
         if(print_param.id != device->id.i && (strcmp(print_param.types, CMD_UPDATE_MAC)!=0)) 
         {
             return -1;
         }
         
         if(strcmp(print_param.types, CMD_UPDATE_MAC) == 0 )
-            print_tcp_configure_mac();  // ÅäÖÃMAC
+            print_tcp_configure_mac();  // é…ç½®MAC
         
-        if(print_param.id == device->id.i )        /* ¸ù¾İÃüÁî½âÎöÊı¾İ */
+        if(print_param.id == device->id.i )        /* æ ¹æ®å‘½ä»¤è§£ææ•°æ® */
         {
             if(strcmp(print_param.types, CMD_INQUIRY)==0)
-                print_status.send_flag.inquiry =1;  // ²éÑ¯
+                print_status.send_flag.inquiry =1;  // æŸ¥è¯¢
             else if(strcmp(print_param.types, CMD_UPDATE_RELAY)==0)
-                print_tcp_configure_rlelay();  // ÅäÖÃ¼ÌµçÆ÷
+                print_tcp_configure_rlelay();  // é…ç½®ç»§ç”µå™¨
             else if(strcmp(print_param.types, CMD_UPDATE_IP)==0)
-                print_configure_local_network();  // ÅäÖÃIP
+                print_configure_local_network();  // é…ç½®IP
             else if(strcmp(print_param.types, CMD_UPDATE_ADDR)==0)
-                print_configure_run_addr();  // ÇĞ»»³ÌĞò
+                print_configure_run_addr();  // åˆ‡æ¢ç¨‹åº
             else if(strcmp(print_param.types, CMD_UPDATE_SERVER)==0)
             {
-                printf_tcp_configure_server_network();  // ÅäÖÃ·şÎñÆ÷µØÖ·
+                printf_tcp_configure_server_network();  // é…ç½®æœåŠ¡å™¨åœ°å€
             }
             else if(strcmp(print_param.types, CMD_UPDATE_NP)==0)
             {
-                printf_tcp_configure_pwd_name();  // ÅäÖÃÓÃ»§ÃûÃÜÂë
+                printf_tcp_configure_pwd_name();  // é…ç½®ç”¨æˆ·åå¯†ç 
             }
         }
     }
@@ -299,10 +299,10 @@ int8_t print_buff_deal_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: app_set_reply_parameters_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃ»Ø¸´²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: app_set_reply_parameters_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®å›å¤å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_reply_parameters_function(uint8_t cmd, uint8_t error)
@@ -314,10 +314,10 @@ void print_reply_parameters_function(uint8_t cmd, uint8_t error)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_tcp_send_function
-*    ¹¦ÄÜËµÃ÷: tcpÍ¨ĞÅ·¢ËÍº¯Êı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_tcp_send_function
+*    åŠŸèƒ½è¯´æ˜: tcpé€šä¿¡å‘é€å‡½æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_udp_send_function(void)
@@ -332,15 +332,15 @@ void print_udp_send_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: app_deal_com_flag_function
-*    ¹¦ÄÜËµÃ÷: ÓÃÀ´´¦ÀíÍ¨ĞÅ»Ø¸´ĞÅÏ¢
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: app_deal_com_flag_function
+*    åŠŸèƒ½è¯´æ˜: ç”¨æ¥å¤„ç†é€šä¿¡å›å¤ä¿¡æ¯
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_deal_com_flag_function(void)
 {
-    /* ËÑË÷Éè±¸»Ø¸´ */
+    /* æœç´¢è®¾å¤‡å›å¤ */
     if(print_status.send_flag.search == 1)
     {
         print_status.send_flag.search = 0;
@@ -349,7 +349,7 @@ void print_deal_com_flag_function(void)
         udp_multicast_send_buff(print_send_buff,print_send_size);
     }
     
-    /* ²éÑ¯ÅäÖÃµ±Ç°²ÎÊıÉèÖÃ */
+    /* æŸ¥è¯¢é…ç½®å½“å‰å‚æ•°è®¾ç½® */
     if(print_status.send_flag.inquiry == 1)
     {
         print_status.send_flag.inquiry = 0;
@@ -357,7 +357,7 @@ void print_deal_com_flag_function(void)
         print_inquiry_ack_function(print_send_buff,&print_send_size);
         udp_multicast_send_buff(print_send_buff,print_send_size);
     }
-    /* »Ø´«ĞÅºÅ */
+    /* å›ä¼ ä¿¡å· */
     if(print_status.send_flag.config_return == 1)
     {
         print_status.send_flag.config_return = 0;
@@ -386,10 +386,10 @@ void print_deal_com_flag_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_search_report_infor_function
-*    ¹¦ÄÜËµÃ÷: Éú³É²éÑ¯»Ø´«°ü
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_search_report_infor_function
+*    åŠŸèƒ½è¯´æ˜: ç”ŸæˆæŸ¥è¯¢å›ä¼ åŒ…
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_search_ack_function(uint8_t *pdata, uint16_t *len,uint8_t ack,uint8_t result)
@@ -401,18 +401,18 @@ void print_search_ack_function(uint8_t *pdata, uint16_t *len,uint8_t ack,uint8_t
     char  temp[30]     = {0};
     char  str[5]     = {0};
     
-    my_cjson_create_function(pdata,0); // ¿ªÊ¼
-    my_cjson_info_create_function(pdata,0); // ¿ªÊ¼    
-    /* Éè±¸Î¨Ò»±êÊ¶TID */
+    my_cjson_create_function(pdata,0); // å¼€å§‹
+    my_cjson_info_create_function(pdata,0); // å¼€å§‹    
+    /* è®¾å¤‡å”¯ä¸€æ ‡è¯†TID */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%X",device->id.i);
     my_cjson_join_string_function(pdata,(uint8_t*)"tid",(uint8_t*)temp,1);
 
-    /** ÏµÍ³Ê±¼ä **/
+    /** ç³»ç»Ÿæ—¶é—´ **/
     my_cjson_join_string_function(pdata,(uint8_t*)"date",app_get_report_current_time(2),0);
-    my_cjson_info_create_function(pdata,1); // ½áÊø
+    my_cjson_info_create_function(pdata,1); // ç»“æŸ
     
-    my_cjson_data_create_function(pdata,0); // ¿ªÊ¼
+    my_cjson_data_create_function(pdata,0); // å¼€å§‹
     switch(ack)
     {
         case NO_ACK:
@@ -449,14 +449,14 @@ void print_search_ack_function(uint8_t *pdata, uint16_t *len,uint8_t ack,uint8_t
         default: break;
     }
     my_cjson_join_string_function(pdata,(uint8_t*)"tnam",(uint8_t*)"FNVIMT_JY",1);    
-    /* ÖÕ¶ËĞòÁĞºÅ */
+    /* ç»ˆç«¯åºåˆ—å· */
     memset(temp,0,sizeof(temp));
     start_get_device_id_str((uint8_t*)temp);
     my_cjson_join_string_function(pdata,(uint8_t*)"mcu",(uint8_t*)temp,1);    
     my_cjson_join_string_function(pdata,(uint8_t*)"mod",(uint8_t*)HARD_NO_STR,1);    
     my_cjson_join_string_function(pdata,(uint8_t*)"sv",(uint8_t*)SOFT_NO_STR,1);    
     
-    /* Íø¿¨MACµØÖ· */
+    /* ç½‘å¡MACåœ°å€ */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%02x-%02x-%02x-%02x-%02x-%02x",local->mac[0],local->mac[1],local->mac[2],
                                                                                              local->mac[3],local->mac[4],local->mac[5]);
@@ -466,25 +466,25 @@ void print_search_ack_function(uint8_t *pdata, uint16_t *len,uint8_t ack,uint8_t
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%d.%d.%d.%d",local->ip[0],local->ip[1],local->ip[2],local->ip[3]);
     my_cjson_join_string_function(pdata,(uint8_t*)"ip",(uint8_t*)temp,1);    
-    /* ×ÓÍøÑÚÂë */
+    /* å­ç½‘æ©ç  */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%d.%d.%d.%d",local->netmask[0],local->netmask[1],local->netmask[2],local->netmask[3]);
     my_cjson_join_string_function(pdata,(uint8_t*)"nm",(uint8_t*)temp,1);    
-    /* Íø¹Ø */
+    /* ç½‘å…³ */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%d.%d.%d.%d",local->gateway[0],local->gateway[1],local->gateway[2],local->gateway[3]);
     my_cjson_join_string_function(pdata,(uint8_t*)"gw",(uint8_t*)temp,1);    
 
-    /* Ö÷Íø¼ì²âIP1 */
+    /* ä¸»ç½‘æ£€æµ‹IP1 */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%d.%d.%d.%d",local->ping_ip[0],local->ping_ip[1],local->ping_ip[2],local->ping_ip[3]);
     my_cjson_join_string_function(pdata,(uint8_t*)"mip1",(uint8_t*)temp,1);
-//        /* Ö÷Íø¼ì²âIP2 */
+//        /* ä¸»ç½‘æ£€æµ‹IP2 */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%d.%d.%d.%d",local->ping_sub_ip[0],local->ping_sub_ip[1],local->ping_sub_ip[2],local->ping_sub_ip[3]);
     my_cjson_join_string_function(pdata,(uint8_t*)"mip2",(uint8_t*)temp,1);
     
-    /* ÉãÏñ»úIP */
+    /* æ‘„åƒæœºIP */
     for(uint8_t i=0;i<6;i++)
     {
         memset(str,0,sizeof(str));
@@ -495,30 +495,30 @@ void print_search_ack_function(uint8_t *pdata, uint16_t *len,uint8_t ack,uint8_t
         my_cjson_join_string_function(pdata,(uint8_t*)str,(uint8_t*)temp,1);
     }
     
-    /* ÄÚÍâ·şÎñÆ÷IP¡¢ÓòÃû+¶Ë¿Ú */
+    /* å†…å¤–æœåŠ¡å™¨IPã€åŸŸå+ç«¯å£ */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%s:%d",remote->inside_iporname,remote->inside_port);
     my_cjson_join_string_function(pdata,(uint8_t*)"inip",(uint8_t*)temp,1);
-    /* ÍâÍø·şÎñÆ÷IP¡¢ÓòÃû+¶Ë¿Ú */
+    /* å¤–ç½‘æœåŠ¡å™¨IPã€åŸŸå+ç«¯å£ */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%s:%d",remote->outside_iporname,remote->outside_port);
     my_cjson_join_string_function(pdata,(uint8_t*)"outip",(uint8_t*)temp,1);
     
-    /* SIM¿¨ĞòÁĞºÅ */
+    /* SIMå¡åºåˆ—å· */
     my_cjson_join_string_function(pdata,(uint8_t*)"iccid",(uint8_t*)gsm_get_sim_ccid_function(),1);
     
-        /* ÓÃ»§Ãû */
+        /* ç”¨æˆ·å */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%s",device->name);
     my_cjson_join_string_function(pdata,(uint8_t*)"name",(uint8_t*)temp,1);
     
-        /* ÃÜÂë */
+        /* å¯†ç  */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%s",device->password);
     my_cjson_join_string_function(pdata,(uint8_t*)"password",(uint8_t*)temp,1);
     
-    my_cjson_data_create_function(pdata,1); // ½áÊø
-    my_cjson_create_function(pdata,1); // ½áÊø
+    my_cjson_data_create_function(pdata,1); // ç»“æŸ
+    my_cjson_create_function(pdata,1); // ç»“æŸ
     
     *len = strlen((char*)pdata);
     
@@ -526,10 +526,10 @@ void print_search_ack_function(uint8_t *pdata, uint16_t *len,uint8_t ack,uint8_t
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_inquiry_ack_function
-*    ¹¦ÄÜËµÃ÷: ²éÑ¯ÅäÖÃ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_inquiry_ack_function
+*    åŠŸèƒ½è¯´æ˜: æŸ¥è¯¢é…ç½®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_inquiry_ack_function(uint8_t *pdata, uint16_t *len)
@@ -539,21 +539,21 @@ void print_inquiry_ack_function(uint8_t *pdata, uint16_t *len)
     uint16_t    buff[4] = {0};
     fp32            data_temp         = 0;
     
-    my_cjson_create_function(pdata,0); // ¿ªÊ¼
-    my_cjson_info_create_function(pdata,0); // ¿ªÊ¼    
-    /* Éè±¸Î¨Ò»±êÊ¶TID */
+    my_cjson_create_function(pdata,0); // å¼€å§‹
+    my_cjson_info_create_function(pdata,0); // å¼€å§‹    
+    /* è®¾å¤‡å”¯ä¸€æ ‡è¯†TID */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%X",device->id.i);
     my_cjson_join_string_function(pdata,(uint8_t*)"tid",(uint8_t*)temp,1);
 
-    /** ÏµÍ³Ê±¼ä **/
+    /** ç³»ç»Ÿæ—¶é—´ **/
     my_cjson_join_string_function(pdata,(uint8_t*)"date",app_get_report_current_time(2),0);
-    my_cjson_info_create_function(pdata,1); // ½áÊø
+    my_cjson_info_create_function(pdata,1); // ç»“æŸ
         
-    my_cjson_data_create_function(pdata,0); // ¿ªÊ¼
+    my_cjson_data_create_function(pdata,0); // å¼€å§‹
     my_cjson_join_string_function(pdata,(uint8_t*)"types",(uint8_t*)"inquiry",1);
     
-    /** µçÑ¹¡¢µçÁ÷ **/
+    /** ç”µå‹ã€ç”µæµ **/
     data_temp = det_get_total_energy_handler(0);
     buff[0] = (uint16_t)data_temp;
     buff[1] = data_temp*100-buff[0]*100;
@@ -568,7 +568,7 @@ void print_inquiry_ack_function(uint8_t *pdata, uint16_t *len)
     sprintf(temp,"%d.%02d",buff[2],buff[3]);
     my_cjson_join_string_function(pdata,(uint8_t*)"cur",(uint8_t*)temp,1);
     
-    /** Êª¶È¡¢ÎÂ¶È **/
+    /** æ¹¿åº¦ã€æ¸©åº¦ **/
     memset(temp,0,sizeof(temp));
     data_temp = det_get_inside_humi();
     buff[0] = (uint16_t)data_temp;
@@ -592,15 +592,15 @@ void print_inquiry_ack_function(uint8_t *pdata, uint16_t *len)
     }    
     my_cjson_join_string_function(pdata,(uint8_t*)"temp",(uint8_t*)temp,1);    
 
-    /* ÃÅ×´Ì¬ */
+    /* é—¨çŠ¶æ€ */
 
 
-    /* ÏäÌå×ËÌ¬ */
+    /* ç®±ä½“å§¿æ€ */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%d",det_get_cabinet_posture());
     my_cjson_join_string_function(pdata,(uint8_t*)"angle",(uint8_t*)temp,1);    
     
-    /* ÎŞÏß×´Ì¬ */
+    /* æ— çº¿çŠ¶æ€ */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%d",gsm_gst_init_status_function(0));
     my_cjson_join_string_function(pdata,(uint8_t*)"csq",(uint8_t*)temp,1);    
@@ -609,22 +609,22 @@ void print_inquiry_ack_function(uint8_t *pdata, uint16_t *len)
     sprintf(temp,"%01d",gsm_gst_init_status_function(1));
     my_cjson_join_string_function(pdata,(uint8_t*)"wire",(uint8_t*)temp,1);    
 
-    /* SIM¿¨ĞòÁĞºÅ */
+    /* SIMå¡åºåˆ—å· */
     my_cjson_join_string_function(pdata,(uint8_t*)"ccid",(uint8_t*)gsm_get_sim_ccid_function(),1);    
 
-    /* ÍøÂç×´Ì¬ */
+    /* ç½‘ç»œçŠ¶æ€ */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%01d",com_report_get_main_network_status(0));    
     my_cjson_join_string_function(pdata,(uint8_t*)"lan",(uint8_t*)temp,1);        
     
-    /* ¼ÌµçÆ÷ */
+    /* ç»§ç”µå™¨ */
 
 
-    /* ¹ÊÕÏÂë */
+    /* æ•…éšœç  */
     my_cjson_join_string_function(pdata,(uint8_t*)"error",(uint8_t*)"100",0);    
 
-    my_cjson_data_create_function(pdata,1); // ½áÊø
-    my_cjson_create_function(pdata,1); // ½áÊø
+    my_cjson_data_create_function(pdata,1); // ç»“æŸ
+    my_cjson_create_function(pdata,1); // ç»“æŸ
     
     *len = strlen((char*)pdata);
     
@@ -632,10 +632,10 @@ void print_inquiry_ack_function(uint8_t *pdata, uint16_t *len)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: com_deal_configure_mac
-*    ¹¦ÄÜËµÃ÷: ÅäÖÃÉè±¸mac
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: com_deal_configure_mac
+*    åŠŸèƒ½è¯´æ˜: é…ç½®è®¾å¤‡mac
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_tcp_configure_mac(void)
@@ -650,10 +650,10 @@ void print_tcp_configure_mac(void)
     local->mac[3] = print_param.mac[3];
     local->mac[4] = print_param.mac[4];
     local->mac[5] = print_param.mac[5]; 
-    /* ÉèÖÃ»Ø´« */
+    /* è®¾ç½®å›ä¼  */
     print_reply_parameters_function(MAC_ACK,1);
     
-    /* ±£´æ */
+    /* ä¿å­˜ */
 //    STMFLASH_Write(DEVICE_ID_ADDR,(uint32_t*)device->id.c,4);    
 //    STMFLASH_Write(DEVICE_MAC_ADDR, (uint32_t *)&local->mac, sizeof(local->mac) / 4);
 
@@ -663,18 +663,18 @@ void print_tcp_configure_mac(void)
 //    STMFLASH_Write(DEVICE_ID_ADDR,(uint32_t*)device->id.c,1);
 //    STMFLASH_Write(DEVICE_MAC_ADDR,(uint32_t *)&local->mac,2);    
     
-    app_set_save_infor_function(SAVE_DEVICE_PARAM);
-    app_set_save_infor_function(SAVE_LOCAL_NETWORK);
+    app_set_save_infor_function(SAVE_FLAG_DEVICE_PARAM);
+    app_set_save_infor_function(SAVE_FLAG_LOCAL_NETWORK);
     vTaskDelay(100);
 //    app_system_softreset();
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: printf_tcp_configure_rlelay
-*    ¹¦ÄÜËµÃ÷: ÅäÖÃ¼ÌµçÆ÷
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: printf_tcp_configure_rlelay
+*    åŠŸèƒ½è¯´æ˜: é…ç½®ç»§ç”µå™¨
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_tcp_configure_rlelay(void)
@@ -684,17 +684,17 @@ void print_tcp_configure_rlelay(void)
         switch(print_param.adapter[i])
         {
             case 1:
-                relay_control((RELAY_DEV)i,RELAY_ON); // ¼ÌµçÆ÷¿ª
+                relay_control((RELAY_DEV)i,RELAY_ON); // ç»§ç”µå™¨å¼€
                 print_reply_parameters_function(RELAY_ACK,1);
             break;
         
             case 2:
-                relay_control((RELAY_DEV)i,RELAY_OFF); // ¼ÌµçÆ÷¹Ø
+                relay_control((RELAY_DEV)i,RELAY_OFF); // ç»§ç”µå™¨å…³
                 print_reply_parameters_function(RELAY_ACK,1);
             break;
 
             default:
-//                print_reply_parameters_function(RELAY_ACK,0);  // ·µ»Ø´íÎóĞÅÏ¢
+//                print_reply_parameters_function(RELAY_ACK,0);  // è¿”å›é”™è¯¯ä¿¡æ¯
             break;
         }    
     }
@@ -702,10 +702,10 @@ void print_tcp_configure_rlelay(void)
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_relay_ack_function
-*    ¹¦ÄÜËµÃ÷: ¼ÌµçÆ÷»Ø¸´Êı¾İ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_relay_ack_function
+*    åŠŸèƒ½è¯´æ˜: ç»§ç”µå™¨å›å¤æ•°æ®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_relay_ack_function(uint8_t *pdata, uint16_t *len, uint8_t result)
@@ -713,18 +713,18 @@ void print_relay_ack_function(uint8_t *pdata, uint16_t *len, uint8_t result)
     struct device_param     *device = app_get_device_param_function();
     char  temp[10]     = {0};
     
-    my_cjson_create_function(pdata,0); // ¿ªÊ¼
-    my_cjson_info_create_function(pdata,0); // ¿ªÊ¼    
-    /* Éè±¸Î¨Ò»±êÊ¶TID */
+    my_cjson_create_function(pdata,0); // å¼€å§‹
+    my_cjson_info_create_function(pdata,0); // å¼€å§‹    
+    /* è®¾å¤‡å”¯ä¸€æ ‡è¯†TID */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%X",device->id.i);
     my_cjson_join_string_function(pdata,(uint8_t*)"tid",(uint8_t*)temp,1);
 
-    /** ÏµÍ³Ê±¼ä **/
+    /** ç³»ç»Ÿæ—¶é—´ **/
     my_cjson_join_string_function(pdata,(uint8_t*)"date",app_get_report_current_time(2),0);
-    my_cjson_info_create_function(pdata,1); // ½áÊø
+    my_cjson_info_create_function(pdata,1); // ç»“æŸ
     
-    my_cjson_data_create_function(pdata,0); // ¿ªÊ¼
+    my_cjson_data_create_function(pdata,0); // å¼€å§‹
     
     my_cjson_join_string_function(pdata,(uint8_t*)"types",(uint8_t*)"update_relay",1);
 
@@ -733,19 +733,19 @@ void print_relay_ack_function(uint8_t *pdata, uint16_t *len, uint8_t result)
     else
         my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"fault",1);        
             
-    /* ¼ÌµçÆ÷ */
+    /* ç»§ç”µå™¨ */
         
-    my_cjson_data_create_function(pdata,1); // ½áÊø
-    my_cjson_create_function(pdata,1); // ½áÊø
+    my_cjson_data_create_function(pdata,1); // ç»“æŸ
+    my_cjson_create_function(pdata,1); // ç»“æŸ
     
     *len = strlen((char*)pdata);
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: printf_tcp_configure_local_network
-*    ¹¦ÄÜËµÃ÷: ÅäÖÃÉè±¸IP¡¢×ÓÍøÑÚÂë¡¢Íø¹Ø
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: printf_tcp_configure_local_network
+*    åŠŸèƒ½è¯´æ˜: é…ç½®è®¾å¤‡IPã€å­ç½‘æ©ç ã€ç½‘å…³
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_configure_local_network(void)
@@ -801,11 +801,11 @@ void print_configure_local_network(void)
     }
     
     if(ret == 0)
-        print_reply_parameters_function(IP_ACK,1);  /* ÉèÖÃ»Ø´« */    
+        print_reply_parameters_function(IP_ACK,1);  /* è®¾ç½®å›ä¼  */    
     else
-        print_reply_parameters_function(IP_ACK,0);  // ·µ»Ø´íÎóĞÅÏ¢
+        print_reply_parameters_function(IP_ACK,0);  // è¿”å›é”™è¯¯ä¿¡æ¯
     
-    /* ±£´æ */
+    /* ä¿å­˜ */
 //    app_set_save_infor_function(SAVE_LOCAL_NETWORK);
     eth_set_network_reset();
     
@@ -814,10 +814,10 @@ void print_configure_local_network(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: printf_tcp_configure_server_network
-*    ¹¦ÄÜËµÃ÷: ÅäÖÃ·şÎñÆ÷µØÖ·¡¢¶Ë¿Ú
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: printf_tcp_configure_server_network
+*    åŠŸèƒ½è¯´æ˜: é…ç½®æœåŠ¡å™¨åœ°å€ã€ç«¯å£
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void printf_tcp_configure_server_network(void)
@@ -833,7 +833,7 @@ void printf_tcp_configure_server_network(void)
 //    uint32_t port = 0;
 //    uint8_t mode  = 0;
     
-    /* ±æÎöÃüÁî */
+    /* è¾¨æå‘½ä»¤ */
 
         memset(remote->inside_iporname,0,sizeof(remote->inside_iporname));
         sscanf((char*)print_param.inside,"%[^:]:%d",remote->inside_iporname,&remote->inside_port);
@@ -844,14 +844,14 @@ void printf_tcp_configure_server_network(void)
 
     
     print_reply_parameters_function(SERVER_ACK,1);
-      app_set_save_infor_function(SAVE_REMOTE_IP);
+      app_set_save_infor_function(SAVE_FLAG_REMOTE_NETWORK);
     
 
     }
 
     /************************************************************
 *    ? ? ?: printf_tcp_configure_pwd_name
-*    ????: ĞŞ¸ÄÓÃ»§Ãû¡¢ÃÜÂë
+*    ????: ä¿®æ”¹ç”¨æˆ·åã€å¯†ç 
 *    ?    ?: * Return        : 
 *    
 ************************************************************/
@@ -870,10 +870,10 @@ void printf_tcp_configure_pwd_name(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: printf_tcp_configure_camera
-*    ¹¦ÄÜËµÃ÷: ´¦ÀíÅäÖÃÉãÏñÍ·ĞÅÏ¢
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: printf_tcp_configure_camera
+*    åŠŸèƒ½è¯´æ˜: å¤„ç†é…ç½®æ‘„åƒå¤´ä¿¡æ¯
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t print_configure_camera_ip(uint8_t id)
@@ -888,7 +888,7 @@ int8_t print_configure_camera_ip(uint8_t id)
 
     if((ip[0] == 0) && (ip[1] == 0) && (ip[2] == 0) && (ip[3] == 0))
     {
-        app_set_camera_num_function(ip,id);        /* Çå³ıÖ¸¶¨IP */
+        app_set_camera_num_function(ip,id);        /* æ¸…é™¤æŒ‡å®šIP */
         ret = 0;
     }
     else
@@ -910,10 +910,10 @@ int8_t print_configure_camera_ip(uint8_t id)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_configure_run_addr
-*    ¹¦ÄÜËµÃ÷: ´¦Àí³ÌĞòÔËĞĞµØÖ·
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_configure_run_addr
+*    åŠŸèƒ½è¯´æ˜: å¤„ç†ç¨‹åºè¿è¡Œåœ°å€
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_configure_run_addr(void)
@@ -923,21 +923,21 @@ void print_configure_run_addr(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: print_report_time_function
-*    ¹¦ÄÜËµÃ÷: Í¨ĞÅ¼ÆÊ±º¯Êı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: print_report_time_function
+*    åŠŸèƒ½è¯´æ˜: é€šä¿¡è®¡æ—¶å‡½æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 void print_report_time_function(void)
 {
-    /* Õı³£ÉÏ±¨ */
+    /* æ­£å¸¸ä¸ŠæŠ¥ */
     print_status.send.report_time++;
     if(print_status.send.report_time > SEND_TIME_MAX)
     {
         print_status.send.report_time = 0;
         
-        print_status.send_flag.inquiry = 1;/* ½øĞĞÒ»´ÎÉÏ±¨ */
+        print_status.send_flag.inquiry = 1;/* è¿›è¡Œä¸€æ¬¡ä¸ŠæŠ¥ */
     }
 }
 

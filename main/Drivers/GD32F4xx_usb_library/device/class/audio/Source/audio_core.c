@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    audio_core.c
     \brief   USB audio device class core functions
 

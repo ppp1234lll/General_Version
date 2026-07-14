@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Application layered TCP connection API (to be used from TCPIP thread)
  * This interface mimics the tcp callback API to the application while preventing

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_msc_scsi.h
     \brief   header file for usbh_msc_scsi.c
 

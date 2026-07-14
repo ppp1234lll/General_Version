@@ -1,12 +1,12 @@
-#ifndef _GSM_H_
+ï»¿#ifndef _GSM_H_
 #define _GSM_H_
 #include "./SYSTEM/sys/sys.h"
 
-/* ²ÎÊı */
+/* å‚æ•° */
 #define GSM_TCP_CONNECT_TIME (3)
 
 
-/* º¯ÊıÉùÃ÷ */
+/* å‡½æ•°å£°æ˜ */
 void gsm_task_function(void);
 void gsm_task_timer_function(void);
 

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_msc_scsi.c
     \brief   USB MSC SCSI commands implementation
 

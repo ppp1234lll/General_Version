@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_trng.h
     \brief   definitions for the TRNG
 

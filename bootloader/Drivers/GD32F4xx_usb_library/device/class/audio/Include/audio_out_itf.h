@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    audio_out_itf.h
     \brief   audio OUT (playback) interface header file
 

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_fwdgt.h
     \brief   definitions for the FWDGT
 

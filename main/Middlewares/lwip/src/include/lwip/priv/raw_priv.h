@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * raw API internal implementations (do not use in application code)
  */

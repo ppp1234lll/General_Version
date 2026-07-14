@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_standard_hid.c
     \brief   USB host HID keyboard and mouse driver
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Sequential API Internal module
  */

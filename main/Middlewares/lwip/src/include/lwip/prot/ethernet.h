@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Ethernet protocol definitions
  */

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ipv6cp.h - PPP IPV6 Control Protocol.
  * Copyright (c) 1999 Tommi Komulainen.  All rights reserved.
  * Redistribution and use in source and binary forms, with or without

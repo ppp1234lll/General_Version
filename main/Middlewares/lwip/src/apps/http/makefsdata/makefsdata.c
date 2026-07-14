@@ -1,4 +1,4 @@
-/**
+﻿/**
  * makefsdata: Converts a directory structure for use with the lwIP httpd.
  * This file is part of the lwIP TCP/IP stack.
  * Author: Jim Pettinato

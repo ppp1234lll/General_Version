@@ -1,9 +1,9 @@
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: µçÄÜ¼ÆÁ¿Çı¶¯
-*    ¹¦ÄÜËµÃ÷: UARTÍ¨ĞÅ
-*    ĞÎ    ²Î: ZHLE
-*    ·µ »Ø Öµ: ´®¿Ú1£¬²¨ÌØÂÊ4800£¬Êı¾İ±ØĞëÊÇ3Î»×Ö½Ú
+*    å‡½ æ•° å: ç”µèƒ½è®¡é‡é©±åŠ¨
+*    åŠŸèƒ½è¯´æ˜: UARTé€šä¿¡
+*    å½¢    å‚: ZHLE
+*    è¿” å› å€¼: ä¸²å£1ï¼Œæ³¢ç‰¹ç‡4800ï¼Œæ•°æ®å¿…é¡»æ˜¯3ä½å­—èŠ‚
 *********************************************************************************************************
 */
 #include "bsp.h"
@@ -11,31 +11,31 @@
 #include "BL0910_UART.h"
 /*
 							 
-Êµ¼ÊµçÑ¹Öµ(V) = [µçÑ¹ÓĞĞ§Öµ¼Ä´æÆ÷Öµ*Vref*(R25+R26+R35+R36+R37)]/[13162*Gain_V*R46*1000]
+å®é™…ç”µå‹å€¼(V) = [ç”µå‹æœ‰æ•ˆå€¼å¯„å­˜å™¨å€¼*Vref*(R25+R26+R35+R36+R37)]/[13162*Gain_V*R46*1000]
 
-µçÑ¹ÏµÊıKv  = [13162*Gain_V*R46*1000]/[Vref*(R25+R26+R35+R36+R37)]
-(È¥³ı1000) = [13162*1*(51+51)*1000]/[1.097*(20+20+20+20+20)]
+ç”µå‹ç³»æ•°Kv  = [13162*Gain_V*R46*1000]/[Vref*(R25+R26+R35+R36+R37)]
+(å»é™¤1000) = [13162*1*(51+51)*1000]/[1.097*(20+20+20+20+20)]
 					 = 1342524 / 109.7
 					 = 12238.14
 
 
-Êµ¼ÊµçÁ÷Öµ(A) = [µçÁ÷ÓĞĞ§Öµ¼Ä´æÆ÷Öµ*Vref] / [12875*Gain_I*(R1+R2)*1000/Rt]
+å®é™…ç”µæµå€¼(A) = [ç”µæµæœ‰æ•ˆå€¼å¯„å­˜å™¨å€¼*Vref] / [12875*Gain_I*(R1+R2)*1000/Rt]
 
-µçÁ÷ÏµÊı Ki = [12875*Gain_I*(R1+R2)*1000/Rt] / Vref
+ç”µæµç³»æ•° Ki = [12875*Gain_I*(R1+R2)*1000/Rt] / Vref
 						= [12875*1*(51+51)*1000/1000] / 1.097
 						= 1197128.53
 						= 1197.128 (mA)
 
-Êµ¼ÊÓĞ¹¦¹¦ÂÊÖµ(W) = [ÓĞ¹¦¹¦ÂÊ¼Ä´æÆ÷Öµ*Vref*Vref*(R25+R26+R35+R36+R37)]/
+å®é™…æœ‰åŠŸåŠŸç‡å€¼(W) = [æœ‰åŠŸåŠŸç‡å¯„å­˜å™¨å€¼*Vref*Vref*(R25+R26+R35+R36+R37)]/
 										[40.4125*((R1+R2)*1000/Rt*Gain_I*R46*Gain_V*1000]
-¹¦ÂÊÏµÊıKp = [40.4125*((R1+R2)*1000/Rt*Gain_I*R46*Gain_V*1000]/[Vref*Vref*(R25+R26+R35+R36+R37)]
+åŠŸç‡ç³»æ•°Kp = [40.4125*((R1+R2)*1000/Rt*Gain_I*R46*Gain_V*1000]/[Vref*Vref*(R25+R26+R35+R36+R37)]
            = [40.4125*((51+51)*1000/1000*1*(51+51)*1*1000]/[1.097*1.097*(20+20+20+20+20)]     
 					 = 420451.65 / 120.3409
 					 = 3493.84
 					 
-Ã¿¸öµçÄÜÂö³å¶ÔÓ¦µÄµçÁ¿ = [4194304*0.032768*16]/
+æ¯ä¸ªç”µèƒ½è„‰å†²å¯¹åº”çš„ç”µé‡ = [4194304*0.032768*16]/
 												 [3600000*CFDIV*Kp]
-¹¦ÂÊÏµÊıKe = [4194304*0.032768*16]/[3600000*16*Kp]
+åŠŸç‡ç³»æ•°Ke = [4194304*0.032768*16]/[3600000*16*Kp]
            = [4194304*0.032768*16]/[3600000*16*3493.84]  
 					 = 0.00001093
 					 
@@ -43,41 +43,41 @@
 
 
 struct bl0910_data_t {
-	uint8_t auto_cmd;		// ×Ô¶¯²É¼¯¹¦ÄÜ
-	uint8_t checksum;		// ºÍĞ£Ñé - Ö÷ÒªÊÇ¶ÁÊ¹ÓÃ
-	uint8_t repeat;			// ÖØ¸´¼ÆÊı
-	uint8_t overtime;		// ³¬Ê±µ¹¼ÆÊ± ÔÚµÈÓÚ1µÄ×´Ì¬ÏÂ£¬¼ÆÊıÇåÁã£¬±êÊ¶³¬Ê±£¬resultÊ¹ÓÃ2
-	uint8_t result;			// ½á¹û£º0-µÈ´ı 1-»ñÈ¡µ½ 2-³¬Ê±
-	uint8_t send; 			// 1-ÓĞ·¢ËÍÊı¾İ
-	uint8_t reg;				// ±¾´Î²Ù×÷ÀàĞÍ-¼Ä´æÆ÷µØÖ·			
-	uint8_t mode;				// 0-¶Á 0x80-Ğ´
-	uint8_t flag;  			// ²É¼¯±êÖ¾Î»  19:µçÑ¹  10-18:µçÁ÷1-9  1-9: ¹¦ÂÊ1-9
+	uint8_t auto_cmd;		// è‡ªåŠ¨é‡‡é›†åŠŸèƒ½
+	uint8_t checksum;		// å’Œæ ¡éªŒ - ä¸»è¦æ˜¯è¯»ä½¿ç”¨
+	uint8_t repeat;			// é‡å¤è®¡æ•°
+	uint8_t overtime;		// è¶…æ—¶å€’è®¡æ—¶ åœ¨ç­‰äº1çš„çŠ¶æ€ä¸‹ï¼Œè®¡æ•°æ¸…é›¶ï¼Œæ ‡è¯†è¶…æ—¶ï¼Œresultä½¿ç”¨2
+	uint8_t result;			// ç»“æœï¼š0-ç­‰å¾… 1-è·å–åˆ° 2-è¶…æ—¶
+	uint8_t send; 			// 1-æœ‰å‘é€æ•°æ®
+	uint8_t reg;				// æœ¬æ¬¡æ“ä½œç±»å‹-å¯„å­˜å™¨åœ°å€			
+	uint8_t mode;				// 0-è¯» 0x80-å†™
+	uint8_t flag;  			// é‡‡é›†æ ‡å¿—ä½  19:ç”µå‹  10-18:ç”µæµ1-9  1-9: åŠŸç‡1-9
 };
 
 static uint16_t sg_bl0910_rec_sta = 0;
 static uint8_t  sg_bl0910_buff[ELEC_RX_MAX] = {0};
 struct bl0910_data_t sg_bl0910data_t = {0};
 
-/* ½Ó¿ÚÓë²ÎÊı */
-#define BL0910_BAUDRATE (38400)  // ¸ù¾İ¹Ü½Å½øĞĞµ÷Õû
+/* æ¥å£ä¸å‚æ•° */
+#define BL0910_BAUDRATE (38400)  // æ ¹æ®ç®¡è„šè¿›è¡Œè°ƒæ•´
 #define BL0910_USART_INIT(baudrate) elec_uart_init(baudrate)
 #define BL0910_SEND_STR(buff,len) 	elec_send_str_function(buff,len)
 
-/* ºê¶¨ÒåÊı¾İ */
-#define BL0910_DET_NUM   			30  		// ²É¼¯´ÎÊı 
-#define BL0910_TIME_OUT  			20 		// ³¬Ê±Ê±¼ä 20ms
-#define BL0910_AUTO_TIME   		4000 	  // 2s (²É¼¯18´Î£¬Ã¿´Î100ms)
-#define BL0910_SEND_TIME   		10 	    // ·¢ËÍÊ±¼ä 10ms
-/* Êı¾İ */
+/* å®å®šä¹‰æ•°æ® */
+#define BL0910_DET_NUM   			30  		// é‡‡é›†æ¬¡æ•° 
+#define BL0910_TIME_OUT  			20 		// è¶…æ—¶æ—¶é—´ 20ms
+#define BL0910_AUTO_TIME   		4000 	  // 2s (é‡‡é›†18æ¬¡ï¼Œæ¯æ¬¡100ms)
+#define BL0910_SEND_TIME   		10 	    // å‘é€æ—¶é—´ 10ms
+/* æ•°æ® */
 #define BL0910_REC_STA  sg_bl0910_rec_sta
 #define BL0910_REC_BUFF sg_bl0910_buff
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_reset_function
-*    ¹¦ÄÜËµÃ÷: ¸´Î»º¯Êı
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_reset_function
+*    åŠŸèƒ½è¯´æ˜: å¤ä½å‡½æ•°
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_reset_function(void)
@@ -86,10 +86,10 @@ void bl0910_reset_function(void)
 	RCC_AHB1PeriphClockCmd(ELEC_RX_GPIO_CLK,ENABLE);
 
 	GPIO_InitStructure.GPIO_Pin   = ELEC_RX_PIN;
-	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_OUT;			// Êä³ö
-	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;  		// ÍÆÍìÊä³ö
-	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_NOPULL;   	// ÉÏÀ­
-	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_100MHz; 	// ¸ßËÙGPIO
+	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_OUT;			// è¾“å‡º
+	GPIO_InitStructure.GPIO_OType=GPIO_OType_PP;  		// æ¨æŒ½è¾“å‡º
+	GPIO_InitStructure.GPIO_PuPd=GPIO_PuPd_NOPULL;   	// ä¸Šæ‹‰
+	GPIO_InitStructure.GPIO_Speed=GPIO_Speed_100MHz; 	// é«˜é€ŸGPIO
 	GPIO_Init(ELEC_RX_GPIO_PORT,&GPIO_InitStructure);
 
 	GPIO_WriteBit(ELEC_RX_GPIO_PORT,ELEC_RX_PIN,Bit_RESET);
@@ -100,10 +100,10 @@ void bl0910_reset_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_init_function
-*    ¹¦ÄÜËµÃ÷: bl0910³õÊ¼»¯
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_init_function
+*    åŠŸèƒ½è¯´æ˜: bl0910åˆå§‹åŒ–
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910c_init_function(void)
@@ -111,37 +111,37 @@ void bl0910c_init_function(void)
 	bl0910_reset_function();
 	BL0910_USART_INIT(BL0910_BAUDRATE);
 	
-	/* ¿ªÆô×Ô¶¯²É¼¯¹¦ÄÜ-µçÑ¹¡¢µçÁ÷ */
+	/* å¼€å¯è‡ªåŠ¨é‡‡é›†åŠŸèƒ½-ç”µå‹ã€ç”µæµ */
 	sg_bl0910data_t.auto_cmd = 1;
 		
-	/* Ğ´ÃüÁîÊ¹ÄÜ */
+	/* å†™å‘½ä»¤ä½¿èƒ½ */
 	bl0910_write_enable_function(1);
 	delay_ms(10);	
-	bl0910_set_gain_function();  // ÉèÖÃÔöÒæ
+	bl0910_set_gain_function();  // è®¾ç½®å¢ç›Š
 	delay_ms(10);	
-	bl0910_set_ch_function();    // ÉèÖÃÍ¨µÀ
+	bl0910_set_ch_function();    // è®¾ç½®é€šé“
 	delay_ms(10);	
 	bl0910_set_mode_function();
 	bl0910_set_eng_rst_function();
 	delay_ms(10);
-	/* Ğ´ÃüÁîÊ§ÄÜ */
+	/* å†™å‘½ä»¤å¤±èƒ½ */
 	bl0910_write_enable_function(0);
 	delay_ms(100);
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_sending_data_function
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍÊı¾İº¯Êı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: ¼Ä´æÆ÷Öµ
-*	@mode		: ·¢ËÍÄ£Ê½
-*	·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_sending_data_function
+*    åŠŸèƒ½è¯´æ˜: å‘é€æ•°æ®å‡½æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: å¯„å­˜å™¨å€¼
+*	@mode		: å‘é€æ¨¡å¼
+*	è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_sending_data_function(uint8_t reg, uint8_t mode)
 {
-	sg_bl0910data_t.overtime 	= 1;  // ³¬Ê±µ¹¼ÆÊ±
+	sg_bl0910data_t.overtime 	= 1;  // è¶…æ—¶å€’è®¡æ—¶
 	sg_bl0910data_t.result  	= 0;   
 	sg_bl0910data_t.mode    	= mode;
 	sg_bl0910data_t.send    	= 1;
@@ -151,10 +151,10 @@ void bl0910_sending_data_function(uint8_t reg, uint8_t mode)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_send_over_function
-*    ¹¦ÄÜËµÃ÷: Êı¾İ·¢ËÍ²Ù×÷Íê³É
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_send_over_function
+*    åŠŸèƒ½è¯´æ˜: æ•°æ®å‘é€æ“ä½œå®Œæˆ
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_send_over_function(void)
@@ -167,35 +167,35 @@ void bl0910_send_over_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: Complement_2_Original
-*    ¹¦ÄÜËµÃ÷: ²¹Âë×ª»»ÎªÔ­Âë
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: Complement_2_Original
+*    åŠŸèƒ½è¯´æ˜: è¡¥ç è½¬æ¢ä¸ºåŸç 
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 uint32_t Complement_2_Original(uint32_t data)
 {
 	uint32_t temp;
-	if((data&0x00800000) == 0x00800000)  // ÅĞ¶Ï×î¸ßÎ»ÊÇ·ñÎª0£¬Bit[23]Îª·ûºÅÎ»£¬Bit[23]=0ÎªÕı
+	if((data&0x00800000) == 0x00800000)  // åˆ¤æ–­æœ€é«˜ä½æ˜¯å¦ä¸º0ï¼ŒBit[23]ä¸ºç¬¦å·ä½ï¼ŒBit[23]=0ä¸ºæ­£
 	{
-		data &= 0x007FFFFF;  // Çå³ı·ûºÅÎ» 	
-		temp =~data;         // ·´Âë
-		data = temp & 0x007FFFFF;  // Çå³ı×ó±ß¶àÓàÎ»
+		data &= 0x007FFFFF;  // æ¸…é™¤ç¬¦å·ä½ 	
+		temp =~data;         // åç 
+		data = temp & 0x007FFFFF;  // æ¸…é™¤å·¦è¾¹å¤šä½™ä½
 		data += 1;				
 	}
-	else  // µ±Ç°Îª¸º¹¦
+	else  // å½“å‰ä¸ºè´ŸåŠŸ
 	{
-		data &= 0x007FFFFF;  // Çå³ı·ûºÅÎ»
+		data &= 0x007FFFFF;  // æ¸…é™¤ç¬¦å·ä½
 	}
 	return data;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_deal_read_data_function
-*    ¹¦ÄÜËµÃ÷: ´¦Àí¶ÁÈ¡µ½µÄÊı¾İ
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_deal_read_data_function
+*    åŠŸèƒ½è¯´æ˜: å¤„ç†è¯»å–åˆ°çš„æ•°æ®
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 int8_t bl0910_deal_read_data_function(void)
@@ -252,41 +252,41 @@ int8_t bl0910_deal_read_data_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_repeat_function
-*    ¹¦ÄÜËµÃ÷: ÖØ¸´²Ù×÷º¯Êı
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_repeat_function
+*    åŠŸèƒ½è¯´æ˜: é‡å¤æ“ä½œå‡½æ•°
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_repeat_function(void)
 {
-	/* Êı¾İµÈ´ı³¬Ê± */
+	/* æ•°æ®ç­‰å¾…è¶…æ—¶ */
 	if( (++sg_bl0910data_t.repeat) <= 5) 
 	{
-		sg_bl0910data_t.overtime = 1;	/* ÖØ¸´»ñÈ¡»òĞ´Èë */
+		sg_bl0910data_t.overtime = 1;	/* é‡å¤è·å–æˆ–å†™å…¥ */
 		bl0910_read_reg_function(sg_bl0910data_t.reg,0);
 	} 
 	else 
-		bl0910_send_over_function();		/* ½áÊøÈÎÎñ */
+		bl0910_send_over_function();		/* ç»“æŸä»»åŠ¡ */
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_analysis_data_function
-*    ¹¦ÄÜËµÃ÷: Êı¾İ¶ÁÈ¡º¯Êı
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_analysis_data_function
+*    åŠŸèƒ½è¯´æ˜: æ•°æ®è¯»å–å‡½æ•°
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_analysis_data_function(void)
 {
 	int8_t   ret = 0;
-	/* µÈ´ı»Ø´«Êı¾İ */
+	/* ç­‰å¾…å›ä¼ æ•°æ® */
 	if(BL0910_REC_STA&0x8000) 
 	{
-		if(sg_bl0910data_t.mode == 0) 		/* Êı¾İ´¦Àí */
+		if(sg_bl0910data_t.mode == 0) 		/* æ•°æ®å¤„ç† */
 		{
-			ret = bl0910_deal_read_data_function();		/* ¶ÁÈ¡Êı¾İ */
+			ret = bl0910_deal_read_data_function();		/* è¯»å–æ•°æ® */
 			if(ret != 0) 
 				bl0910_repeat_function();
 			else 
@@ -295,7 +295,7 @@ void bl0910_analysis_data_function(void)
 		BL0910_REC_STA = 0;
 	}
 	
-	/* ¼ì²â±¾´Î²Ù×÷ÊÇ·ñ³¬Ê± */
+	/* æ£€æµ‹æœ¬æ¬¡æ“ä½œæ˜¯å¦è¶…æ—¶ */
 	if(sg_bl0910data_t.result == 2) 
 	{
 		sg_bl0910data_t.result = 0;
@@ -305,10 +305,10 @@ void bl0910_analysis_data_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_write_reg_function
-*    ¹¦ÄÜËµÃ÷: Ğ´¼Ä´æÆ÷
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_write_reg_function
+*    åŠŸèƒ½è¯´æ˜: å†™å¯„å­˜å™¨
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_write_reg_function(uint8_t reg,uint8_t *data, uint8_t len,uint8_t mode)
@@ -322,90 +322,90 @@ void bl0910_write_reg_function(uint8_t reg,uint8_t *data, uint8_t len,uint8_t mo
 	for(index=0; index<len; index++) 
 		buff[2+index] = data[index];
 	
-	/* ¼ÆÊıºÍĞ£Ñé */
+	/* è®¡æ•°å’Œæ ¡éªŒ */
 	sg_bl0910data_t.checksum = 0;
 	for(index=1; index<(2+len); index++)
 		sg_bl0910data_t.checksum+=buff[index];
 	
-	/* Ìî³äºÍĞ£Ñé */
+	/* å¡«å……å’Œæ ¡éªŒ */
 	buff[2+len] = 0xff - sg_bl0910data_t.checksum;
 	
-	if( mode == 0) 	/* ¸üĞÂ±êÖ¾ */
+	if( mode == 0) 	/* æ›´æ–°æ ‡å¿— */
 		bl0910_sending_data_function(reg,0x80);
 	
-	/* Êı¾İ·¢ËÍ */
+	/* æ•°æ®å‘é€ */
 	BL0910_SEND_STR(buff,3+len);
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_read_reg_function
-*    ¹¦ÄÜËµÃ÷: ¼Ä´æÆ÷¶ÁÈ¡ÃüÁî
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: ¼Ä´æÆ÷Öµ
-*	@mode		: 0-¸üĞÂ±êÖ¾ other-²»¸üĞÂ
-*	·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_read_reg_function
+*    åŠŸèƒ½è¯´æ˜: å¯„å­˜å™¨è¯»å–å‘½ä»¤
+*    å½¢    å‚: 
+*    è¿” å› å€¼: å¯„å­˜å™¨å€¼
+*	@mode		: 0-æ›´æ–°æ ‡å¿— other-ä¸æ›´æ–°
+*	è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_read_reg_function(uint8_t reg, uint8_t mode)
 {
 	uint8_t buff[2] = {0};
 
-	buff[0] = CMD_READ;	/* Êı¾İ */
-	buff[1] = reg;	/* Êı¾İ */
+	buff[0] = CMD_READ;	/* æ•°æ® */
+	buff[1] = reg;	/* æ•°æ® */
 
-	sg_bl0910data_t.checksum = buff[1];   /* ¼ÆÊıºÍĞ£Ñé */
+	sg_bl0910data_t.checksum = buff[1];   /* è®¡æ•°å’Œæ ¡éªŒ */
 	
-	if( mode == 0) 	/* ¸üĞÂ±êÖ¾ */
+	if( mode == 0) 	/* æ›´æ–°æ ‡å¿— */
 		bl0910_sending_data_function(reg,0);
 	
-	BL0910_SEND_STR(buff,sizeof(buff));	/* Êı¾İ·¢ËÍ */
+	BL0910_SEND_STR(buff,sizeof(buff));	/* æ•°æ®å‘é€ */
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_send_data_function
-*    ¹¦ÄÜËµÃ÷: Êı¾İ·¢ËÍº¯Êı
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_send_data_function
+*    åŠŸèƒ½è¯´æ˜: æ•°æ®å‘é€å‡½æ•°
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_send_data_function(void)
 {
-	/* ÔÊĞí½øĞĞ·¢ËÍ²Ù×÷ */
+	/* å…è®¸è¿›è¡Œå‘é€æ“ä½œ */
 	if(sg_bl0910data_t.send == 0) 
 	{
 		if(sg_bl0910data_t.flag > 0)
 		{
 			switch(sg_bl0910data_t.flag)
 			{
-				case 1: 	bl0910_read_reg_function(I5_RMS,0); break; // µçÁ÷ 4
-				case 2: 	bl0910_read_reg_function(I6_RMS,0); break; // µçÁ÷ 3
-				case 3: 	bl0910_read_reg_function(I7_RMS,0); break; // µçÁ÷ 2
-				case 4: 	bl0910_read_reg_function(I8_RMS,0); break; // µçÁ÷ 1
-				case 5: 	bl0910_read_reg_function(I9_RMS,0); break; // ×ÜµçÁ÷
-				case 6: 	bl0910_read_reg_function(V_RMS,0); break;  // µçÑ¹
-				case 7: 	bl0910_read_reg_function(WATT5_AP,0); break; // ¹¦ÂÊ 4
-				case 8: 	bl0910_read_reg_function(WATT6_AP,0); break; // ¹¦ÂÊ 3
-				case 9: 	bl0910_read_reg_function(WATT7_AP,0); break; // ¹¦ÂÊ 2
-				case 10: 	bl0910_read_reg_function(WATT8_AP,0); break; // ¹¦ÂÊ 1
-				case 11: 	bl0910_read_reg_function(WATT9_AP,0); break; // ×Ü¹¦ÂÊ				
-				case 12: 	bl0910_read_reg_function(CF5_CNT,0); break; // ¹¦ÂÊ 4
-				case 13: 	bl0910_read_reg_function(CF6_CNT,0); break; // ¹¦ÂÊ 3
-				case 14: 	bl0910_read_reg_function(CF7_CNT,0); break; // ¹¦ÂÊ 2
-				case 15: 	bl0910_read_reg_function(CF8_CNT,0); break; // ¹¦ÂÊ 1
-				case 16: 	bl0910_read_reg_function(CF9_CNT,0); break; // ×ÜÓĞ¹¦Âö³å	
-				case 17: 	bl0910_read_reg_function(I4_RMS,0); break; // µçÁ÷ 4
-				case 18: 	bl0910_read_reg_function(I3_RMS,0); break; // µçÁ÷ 3
-				case 19: 	bl0910_read_reg_function(I2_RMS,0); break; // µçÁ÷ 2
-				case 20: 	bl0910_read_reg_function(I1_RMS,0); break; // µçÁ÷ 1
-				case 21: 	bl0910_read_reg_function(WATT4_AP,0); break; // ¹¦ÂÊ 4
-				case 22: 	bl0910_read_reg_function(WATT3_AP,0); break; // ¹¦ÂÊ 3
-				case 23: 	bl0910_read_reg_function(WATT2_AP,0); break; // ¹¦ÂÊ 2
-				case 24: 	bl0910_read_reg_function(WATT1_AP,0); break; // ¹¦ÂÊ 1
-				case 25: 	bl0910_read_reg_function(CF4_CNT,0); break; // ¹¦ÂÊ 4
-				case 26: 	bl0910_read_reg_function(CF3_CNT,0); break; // ¹¦ÂÊ 3
-				case 27: 	bl0910_read_reg_function(CF2_CNT,0); break; // ¹¦ÂÊ 2
-				case 28: 	bl0910_read_reg_function(CF1_CNT,0); break; // ¹¦ÂÊ 1				
+				case 1: 	bl0910_read_reg_function(I5_RMS,0); break; // ç”µæµ 4
+				case 2: 	bl0910_read_reg_function(I6_RMS,0); break; // ç”µæµ 3
+				case 3: 	bl0910_read_reg_function(I7_RMS,0); break; // ç”µæµ 2
+				case 4: 	bl0910_read_reg_function(I8_RMS,0); break; // ç”µæµ 1
+				case 5: 	bl0910_read_reg_function(I9_RMS,0); break; // æ€»ç”µæµ
+				case 6: 	bl0910_read_reg_function(V_RMS,0); break;  // ç”µå‹
+				case 7: 	bl0910_read_reg_function(WATT5_AP,0); break; // åŠŸç‡ 4
+				case 8: 	bl0910_read_reg_function(WATT6_AP,0); break; // åŠŸç‡ 3
+				case 9: 	bl0910_read_reg_function(WATT7_AP,0); break; // åŠŸç‡ 2
+				case 10: 	bl0910_read_reg_function(WATT8_AP,0); break; // åŠŸç‡ 1
+				case 11: 	bl0910_read_reg_function(WATT9_AP,0); break; // æ€»åŠŸç‡				
+				case 12: 	bl0910_read_reg_function(CF5_CNT,0); break; // åŠŸç‡ 4
+				case 13: 	bl0910_read_reg_function(CF6_CNT,0); break; // åŠŸç‡ 3
+				case 14: 	bl0910_read_reg_function(CF7_CNT,0); break; // åŠŸç‡ 2
+				case 15: 	bl0910_read_reg_function(CF8_CNT,0); break; // åŠŸç‡ 1
+				case 16: 	bl0910_read_reg_function(CF9_CNT,0); break; // æ€»æœ‰åŠŸè„‰å†²	
+				case 17: 	bl0910_read_reg_function(I4_RMS,0); break; // ç”µæµ 4
+				case 18: 	bl0910_read_reg_function(I3_RMS,0); break; // ç”µæµ 3
+				case 19: 	bl0910_read_reg_function(I2_RMS,0); break; // ç”µæµ 2
+				case 20: 	bl0910_read_reg_function(I1_RMS,0); break; // ç”µæµ 1
+				case 21: 	bl0910_read_reg_function(WATT4_AP,0); break; // åŠŸç‡ 4
+				case 22: 	bl0910_read_reg_function(WATT3_AP,0); break; // åŠŸç‡ 3
+				case 23: 	bl0910_read_reg_function(WATT2_AP,0); break; // åŠŸç‡ 2
+				case 24: 	bl0910_read_reg_function(WATT1_AP,0); break; // åŠŸç‡ 1
+				case 25: 	bl0910_read_reg_function(CF4_CNT,0); break; // åŠŸç‡ 4
+				case 26: 	bl0910_read_reg_function(CF3_CNT,0); break; // åŠŸç‡ 3
+				case 27: 	bl0910_read_reg_function(CF2_CNT,0); break; // åŠŸç‡ 2
+				case 28: 	bl0910_read_reg_function(CF1_CNT,0); break; // åŠŸç‡ 1				
 				default: break;			
 			}
 			sg_bl0910data_t.flag--;
@@ -415,10 +415,10 @@ void bl0910_send_data_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_run_timer_function
-*    ¹¦ÄÜËµÃ÷: ÔËĞĞ¼ÆÊ±Ïà¹Øº¯Êı
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_run_timer_function
+*    åŠŸèƒ½è¯´æ˜: è¿è¡Œè®¡æ—¶ç›¸å…³å‡½æ•°
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_run_timer_function(void)
@@ -426,15 +426,15 @@ void bl0910_run_timer_function(void)
 	static uint16_t  times = 0;
 	static uint16_t  auto_time = 0;
 	
-	if(sg_bl0910data_t.overtime != 0) 	/* ¼ÆÊı¸üĞÂ */
+	if(sg_bl0910data_t.overtime != 0) 	/* è®¡æ•°æ›´æ–° */
 	{
 		if(sg_bl0910data_t.overtime == 1) 
 		{
 			sg_bl0910data_t.overtime = 2;
 			times = 0;
 		}
-		/* ¼ÆÊıÖµ */
-		if((++times) >= BL0910_TIME_OUT)  // ³¬Ê±Ê±¼ä
+		/* è®¡æ•°å€¼ */
+		if((++times) >= BL0910_TIME_OUT)  // è¶…æ—¶æ—¶é—´
 		{
 			times = 0;
 			sg_bl0910data_t.overtime = 0;
@@ -444,7 +444,7 @@ void bl0910_run_timer_function(void)
 	else 
 		times = 0;
 	
-	/* ×Ô¶¯²É¼¯ */
+	/* è‡ªåŠ¨é‡‡é›† */
 	if(sg_bl0910data_t.auto_cmd == 1) 
 	{
 		if((++auto_time) >= BL0910_AUTO_TIME) 
@@ -460,10 +460,10 @@ void bl0910_run_timer_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_work_process_function
-*    ¹¦ÄÜËµÃ÷: ¹¤×÷½ø³Ìº¯Êı
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_work_process_function
+*    åŠŸèƒ½è¯´æ˜: å·¥ä½œè¿›ç¨‹å‡½æ•°
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_work_process_function(void)
@@ -474,10 +474,10 @@ void bl0910_work_process_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_get_rec_data_function
-*    ¹¦ÄÜËµÃ÷: »ñÈ¡Í¨ĞÅÊı¾İ
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_get_rec_data_function
+*    åŠŸèƒ½è¯´æ˜: è·å–é€šä¿¡æ•°æ®
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_get_rec_data_function(uint8_t *buff, uint16_t len)
@@ -497,11 +497,11 @@ void bl0910_get_rec_data_function(uint8_t *buff, uint16_t len)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_write_enable_function
-*    ¹¦ÄÜËµÃ÷: Ğ´Ê¹ÄÜ¿ØÖÆº¯Êı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 0-Ê§ÄÜ 1-Ê¹ÄÜ
-*	·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_write_enable_function
+*    åŠŸèƒ½è¯´æ˜: å†™ä½¿èƒ½æ§åˆ¶å‡½æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 0-å¤±èƒ½ 1-ä½¿èƒ½
+*	è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_write_enable_function(uint8_t cmd)
@@ -526,10 +526,10 @@ void bl0910_write_enable_function(uint8_t cmd)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_set_gain_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃÔöÒæ¼Ä´æÆ÷
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_set_gain_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®å¢ç›Šå¯„å­˜å™¨
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_set_gain_function(void)
@@ -537,13 +537,13 @@ void bl0910_set_gain_function(void)
 	uint8_t gain1_buff[3] = {0};
 	uint8_t gain2_buff[3] = {0};
 	
-	gain1_buff[0] = GAIN_1<<4 | GAIN_1;  // Í¨µÀ1 µçÑ¹Í¨µÀ
-	gain1_buff[1] = GAIN_1<<4 | GAIN_1;  // Í¨µÀ3 Í¨µÀ2
-	gain1_buff[2] = GAIN_1<<4 | GAIN_1;  // Í¨µÀ5 Í¨µÀ4
+	gain1_buff[0] = GAIN_1<<4 | GAIN_1;  // é€šé“1 ç”µå‹é€šé“
+	gain1_buff[1] = GAIN_1<<4 | GAIN_1;  // é€šé“3 é€šé“2
+	gain1_buff[2] = GAIN_1<<4 | GAIN_1;  // é€šé“5 é€šé“4
 
-	gain2_buff[0] = GAIN_1<<4 | GAIN_1;  // Í¨µÀ7 Í¨µÀ6
-	gain2_buff[1] = GAIN_1<<4 | GAIN_1;  // Í¨µÀ9 Í¨µÀ8
-	gain2_buff[2] = GAIN_1;  						 // Í¨µÀ10
+	gain2_buff[0] = GAIN_1<<4 | GAIN_1;  // é€šé“7 é€šé“6
+	gain2_buff[1] = GAIN_1<<4 | GAIN_1;  // é€šé“9 é€šé“8
+	gain2_buff[2] = GAIN_1;  						 // é€šé“10
 	
 	bl0910_write_reg_function(GAIN1_REG,gain1_buff,3,0);
 	delay_ms(50);
@@ -552,28 +552,28 @@ void bl0910_set_gain_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_set_ch_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃÍ¨µÀ¼Ä´æÆ÷
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_set_ch_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®é€šé“å¯„å­˜å™¨
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_set_ch_function(void)
 {
 	uint8_t ch_buff[3] = {0};
 	
-	ch_buff[0] = 0x00;  // È«²¿Ê¹ÓÃ
-	ch_buff[1] = 0x04;  // ¹Ø±ÕÍ¨µÀ10
-	ch_buff[2] = 0x00;  // ¹Ø±ÕÍ¨µÀ10	
+	ch_buff[0] = 0x00;  // å…¨éƒ¨ä½¿ç”¨
+	ch_buff[1] = 0x04;  // å…³é—­é€šé“10
+	ch_buff[2] = 0x00;  // å…³é—­é€šé“10	
 	bl0910_write_reg_function(ADC_PD_CTRL,ch_buff,3,0);
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_set_mode_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃÄ£Ê½
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_set_mode_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®æ¨¡å¼
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_set_mode_function(void)
@@ -581,24 +581,24 @@ void bl0910_set_mode_function(void)
 	uint8_t mode_buff[3] = {0};
 	
 	mode_buff[0] = 0x00;  // 
-	mode_buff[1] = 0x02;  // ´ò¿ªcf
+	mode_buff[1] = 0x02;  // æ‰“å¼€cf
 	mode_buff[2] = 0x00;  // 	
 	bl0910_write_reg_function(MODE3_REG,mode_buff,3,0);
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_set_eng_rst_function
-*    ¹¦ÄÜËµÃ÷: ÄÜÁ¿¶ÁºóÇåÁã
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_set_eng_rst_function
+*    åŠŸèƒ½è¯´æ˜: èƒ½é‡è¯»åæ¸…é›¶
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_set_eng_rst_function(void)
 {
 	uint8_t ch_buff[3] = {0};
 	
-	ch_buff[0] = 0x00;  // È«²¿Ê¹ÓÃ
+	ch_buff[0] = 0x00;  // å…¨éƒ¨ä½¿ç”¨
 	ch_buff[1] = 0x00;  
 	ch_buff[2] = 0x00; 
 	bl0910_write_reg_function(RST_ENG,ch_buff,3,0);
@@ -606,17 +606,17 @@ void bl0910_set_eng_rst_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_reset_numreg_function
-*    ¹¦ÄÜËµÃ÷: ¸´Î»Êı×Ö²¿·ÖµÄ×´Ì¬»úºÍ¼Ä´æÆ÷  5A5A5A
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_reset_numreg_function
+*    åŠŸèƒ½è¯´æ˜: å¤ä½æ•°å­—éƒ¨åˆ†çš„çŠ¶æ€æœºå’Œå¯„å­˜å™¨  5A5A5A
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_reset_numreg_function(void)
 {
 	uint8_t ch_buff[3] = {0};
 	
-	ch_buff[0] = 0x5A;  // È«²¿Ê¹ÓÃ
+	ch_buff[0] = 0x5A;  // å…¨éƒ¨ä½¿ç”¨
 	ch_buff[1] = 0x5A;  
 	ch_buff[2] = 0x5A; 
 	bl0910_write_reg_function(SOFT_RESET_REG,ch_buff,3,0);
@@ -624,31 +624,31 @@ void bl0910_reset_numreg_function(void)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: bl0910_test
-*    ¹¦ÄÜËµÃ÷: µçÑ¹¡¢µçÁ÷²âÊÔ
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: bl0910_test
+*    åŠŸèƒ½è¯´æ˜: ç”µå‹ã€ç”µæµæµ‹è¯•
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void bl0910_test(void)
 {
-	bl0910_read_reg_function(TPS_CTRL,0);  // Ä¬ÈÏÖµÊÇ0x07FF
+	bl0910_read_reg_function(TPS_CTRL,0);  // é»˜è®¤å€¼æ˜¯0x07FF
 	delay_ms(200);	
-	bl0910_read_reg_function(SAGLVL_LINECYC,0);  // Ä¬ÈÏÖµÊÇ0x100009
+	bl0910_read_reg_function(SAGLVL_LINECYC,0);  // é»˜è®¤å€¼æ˜¯0x100009
 	delay_ms(200);	
-	bl0910_read_reg_function(ADC_PD_CTRL,0);  // Ä¬ÈÏÖµÊÇ0x100009
+	bl0910_read_reg_function(ADC_PD_CTRL,0);  // é»˜è®¤å€¼æ˜¯0x100009
 	delay_ms(200);
-	bl0910_read_reg_function(GAIN1_REG,0);  // Ä¬ÈÏÖµÊÇ0x100009
+	bl0910_read_reg_function(GAIN1_REG,0);  // é»˜è®¤å€¼æ˜¯0x100009
 	delay_ms(200);	
-	bl0910_read_reg_function(GAIN2_REG,0);  // Ä¬ÈÏÖµÊÇ0x100009
+	bl0910_read_reg_function(GAIN2_REG,0);  // é»˜è®¤å€¼æ˜¯0x100009
 	delay_ms(200);	
-	bl0910_read_reg_function(RST_ENG,0);  // Ä¬ÈÏÖµÊÇ0x100009
+	bl0910_read_reg_function(RST_ENG,0);  // é»˜è®¤å€¼æ˜¯0x100009
 	delay_ms(200);		
-	bl0910_read_reg_function(MODE3_REG,0);  // Ä¬ÈÏÖµÊÇ0x100009
+	bl0910_read_reg_function(MODE3_REG,0);  // é»˜è®¤å€¼æ˜¯0x100009
 	delay_ms(200);
 	while(1)
 	{
-		bl0910_work_process_function();	// Êı¾İ»ñÈ¡º¯Êı
+		bl0910_work_process_function();	// æ•°æ®è·å–å‡½æ•°
 		delay_ms(20);		
 	}
 }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * MQTT client (private interface)
  */

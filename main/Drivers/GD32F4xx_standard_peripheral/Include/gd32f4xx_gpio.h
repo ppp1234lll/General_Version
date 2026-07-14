@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_gpio.h
     \brief   definitions for the GPIO
 

@@ -1,4 +1,4 @@
-#ifndef HAL_LIS3DH_H_
+﻿#ifndef HAL_LIS3DH_H_
 #define HAL_LIS3DH_H_
 #include <stdbool.h>
 #include <stdint.h>

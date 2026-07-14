@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * lwIP network interface abstraction
  * @defgroup netif Network interface (NETIF)

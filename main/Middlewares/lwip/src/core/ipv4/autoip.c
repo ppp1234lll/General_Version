@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * AutoIP Automatic LinkLocal IP Configuration
  * This is a AutoIP implementation for the lwIP TCP/IP stack. It aims to conform

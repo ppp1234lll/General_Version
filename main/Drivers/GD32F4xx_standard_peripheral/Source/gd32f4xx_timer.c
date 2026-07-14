@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_timer.c
     \brief   TIMER driver
 

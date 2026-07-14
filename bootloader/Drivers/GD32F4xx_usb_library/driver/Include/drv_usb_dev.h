@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    drv_usb_dev.h
     \brief   USB device low level driver header file
 

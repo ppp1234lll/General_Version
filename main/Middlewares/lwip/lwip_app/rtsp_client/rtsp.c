@@ -334,12 +334,12 @@ static err_t process_response(RTSPSession *session, char *server_reply) {
         return res;
     }
 
-    // 判断是否有RTSP服务能力（只要收到标准握手响应即可）
+    // 鍒ゆ柇鏄惁鏈塕TSP鏈嶅姟鑳藉姏锛堝彧瑕佹敹鍒版爣鍑嗘彙鎵嬪搷搴斿嵆鍙級
     if(reply.status_code == RTSP_STATUS_OK &&
        (session->state == OPTIONS || session->state == DESCRIBE || session->state == SETUP || session->state == PLAY)) {
         session->rtsp_capable = 1;
     }
-    // 判断RTSP SETUP是否真正成功
+    // 鍒ゆ柇RTSP SETUP鏄惁鐪熸鎴愬姛
     if(reply.status_code == RTSP_STATUS_OK && session->state == SETUP) {
         session->result = 1;
     }

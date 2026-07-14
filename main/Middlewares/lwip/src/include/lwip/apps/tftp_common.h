@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file tftp_common.h
  * @author   Logan Gunthorpe <logang@deltatee.com>
  * @brief    Trivial File Transfer Protocol (RFC 1350)

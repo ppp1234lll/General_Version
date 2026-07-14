@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_rcu.h
     \brief   definitions for the RCU
     

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Management Information Base II (RFC1213) SNMP objects and functions.
  */

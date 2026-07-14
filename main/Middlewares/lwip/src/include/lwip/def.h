@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * various utility macros
  */

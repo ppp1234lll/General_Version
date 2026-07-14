@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usb_hid.h
     \brief   definitions for the USB HID class
 

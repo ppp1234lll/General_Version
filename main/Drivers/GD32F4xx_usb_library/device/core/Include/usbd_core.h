@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_core.h
     \brief   USB device mode core functions prototype
 

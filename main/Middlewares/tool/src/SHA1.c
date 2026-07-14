@@ -1,4 +1,4 @@
-
+ï»¿
 /*
 * sha1.c
 *    ????: * This file implements the Secure Hashing Algorithm 1 as
@@ -48,7 +48,7 @@ void SHA1ProcessMessageBlock(SHA1Context *);
 * Returns:
 * sha Error Code.
 */
-int SHA1Reset(SHA1Context *context)//³õÊ¼»¯×´Ì¬
+int SHA1Reset(SHA1Context *context)//åˆå§‹åŒ–çŠ¶æ€
 {
     if (!context)
     {
@@ -57,7 +57,7 @@ int SHA1Reset(SHA1Context *context)//³õÊ¼»¯×´Ì¬
     context->Length_Low = 0;
     context->Length_High = 0;
     context->Message_Block_Index = 0;
-    context->Intermediate_Hash[0] = 0x67452301;//È¡µÃµÄHASH½á¹û£¨ÖÐ¼äÊý¾Ý£©
+    context->Intermediate_Hash[0] = 0x67452301;//å–å¾—çš„HASHç»“æžœï¼ˆä¸­é—´æ•°æ®ï¼‰
     context->Intermediate_Hash[1] = 0xEFCDAB89;
     context->Intermediate_Hash[2] = 0x98BADCFE;
     context->Intermediate_Hash[3] = 0x10325476;
@@ -267,7 +267,7 @@ void SHA1ProcessMessageBlock(SHA1Context *context)
 /*
 * SHA1PadMessage
 *    ????: * According to the standard, the message must be padded to an even
-* 512 bits. The first padding bit must be a ¡¯1¡¯. The last 64
+* 512 bits. The first padding bit must be a â€™1â€™. The last 64
 * bits represent the length of the original message. All bits in
 * between should be 0. This function will pad the message
 * according to those rules by filling the Message_Block array

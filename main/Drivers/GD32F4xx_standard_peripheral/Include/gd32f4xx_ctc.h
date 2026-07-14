@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_ctc.h
     \brief   definitions for the CTC
 

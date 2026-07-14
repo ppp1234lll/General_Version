@@ -1,4 +1,4 @@
-/*
+ï»¿/*
  * Copyright (c) 2017 Murat Seker.
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -66,7 +66,7 @@ typedef struct RTSPHeader {
 } RTSPHeader;
 
 typedef struct RTSPSession {
-    volatile int rtsp_capable; // 0=Î´Öª, 1=ÓĞRTSP·şÎñ
+    volatile int rtsp_capable; // 0=æœªçŸ¥, 1=æœ‰RTSPæœåŠ¡
     u8_t c_seq;
     long session_id;
     State state;
@@ -79,7 +79,7 @@ typedef struct RTSPSession {
     struct tcp_pcb *pcb;
     struct udp_pcb *rtp_pcb;
     struct RTPSession rtp_session;
-    volatile int result; // 0=Î´Íê³É, 1=³É¹¦, -1=Ê§°Ü
+    volatile int result; // 0=æœªå®Œæˆ, 1=æˆåŠŸ, -1=å¤±è´¥
 } RTSPSession;
 
 err_t rtsp_setup(RTSPSession *session, const char *uri);

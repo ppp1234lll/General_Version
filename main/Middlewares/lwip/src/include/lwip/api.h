@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * netconn API (to be used from non-TCPIP threads)
  */

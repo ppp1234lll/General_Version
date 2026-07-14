@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_iref.h
     \brief   definitions for the IREF
 

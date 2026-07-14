@@ -4,23 +4,23 @@
 #include "./SYSTEM/sys/sys.h"
 
 
-/* ²ÎÊı */
-#define PING_NETWORK_DELAY     100  // pingÍøÂçÑÓÊ±ÅĞ¶¨Ê±¼ä
+/* å‚æ•° */
+#define PING_NETWORK_DELAY     100  // pingç½‘ç»œå»¶æ—¶åˆ¤å®šæ—¶é—´
 
 #define PING_DEV_MAX_NUM (3)
 #define PING_TIME_OUT     (4000)
 #define PING_TIME_DELAY     (2000)
 
 
-#define LWIP_PING_WAIT          (1)    // µÈ´ıping
-#define LWIP_PING_SUCCESS      (0)    // ³É¹¦
-#define LWIP_PING_FAIL            (-1)    // Ê§°Ü
-#define LWIP_PING_NO_NETWORK (-2)    // ÎŞÍøÂç
+#define LWIP_PING_WAIT          (1)    // ç­‰å¾…ping
+#define LWIP_PING_SUCCESS      (0)    // æˆåŠŸ
+#define LWIP_PING_FAIL            (-1)    // å¤±è´¥
+#define LWIP_PING_NO_NETWORK (-2)    // æ— ç½‘ç»œ
 
 
-/* º¯ÊıÉùÃ÷ */
+/* å‡½æ•°å£°æ˜ */
 
-/** Ö´ĞĞº¯Êı **/
+/** æ‰§è¡Œå‡½æ•° **/
 void lwip_ping_timer_function(void);
 int8_t lwip_ping_function(void);
 uint8_t icmp_pcb_init(void);
@@ -31,7 +31,7 @@ int8_t lwip_mainnet_ping_function(void);
 void lwip_ping_clear(void);
 int8_t lwip_ping_the_specified_ip_function(uint8_t ip[4]);
 
-/** Êı¾İÊäÈëº¯Êı **/
+/** æ•°æ®è¾“å…¥å‡½æ•° **/
 void lwip_ping_echo_reply(void);
 uint16_t get_lwip_ping_times(void);
 

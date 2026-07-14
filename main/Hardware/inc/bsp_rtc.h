@@ -1,4 +1,4 @@
-#ifndef __BSP_RTC_H
+ï»¿#ifndef __BSP_RTC_H
 #define __BSP_RTC_H
 
 #include "./SYSTEM/sys/sys.h"
@@ -14,11 +14,11 @@ typedef struct
     uint8_t  sec;
 } rtc_time_t;
 
-uint8_t bsp_InitRTC(void);                                        // RTC³õÊ¼»¯
-ErrStatus RTC_Set_Time(rtc_time_t rtc);    // RTCÊ±¼äÉèÖÃ    
+uint8_t bsp_InitRTC(void);                                        // RTCåˆå§‹åŒ–
+ErrStatus RTC_Set_Time(rtc_time_t rtc);    // RTCæ—¶é—´è®¾ç½®    
 
-void RTC_Set_AlarmA(uint8_t week,uint8_t hour,uint8_t min,uint8_t sec);            // ÉèÖÃÄÖÖÓÊ±¼ä(°´ĞÇÆÚÄÖÁå,24Ğ¡Ê±ÖÆ)
-void RTC_Set_WakeUp(uint32_t wksel,uint16_t cnt);                        // ÖÜÆÚĞÔ»½ĞÑ¶¨Ê±Æ÷ÉèÖÃ
+void RTC_Set_AlarmA(uint8_t week,uint8_t hour,uint8_t min,uint8_t sec);            // è®¾ç½®é—¹é’Ÿæ—¶é—´(æŒ‰æ˜ŸæœŸé—¹é“ƒ,24å°æ—¶åˆ¶)
+void RTC_Set_WakeUp(uint32_t wksel,uint16_t cnt);                        // å‘¨æœŸæ€§å”¤é†’å®šæ—¶å™¨è®¾ç½®
 void RTC_Get_Time(rtc_time_t *rtc);
 void RTC_set_Time(rtc_time_t rtc);
 void TimeBySecond(uint32_t second);

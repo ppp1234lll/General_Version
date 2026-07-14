@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Internet checksum functions.
  * These are some reference implementations of the checksum algorithm, with the

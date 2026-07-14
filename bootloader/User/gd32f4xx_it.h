@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_it.h
     \brief   the header file of the ISR
 

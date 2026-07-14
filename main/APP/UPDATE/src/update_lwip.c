@@ -1,20 +1,23 @@
 #include "main.h"
 #include "./UPDATE/inc/update.h"
 #include "./UPDATE/inc/update_http.h"
-#include <stdbool.h>
 
 /*
 *********************************************************************************************************
-*    ÎÄ ¼ş Ãû: update_lwip.c
-*    ¹¦ÄÜËµÃ÷: ÓĞÏß(lwIP) OTA Éı¼¶ HTTP ´«ÊäÓë FreeRTOS ºóÌ¨ÈÎÎñ
-*    Ëµ    Ã÷: HTTP Ó¦´ğ½âÎöµÈ¹«¹²Âß¼­¼û update_http.c,±¾ÎÄ¼ş¸ºÔğ TCP Á¬½Ó/ÊÕ·¢
+*    æ–‡ ä»¶ å: update_lwip.c
+*    åŠŸèƒ½è¯´æ˜: æœ‰çº¿(LWIP) OTA å‡çº§ HTTP ä¼ è¾“ä¸ FreeRTOS åå°ä»»åŠ¡
+*    è¯´    æ˜: HTTP åº”ç­”è§£æç­‰å…¬å…±é€»è¾‘è§ update_http.c,æœ¬æ–‡ä»¶è´Ÿè´£ LWIP TCP è¿æ¥/æ”¶å‘
 *********************************************************************************************************
 */
+#define UPDATE_LWIP_TASK_PRIO            (9U)
+#define UPDATE_LWIP_TASK_STK             (4096U)
+static TaskHandle_t s_update_lwip_task = NULL;
+static volatile uint8_t s_update_lwip_exit_req = 0;  /* 1: ä»»åŠ¡å·²åœåˆ°å®‰å…¨ç‚¹, å¾…å¤–éƒ¨åŒæ­¥åˆ é™¤ */
 
-/* ======================== ÓĞÏß OTA HTTP ======================== */
-
+/* LWIP å…¨å±€å˜é‡ */
 struct netconn *tcp_update;
 
+/* å†…éƒ¨å‡½æ•°å£°æ˜ */
 static int http_update_connect_server_by_lwip(ip_addr_t *ip, unsigned short port);
 static int http_update_send_request_for_info_txt_by_lwip(ip_addr_t *server_ipaddr, uint16_t server_port);
 static int http_update_recv_reponse_by_lwip(int *out_recv_size);
@@ -22,708 +25,488 @@ static int http_update_send_request_for_crcbin_file_size_by_lwip(ip_addr_t *serv
 static int http_update_send_request_for_crcbin_data_by_lwip(ip_addr_t *server_ipaddr, uint16_t server_port);
 static void http_update_cb_server_ip(const char *name, const ip_addr_t *ipaddr, void *arg);
 
+
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_get_info_txt_by_lwip
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı lwIP »ñÈ¡ info.txt,Ğ£Ñé°æ±¾²¢ÌáÈ¡¹Ì¼şÏÂÔØ URL
-*    ĞÎ    ²Î: server_ipaddr Éı¼¶·şÎñÆ÷ IP; server_port ¶Ë¿Ú
-*    ·µ »Ø Öµ: 1-Ğè¸üĞÂ 2-°æ±¾ÏàÍ¬ <0-³ö´í(-1Á¬½Ó -2·¢ËÍ -3/-4½ÓÊÕ -5°æ±¾ -6URL)
+*    å‡½ æ•° å: update_lwip_task
+*    åŠŸèƒ½è¯´æ˜: LWIP æœ‰çº¿ OTA FreeRTOS åå°ä»»åŠ¡,æ‰§è¡Œå‡çº§æµç¨‹åè‡ªåˆ é™¤
+*    å½¢    å‚: pvParameters æœªä½¿ç”¨
+*    è¿” å› å€¼: æ— 
+*    å¤‡    æ³¨: å¤±è´¥æ—¶å†™å…¥å¤±è´¥çŠ¶æ€åˆ° Boot å‚æ•°åŒº
 *********************************************************************************************************
 */
-int http_update_get_info_txt_by_lwip(ip_addr_t *server_ipaddr, uint16_t server_port)
+static void update_lwip_task(void *pvParameters)
 {
-    int ret = 0, res;
-    int cur_recv_size = 0;
-    bool be_timing = false;
-    unsigned int begin_ticks = 0, end_ticks = 0;
-    ////
+	ip_addr_t server_ipaddr;
+	uint16_t  server_port;
+	int8_t    ret = 0;
+	struct update_addr *param = app_get_http_ota_function();
 
-    // Á¬½Ó·şÎñÆ÷
-    printf("\nÓĞÏßÁ¬½Ó·şÎñÆ÷ %s:%d ...\n", ipaddr_ntoa(server_ipaddr), server_port);
-    ret = http_update_connect_server_by_lwip(server_ipaddr, server_port);
-    if(ret){ return(-1); }
-    led_control_function(LD_LAN, LD_FLICKER);
+	(void)pvParameters;
 
-    // ·¢ËÍhttpÇëÇó
-    ret = http_update_send_request_for_info_txt_by_lwip(server_ipaddr, server_port);
-    if(ret)
-    {
-        http_update_close_connect_by_lwip();
-        return(-2);
-    }
+	/* æ¯æ¬¡æ›´æ–°å‰ä»ç³»ç»Ÿé…ç½®åŒæ­¥æœ€æ–° IPã€ç«¯å£ */
+	update_set_update_addr();
 
-    // ½ÓÊÕÍêÕûµÄhttpÓ¦´ğÊı¾İ
-    sg_http_update_param.http_response_recv_size = 0;
-    if(sg_http_update_param.http_response_buff){ sg_http_update_param.http_response_buff[0] = 0; }
-    while(true)
-    {
-        // ½ÓÊÕÊı¾İ
-        ret = http_update_recv_reponse_by_lwip(&cur_recv_size);
-        //printf("\n½ÓÊÕÊı¾İ: %d ×Ö½Ú\n", cur_recv_size);
-        if(ret)
-        {
-            http_update_close_connect_by_lwip();
-            return(-3);
-        }
+	/* åˆå§‹åŒ–å‚æ•° */
+	server_port = param->port;
+	IP4_ADDR(&server_ipaddr, param->ip[0], param->ip[1], param->ip[2], param->ip[3]);
 
-        // ÔİÊ±ÎŞÊı¾İ
-        if(!cur_recv_size)
-        {
-            if(!be_timing) // ·Ç¼ÆÊ±×´Ì¬
-            {
-                be_timing = true; // ¿ªÊ¼¼ÆÊ±
-                begin_ticks = HAL_GetTick();
-            }
-            else // ¼ÆÊ±×´Ì¬
-            {
-                end_ticks = HAL_GetTick();
-                if( (end_ticks - begin_ticks) >= (10 * configTICK_RATE_HZ) ) // ³¬Ê±10Ãë
-                {
-                    //printf("\nhttp¸üĞÂ,ÎŞÊı¾İ½ÓÊÕ³¬Ê±....\n");
-                    http_update_close_connect_by_lwip();
-                    return(-4);
-                }
-            }
-            vTaskDelay(10);
-            continue;
-        }
-        else{ be_timing = false; } // Í£Ö¹¼ÆÊ±
+	sg_http_update_param.section_len = (UPDATE_CHUNK_SIZE - 2);
+	sg_http_update_param.http_response_recv_size = 0;
 
-        // ÅĞ¶ÏhttpÓ¦´ğÍêÕûĞÔ
-        ret = http_update_check_response_completed();
-        if(ret != 2){ /*OSTimeDlyHMSM(0,0,0,10);*/ continue; }
-        else
-        {
-            //printf("\nhttpÓ¦´ğ:\n%s\n", (char *)(sg_http_update_param.http_response_buff));
-            break;
-        }
-    } //while()
-    ////
+	/* æ­¥éª¤1: è·å¾— info.txt ä¿¡æ¯ */
+	ret = http_update_get_info_txt_by_lwip(&server_ipaddr, server_port);
+	if( (ret < 0) || (ret == 2) )
+	{
+		if(ret < 0){ printf("\nGet info.txt failed! ret: %d\n", ret); }
+		else{ printf("\nAlready latest version, no update needed!\n"); }
+		goto UPDATE_END;
+	}
 
-    // ÏÈ¹Ø±ÕÁ¬½Ó
-    http_update_close_connect_by_lwip();
-    led_control_function(LD_LAN, LD_OFF);
+	/* æ­¥éª¤2: è·å¾— crc_bin æ–‡ä»¶å¤§å° */
+	ret = http_update_get_crc_bin_file_size_by_lwip();
+	if(ret < 0)
+	{
+		printf("\nGet crc_bin file size failed! ret: %d\n", ret);
+		goto UPDATE_END;
+	}
 
-    // ÅĞ¶Ï°æ±¾
-    ret = http_update_chack_version();
-    if(ret < 0){ return(-5); }
+	/* æ­¥éª¤3: è·å¾— crc_bin æ–‡ä»¶æ•°æ® */
+	ret = http_update_get_crc_bin_file_data_by_lwip();
+	if(ret < 0)
+	{
+		printf("\nGet crc_bin file content failed! ret: %d\n", ret);
+		goto UPDATE_END;
+	}
 
-    // ÌáÈ¡url
-    if(ret == 1) // ĞèÒª¸üĞÂ
-    {
-        res = http_update_get_url();
-        if(res){ return(-6); }
-    }
+	/* å‡çº§å®Œæˆï¼Œé‡å¯ç³»ç»Ÿ */
+	printf("\nUpdate done, restarting device...\n");
+	http_update_success_reboot();
+	ret = 0;
 
-    return(ret);
+UPDATE_END:
+	http_update_close_connect_by_lwip();
+
+	if(ret < 0){ 
+		http_update_failed(); 
+		app_set_reply_parameters_function(CONFIGURE_UPDATE_SYSTEM, 0x00);  // ç«‹å³é€šçŸ¥å¹³å°å‡çº§å¤±è´¥
+		http_update_clear_param();  // æ¸…é™¤FlashçŠ¶æ€, é˜²æ­¢é‡å¯å update_status_detection é‡å¤å‘é€
+	}
+
+	/* ä»»åŠ¡ç»“æŸï¼šæ¸…é™¤æ¨¡å¼ã€é‡Šæ”¾å¥æŸ„ã€è‡ªåˆ é™¤ */
+	if(update_get_mode_function() != UPDATE_MODE_NULL)
+	{
+		update_set_update_mode(UPDATE_MODE_NULL);
+	}
+	/* ä¸è‡ªåˆ é™¤(è‡ªåˆ é™¤çš„æ ˆ/TCB ä¼šæ¨è¿Ÿåˆ°ç©ºé—²ä»»åŠ¡å›æ”¶, é¢‘ç¹é‡å»ºæ˜“å †ç§¯/ç¢ç‰‡, æœ€ç»ˆ
+	 * xTaskCreate å†…å­˜ä¸è¶³)ã€‚æ”¹ä¸ºç½®é€€å‡ºè¯·æ±‚å¹¶æŒ‚èµ·, ç”± eth ä»»åŠ¡è°ƒç”¨ update_lwip_delete()
+	 * åœ¨å…¶å®ƒä»»åŠ¡ä¸Šä¸‹æ–‡åŒæ­¥åˆ é™¤, ç«‹å³å›æ”¶æ ˆ/TCB */
+	s_update_lwip_exit_req = 1;
+	for(;;)
+	{
+		vTaskSuspend(NULL);
+	}
 }
+
+/******************************************************************************
+ *  LWIP HTTP åº•å±‚å‡½æ•°
+ ******************************************************************************/
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_connect_server_by_lwip
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı lwIP TCP Á¬½Ó OTA ·şÎñÆ÷,×î¶àÖØÊÔ 3 ´Î
-*    ĞÎ    ²Î: ip ·şÎñÆ÷ IP; port ¶Ë¿Ú
-*    ·µ »Ø Öµ: 0-³É¹¦ -1-Ê§°Ü
+*    å‡½ æ•° å: http_update_connect_server_by_lwip
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡LWIP TCPè¿æ¥æœåŠ¡å™¨(æœ€å¤šé‡è¯•3æ¬¡)
+*    å½¢    å‚: ip   æœåŠ¡å™¨IPåœ°å€
+*              port æœåŠ¡å™¨ç«¯å£
+*    è¿” å› å€¼: 0:æˆåŠŸ  -1:è¿æ¥å¤±è´¥
 *********************************************************************************************************
 */
 static int http_update_connect_server_by_lwip(ip_addr_t *ip, unsigned short port)
 {
-    unsigned char index = 0;
-    err_t err;
-    update_param_t *updateparam = NULL;
-    ////
+	unsigned char index = 0;
+	err_t err;
+	update_param_t *updateparam = NULL;
 
-    updateparam = update_get_infor_data_function();
-    for(index=0; index<3; index++)
-    {
-        tcp_update = netconn_new(NETCONN_TCP);
-        if( tcp_update == NULL ) { continue; }
+	updateparam = update_get_infor_data_function();
+	for(index=0; index<3; index++)
+	{
+		tcp_update = netconn_new(NETCONN_TCP);
+		if( tcp_update == NULL ) { continue; }
 
-        err = netconn_connect(tcp_update, ip, port);
-        if(err != ERR_OK)
-        {
-            netconn_delete(tcp_update); tcp_update = NULL;
-            continue;
-        }
-        else
-        {
-            updateparam->tcp_t.connect = 1;
-            tcp_update->recv_timeout = 10;
-            updateparam->tcp_t.state = 2;
-            return(0);
-        }
-    } //for()
+		err = netconn_connect(tcp_update, ip, port);
+		if(err != ERR_OK)
+		{
+			netconn_delete(tcp_update); tcp_update = NULL;
+			continue;
+		}
+		else
+		{
+			updateparam->tcp_t.connect = 1;
+			tcp_update->recv_timeout = 10;
+			updateparam->tcp_t.state = 2;
+			return(0);
+		}
+	} //for()
 
-    /* tcpÁ¬½ÓÊ§°Ü */
-    eth_set_network_reset();
-
-    return(-1);
+	/* tcpè¿æ¥å¤±è´¥ */
+	eth_set_network_reset();
+	
+	return(-1);
 }
-
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_send_request_for_info_txt_by_lwip
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍ GET ÇëÇó»ñÈ¡ info.txt
-*    ĞÎ    ²Î: server_ipaddr ·şÎñÆ÷ IP; server_port ¶Ë¿Ú
-*    ·µ »Ø Öµ: netconn_write ·µ»ØÖµ(ERR_OK Îª³É¹¦)
-*********************************************************************************************************
-*/
-static int http_update_send_request_for_info_txt_by_lwip(ip_addr_t *server_ipaddr, uint16_t server_port)
-{
-    char send_buf[256]={0};
-    char *append_pt = send_buf;
-    int ret = 0;
-    ////
-
-    sprintf(append_pt, "GET /%s/info.txt HTTP/1.1\r\n", HARD_NO_STR);
-    append_pt += strlen(append_pt);
-    sprintf(append_pt, "Host: %s:%d\r\n\r\n", ipaddr_ntoa(server_ipaddr), server_port);
-    append_pt += strlen(append_pt);
-
-    //printf("\nhttpÇëÇó:\n%s\n", send_buf);
-    ret = netconn_write(tcp_update, send_buf, (append_pt - send_buf), NETCONN_COPY);
-    return(ret);
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: http_update_close_connect_by_lwip
-*    ¹¦ÄÜËµÃ÷: ¹Ø±Õ lwIP TCP Á¬½Ó²¢Çå³ıÁ¬½Ó×´Ì¬
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: http_update_close_connect_by_lwip
+*    åŠŸèƒ½è¯´æ˜: å…³é—­LWIP TCPè¿æ¥å¹¶æ¸…ç†èµ„æº
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 void http_update_close_connect_by_lwip(void)
 {
-    update_param_t *updateparam = NULL;
-    ////
+	update_param_t *updateparam = NULL;
+    
+	if(tcp_update)
+	{
+		netconn_close(tcp_update);
+		netconn_delete(tcp_update);
+		tcp_update = NULL;
+	}
 
-    if(tcp_update)
-    {
-        netconn_close(tcp_update);
-        netconn_delete(tcp_update);
-        tcp_update = NULL;
-    }
-
-    updateparam = update_get_infor_data_function();
-    updateparam->tcp_t.connect = 0;
-    updateparam->tcp_t.state = 1;
+	updateparam = update_get_infor_data_function();
+	updateparam->tcp_t.connect = 0;
+	updateparam->tcp_t.state = 1;
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_recv_reponse_by_lwip
-*    ¹¦ÄÜËµÃ÷: ´Ó lwIP TCP Á¬½Ó¶ÁÈ¡Ò»´ÎÊı¾İ²¢×·¼Óµ½ HTTP Ó¦´ğ»º³å
-*    ĞÎ    ²Î: out_recv_size Êä³ö±¾´Î¶ÁÈ¡×Ö½ÚÊı(¿ÉÎª NULL)
-*    ·µ »Ø Öµ: 0-³É¹¦ -1-Î´Á¬½Ó -2-ÄÚÈİ³¬´ó -3-Á¬½Ó¶Ï¿ª
+*    å‡½ æ•° å: http_update_recv_reponse_by_lwip
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡LWIPæ¥æ”¶HTTPåº”ç­”æ•°æ®
+*    å½¢    å‚: out_recv_size è¾“å‡ºæœ¬æ¬¡æ¥æ”¶çš„å­—èŠ‚æ•°
+*    è¿” å› å€¼: 0:æˆåŠŸ  -1:æœªè¿æ¥  -2:ç¼“å†²æº¢å‡º  -3:è¿æ¥æ–­å¼€
 *********************************************************************************************************
 */
 static int http_update_recv_reponse_by_lwip(int *out_recv_size)
 {
-    err_t recv_err = 0;
-    struct netbuf *recvbuf = NULL;
+	err_t recv_err = 0;
+	struct netbuf *recvbuf = NULL;
+	struct pbuf *q = NULL;
+	int ret = 0, recv_size = 0;
+	////
 
-    struct pbuf *q = NULL;
-    int ret = 0, recv_size = 0;
-    ////
+	if(out_recv_size){ (*out_recv_size) = 0; }
+	if(!tcp_update){ return(-1); }
 
-    if(out_recv_size){ (*out_recv_size) = 0; }
-    if(!tcp_update){ return(-1); }
+	recv_err = netconn_recv(tcp_update, &recvbuf);
+	switch(recv_err)
+	{
+		case ERR_OK: // æ¥æ”¶åˆ°æ•°æ®
+			taskENTER_CRITICAL();           /* è¿›å…¥ä¸´ç•ŒåŒº */
+			{
+				for(q = recvbuf->p; q != NULL; q = q->next)  //éå†å®Œæ•´ä¸ªpbufé“¾è¡¨
+				{
+					// ä¿å­˜åˆ° http åº”ç­”buuf ä¸­ 
+					ret = http_update_save_response( (unsigned char *)(q->payload), q->len );
+					if(ret){ break; }
 
-    recv_err = netconn_recv(tcp_update, &recvbuf);
-    switch(recv_err)
-    {
-        case ERR_OK: // ½ÓÊÕµ½Êı¾İ
-            taskENTER_CRITICAL();
-            {
-                for(q = recvbuf->p; q != NULL; q = q->next)  //±éÀúÍêÕû¸öpbufÁ´±í
-                {
-                    // ±£´æµ½ http Ó¦´ğbuuf ÖĞ
-                    ret = http_update_save_response( (unsigned char *)(q->payload), q->len );
-                    if(ret){ break; }
+					recv_size += q->len;
+				} // for()
+			}
+			taskEXIT_CRITICAL();            /* é€€å‡ºä¸´ç•ŒåŒº */
 
-                    recv_size += q->len;
-                } // for()
-            }
-            taskEXIT_CRITICAL();            /* ÍË³öÁÙ½çÇø */
+			netbuf_delete(recvbuf); recvbuf = NULL;
+			if(ret){ return(-2); } // åº”è¯¥æ˜¯ç¼“å†²å®¹çº³ä¸äº†äº†
 
-            netbuf_delete(recvbuf); recvbuf = NULL;
-            if(ret){ return(-2); } // Ó¦¸ÃÊÇ»º³åÈİÄÉ²»ÁËÁË
+			if(out_recv_size){ (*out_recv_size) = recv_size; }
+		return(0);
 
-            if(out_recv_size){ (*out_recv_size) = recv_size; }
-        return(0);
-        ////
+		case ERR_TIMEOUT: // æš‚æ— æ•°æ®
+			if(recvbuf){ netbuf_delete(recvbuf); recvbuf = NULL; }
+		return(0);
 
-        case ERR_TIMEOUT: // ÔİÎŞÊı¾İ
-            if(recvbuf){ netbuf_delete(recvbuf); recvbuf = NULL; }
-            //OSTimeDlyHMSM(0,0,0,10);
-        return(0);
-        ////
-
-        case ERR_CLSD: // ¶Ô¶ËÒÑ¾­¹Ø±Õ
-        default:
-            if(recvbuf){ netbuf_delete(recvbuf); recvbuf = NULL; }
-        return(-3);
-    } // switch()
+		case ERR_CLSD: // å¯¹ç«¯å·²ç»å…³é—­
+		default:
+			if(recvbuf){ netbuf_delete(recvbuf); recvbuf = NULL; }
+		return(-3);
+	} // switch()
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_get_crc_bin_file_size_by_lwip
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı lwIP ·¢ËÍ HEAD ÇëÇó»ñÈ¡ crc_bin ÎÄ¼ş´óĞ¡
-*    ĞÎ    ²Î: ÎŞ(Ê¹ÓÃ sg_http_update_param ÖĞµÄ host/port/url)
-*    ·µ »Ø Öµ: 0-³É¹¦ <0-³ö´í(-1 DNS -2 IP -3Á¬½Ó -4·¢ËÍ -5/-6½ÓÊÕ -7½âÎö)
-*********************************************************************************************************
-*/
-int http_update_get_crc_bin_file_size_by_lwip(void)
-{
-    int ret = 0;
-    int cur_recv_size = 0;
-    bool be_timing = false;
-    unsigned int begin_ticks = 0, end_ticks = 0;
-    ip_addr_t server_addr = {0};
-    ////
-
-    // dns
-    if( (sg_http_update_param.http_host[0] < '0') || (sg_http_update_param.http_host[0] > '9') )
-    {
-        ret = dns_gethostbyname(sg_http_update_param.http_host, &server_addr, &http_update_cb_server_ip, (void *)(&server_addr));
-        if(ret != ERR_OK){ return(-1); }
-    }
-    else
-    {
-        ret = ipaddr_aton(sg_http_update_param.http_host, &server_addr);
-        if(ret != 1){ return(-2); }
-    }
-    memcpy( &(sg_http_update_param.http_server_addr),  &server_addr, sizeof(ip_addr_t) );
-
-    // Á¬½Ó·şÎñÆ÷
-    printf("\nÓĞÏßÁ¬½Ó·şÎñÆ÷ %s:%d ...\n", ipaddr_ntoa(&(sg_http_update_param.http_server_addr)), sg_http_update_param.http_port);
-    ret = http_update_connect_server_by_lwip( &(sg_http_update_param.http_server_addr), sg_http_update_param.http_port );
-    if(ret){ return(-3); }
-    led_control_function(LD_LAN, LD_FLICKER);
-
-    // ·¢ËÍhttpÇëÇó(HEADÇëÇó)
-    ret = http_update_send_request_for_crcbin_file_size_by_lwip( &(sg_http_update_param.http_server_addr), sg_http_update_param.http_port );
-    if(ret != ERR_OK)
-    {
-        http_update_close_connect_by_lwip();
-        return(-4);
-    }
-
-    // ½ÓÊÕÍêÕûµÄhttpÓ¦´ğÊı¾İ
-    sg_http_update_param.http_response_recv_size = 0;
-    if(sg_http_update_param.http_response_buff){ sg_http_update_param.http_response_buff[0] = 0; }
-    while(true)
-    {
-        // ½ÓÊÕÊı¾İ
-        ret = http_update_recv_reponse_by_lwip(&cur_recv_size);
-        if(ret)
-        {
-            http_update_close_connect_by_lwip();
-            return(-5);
-        }
-
-        // ÔİÊ±ÎŞÊı¾İ
-        if(!cur_recv_size)
-        {
-            if(!be_timing) // ·Ç¼ÆÊ±×´Ì¬
-            {
-                be_timing = true; // ¿ªÊ¼¼ÆÊ±
-                begin_ticks = HAL_GetTick();
-            }
-            else // ¼ÆÊ±×´Ì¬
-            {
-                end_ticks = HAL_GetTick();
-                if( (end_ticks - begin_ticks) >= (10 * configTICK_RATE_HZ) ) // ³¬Ê±10Ãë
-                {
-                    printf("\nhttp¸üĞÂ,ÎŞÊı¾İ½ÓÊÕ³¬Ê±....\n");
-                    http_update_close_connect_by_lwip();
-                    return(-6);
-                }
-            }
-            vTaskDelay(10);
-            continue;
-        }
-        else{ be_timing = false; } // Í£Ö¹¼ÆÊ±
-
-        // ÅĞ¶ÏhttpÓ¦´ğÍêÕûĞÔ
-        ret = http_update_check_response_completed();
-        if(ret == 0){ vTaskDelay(10); continue; } // Ö»½ÓÊÕhttpÍ·
-        else
-        {
-            //printf("\nhttpÓ¦´ğ:\n%s\n", (char *)(sg_http_update_param.http_response_buff));
-            break;
-        }
-    } //while()
-    ////
-
-    // ÏÈ¹Ø±ÕÁ¬½Ó
-    http_update_close_connect_by_lwip();
-    led_control_function(LD_LAN, LD_OFF);
-
-    // »ñµÃ crc_bin ÎÄ¼şµÄ´óĞ¡
-    ret = http_update_get_crc_bin_size(NULL);
-    if(ret < 0){ return(-7); }
-
-    return(0);
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: http_update_send_request_for_crcbin_file_size_by_lwip
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍ HEAD ÇëÇó²éÑ¯ crc_bin ÎÄ¼ş Content-Length
-*    ĞÎ    ²Î: server_ipaddr ·şÎñÆ÷ IP; server_port ¶Ë¿Ú
-*    ·µ »Ø Öµ: netconn_write ·µ»ØÖµ(ERR_OK Îª³É¹¦)
-*********************************************************************************************************
-*/
-static int http_update_send_request_for_crcbin_file_size_by_lwip(ip_addr_t *server_ipaddr, uint16_t server_port)
-{
-    char send_buf[256]={0};
-    char *append_pt = send_buf;
-    int ret = 0;
-    ////
-
-    sprintf(append_pt, "HEAD %s HTTP/1.1\r\n", sg_http_update_param.http_url); append_pt += strlen(append_pt);
-    sprintf(append_pt, "Host: %s:%d\r\n\r\n", ipaddr_ntoa(server_ipaddr), server_port); append_pt += strlen(append_pt); // ÌîĞ´IPµØÖ·(×îºÃ²»ÒªÌîĞ´ÓòÃû )
-
-    //printf("\nhttpÇëÇó:\n%s\n", send_buf);
-    ret = netconn_write(tcp_update, send_buf, (append_pt - send_buf), NETCONN_COPY);
-    return(ret);
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: http_update_cb_server_ip
-*    ¹¦ÄÜËµÃ÷: DNS ½âÎöÍê³É»Øµ÷,Ğ´Èë½âÎö½á¹û
-*    ĞÎ    ²Î: name ÓòÃû; ipaddr ½âÎö IP; arg Êä³ö»º³åÖ¸Õë
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: http_update_cb_server_ip
+*    åŠŸèƒ½è¯´æ˜: DNSè§£æå›è°ƒ,å°†è§£æç»“æœæ‹·è´åˆ°è¾“å‡ºå‚æ•°
+*    å½¢    å‚: name   DNSåŸŸå
+*              ipaddr è§£æå¾—åˆ°çš„IPåœ°å€
+*              arg    è¾“å‡ºå‚æ•°(ip_addr_t*)
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 static void http_update_cb_server_ip(const char *name, const ip_addr_t *ipaddr, void *arg)
 {
-    struct ip_addr *out_addr = (struct ip_addr *)arg;
-    ////
-
-    if( !ipaddr || !(ipaddr->addr) ){ return; }
-
-    memcpy(out_addr, ipaddr, sizeof(ip_addr_t));
+	ip_addr_t *out_addr = (ip_addr_t *)arg;
+	if( !ipaddr || !(ipaddr->addr) ){ return; }
+	memcpy(out_addr, ipaddr, sizeof(ip_addr_t));
 }
 
+/******************************************************************************
+ *  LWIP HTTP ä¸šåŠ¡å‡½æ•°
+ ******************************************************************************/
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_get_crc_bin_file_data_by_lwip
-*    ¹¦ÄÜËµÃ÷: Í¨¹ı lwIP ·Ö¿éÏÂÔØ crc_bin ¹Ì¼ş²¢Ğ´Èë SPI Flash
-*    ĞÎ    ²Î: ÎŞ(Ê¹ÓÃ sg_http_update_param ÖĞµÄ·Ö°ü²ÎÊı)
-*    ·µ »Ø Öµ: 0-³É¹¦ <0-³ö´í(-1Á¬½Ó -2·¢ËÍ -3 CRC -4½âÎö)
+*    å‡½ æ•° å: http_update_send_request_for_info_txt_by_lwip
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡LWIPå‘é€HTTP GETè¯·æ±‚è·å–info.txt
+*    å½¢    å‚: server_ipaddr æœåŠ¡å™¨IPåœ°å€
+*              server_port   æœåŠ¡å™¨ç«¯å£
+*    è¿” å› å€¼: ERR_OK:æˆåŠŸ  å…¶å®ƒ:å¤±è´¥
 *********************************************************************************************************
 */
-int http_update_get_crc_bin_file_data_by_lwip(void)
+static int http_update_send_request_for_info_txt_by_lwip(ip_addr_t *server_ipaddr, uint16_t server_port)
 {
-    int ret = 0;
-    int cur_recv_size = 0;
-    bool be_timing = false;
-    unsigned int begin_ticks = 0, end_ticks = 0;
-    unsigned int crc_check_err_times = 0, connect_times = 0;
-    ////
+	char send_buf[256]={0};
+	int len = 0;
 
-    sg_http_update_param.section_current = 0;
+	len = http_update_build_info_txt_request(send_buf, sizeof(send_buf), ipaddr_ntoa(server_ipaddr), server_port);
+	if(len < 0){ return(ERR_ARG); }
 
-RECONNECT:
+	return netconn_write(tcp_update, send_buf, len, NETCONN_COPY);
+}
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: http_update_get_info_txt_by_lwip
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡LWIPè·å–info.txtå‡çº§ä¿¡æ¯å¹¶æ£€æŸ¥ç‰ˆæœ¬
+*    å½¢    å‚: server_ipaddr æœåŠ¡å™¨IPåœ°å€
+*              server_port   æœåŠ¡å™¨ç«¯å£
+*    è¿” å› å€¼: 1:ç‰ˆæœ¬å·ä¸åŒéœ€è¦æ›´æ–°  2:ç‰ˆæœ¬å·ç›¸åŒæ— éœ€æ›´æ–°  <0:å‡ºé”™
+*********************************************************************************************************
+*/
+int http_update_get_info_txt_by_lwip(ip_addr_t *server_ipaddr, uint16_t server_port)
+{
+	int ret = 0;
 
-    // Á¬½Ó·şÎñÆ÷
-    printf("\nÓĞÏßÁ¬½Ó·şÎñÆ÷ %s:%d ...\n", ipaddr_ntoa(&(sg_http_update_param.http_server_addr)), sg_http_update_param.http_port);
-    ret = http_update_connect_server_by_lwip( &(sg_http_update_param.http_server_addr), sg_http_update_param.http_port );
-    if(ret)
-    {
-        connect_times++; // Á¬ĞøÁ¬½ÓÊ§°ÜµÄ´ÎÊı
-        if(connect_times > 10){ return(-1); }
-        goto RECONNECT;
-    }
-    connect_times = 0;
-    led_control_function(LD_LAN, LD_FLICKER);
+	// è¿æ¥æœåŠ¡å™¨
+	printf("\nLWIP connecting server %s:%d ...\n", ipaddr_ntoa(server_ipaddr), server_port);
+	ret = http_update_connect_server_by_lwip(server_ipaddr, server_port);
+	if(ret){ return(-1); }
+	led_control_function(LD_LAN, LD_FLICKER);
 
-    // Ñ­»·ÇëÇó¡¢½ÓÊÕÊı¾İ¿é
-    while(sg_http_update_param.section_current < sg_http_update_param.section_total)
-    {
-        // ·¢ËÍhttpÇëÇó(GETÇëÇó)
-        ret = http_update_send_request_for_crcbin_data_by_lwip( &(sg_http_update_param.http_server_addr), sg_http_update_param.http_port );
-        if(ret == ERR_CLSD)
-        {
-            http_update_close_connect_by_lwip();
-            goto RECONNECT;
-        }
-        else if(ret != ERR_OK)
-        {
-            http_update_close_connect_by_lwip();
-            return(-2);
-        }
+	// å‘é€httpè¯·æ±‚
+	ret = http_update_send_request_for_info_txt_by_lwip(server_ipaddr, server_port);
+	if(ret)
+	{
+		http_update_close_connect_by_lwip();
+		return(-2);
+	}
 
-        // ½ÓÊÕÍêÕûµÄhttpÓ¦´ğÊı¾İ
-        sg_http_update_param.http_response_recv_size = 0;
-        be_timing = false;
-        begin_ticks = 0;
-        end_ticks = 0;
-        while(true)
-        {
-            // ½ÓÊÕÊı¾İ
-            ret = http_update_recv_reponse_by_lwip(&cur_recv_size);
-            if(ret == -3) // ·şÎñÆ÷¶Ï¿ª,ĞèÒªÖØĞÂÁ¬½Ó
-            {
-                http_update_close_connect_by_lwip();
-                goto RECONNECT;
-            }
-            else if(ret) // ÆäËüÒì³£
-            {
-                http_update_close_connect_by_lwip();
-                return(-3);
-            }
-
-            // ÔİÊ±ÎŞÊı¾İ
-            if(!cur_recv_size)
-            {
-                if(!be_timing) // ·Ç¼ÆÊ±×´Ì¬
-                {
-                    be_timing = true; // ¿ªÊ¼¼ÆÊ±
-                    begin_ticks = HAL_GetTick();
-                }
-                else // ¼ÆÊ±×´Ì¬
-                {
-                    end_ticks = HAL_GetTick();
-                    if( (end_ticks - begin_ticks) >= (10 * configTICK_RATE_HZ) ) // ³¬Ê±10Ãë
-                    {
-                        //printf("\nhttp¸üĞÂ,ÎŞÊı¾İ½ÓÊÕ³¬Ê±,ÖØĞÂ·¢ÆğÁ¬½Ó ....\n");
-                        http_update_close_connect_by_lwip();
-                        goto RECONNECT;
-                    }
-                }
-                vTaskDelay(10);
-                continue;
-            }
-
-            else{ be_timing = false; } // Í£Ö¹¼ÆÊ±
-
-            // ÅĞ¶ÏhttpÓ¦´ğÍêÕûĞÔ
-            ret = http_update_check_response_completed();
-            if(ret != 2){ vTaskDelay(10); continue; }
-            else
-            {
-                //printf("\nhttpÓ¦´ğ:\n%s\n", (char *)(sg_http_update_param.http_response_buff));
-                printf("\n¶Î: %u/%u\n", sg_http_update_param.section_current, sg_http_update_param.section_total);
-                break;
-            }
-        } //while(½ÓÊÕÍêÕûµÄhttpÓ¦´ğÊı¾İ)
-
-        // ½âÎö¡¢±£´æÊı¾İ
-        ret = http_update_parse_crc_bin_data();
-        if(ret)
-        {
-            if(ret == -5) // Å¼¶û»á³öÏÖĞ£Ñé´íÎó,´ËÊ±ÖØĞÂÏÂÔØ¼´¿É
-            {
-                crc_check_err_times++; // Á¬ĞøĞ£Ñé´íÎóµÄ´ÎÊı
-                if(crc_check_err_times > 10){ return(-3); }
-                continue;
-            }
-            else{ return(-4); }
-        }
-
-        crc_check_err_times = 0;
-    } // while(Ñ­»·ÇëÇó¡¢½ÓÊÕÊı¾İ¿é)
-    ////
-
-    // ÏÈ¹Ø±ÕÁ¬½Ó
-    http_update_close_connect_by_lwip();
-    led_control_function(LD_LAN, LD_OFF);
-
-    return(0);
+	ret = http_update_finish_get_info_txt(http_update_recv_reponse_by_lwip,
+	                                       http_update_close_connect_by_lwip);
+	led_control_function(LD_LAN, LD_OFF);
+	return(ret);
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: http_update_send_request_for_crcbin_data_by_lwip
-*    ¹¦ÄÜËµÃ÷: ·¢ËÍ´ø Range µÄ GET ÇëÇóÏÂÔØµ±Ç°¹Ì¼ş·Ö¿é
-*    ĞÎ    ²Î: server_ipaddr ·şÎñÆ÷ IP; server_port ¶Ë¿Ú
-*    ·µ »Ø Öµ: netconn_write ·µ»ØÖµ(ERR_OK Îª³É¹¦)
+*    å‡½ æ•° å: http_update_send_request_for_crcbin_file_size_by_lwip
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡LWIPå‘é€HTTP HEADè¯·æ±‚è·å–crc_binæ–‡ä»¶å¤§å°
+*    å½¢    å‚: server_ipaddr æœåŠ¡å™¨IPåœ°å€
+*              server_port   æœåŠ¡å™¨ç«¯å£
+*    è¿” å› å€¼: ERR_OK:æˆåŠŸ  å…¶å®ƒ:å¤±è´¥
+*********************************************************************************************************
+*/
+static int http_update_send_request_for_crcbin_file_size_by_lwip(ip_addr_t *server_ipaddr, uint16_t server_port)
+{
+	char send_buf[256]={0};
+	int len = 0;
+
+	len = http_update_build_head_request(send_buf, sizeof(send_buf), ipaddr_ntoa(server_ipaddr), server_port);
+	if(len < 0){ return(ERR_ARG); }
+
+	return netconn_write(tcp_update, send_buf, len, NETCONN_COPY);
+}
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: http_update_get_crc_bin_file_size_by_lwip
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡LWIPè·å–crc_binæ–‡ä»¶å¤§å°(DNSè§£æ+HEADè¯·æ±‚)
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: 0:æˆåŠŸ  <0:å‡ºé”™
+*********************************************************************************************************
+*/
+int http_update_get_crc_bin_file_size_by_lwip(void)
+{
+	int ret = 0;
+	ip_addr_t server_addr = {0};
+	////
+
+	// dns
+	if( (sg_http_update_param.http_host[0] < '0') || (sg_http_update_param.http_host[0] > '9') )
+	{
+		ret = dns_gethostbyname(sg_http_update_param.http_host, &server_addr, &http_update_cb_server_ip, (void *)(&server_addr));
+		if(ret != ERR_OK){ return(-1); }
+	}
+	else
+	{
+		ret = ipaddr_aton(sg_http_update_param.http_host, &server_addr);
+		if(ret != 1){ return(-2); }
+	}
+	memcpy( &(sg_http_update_param.http_server_addr),  &server_addr, sizeof(ip_addr_t) );
+
+	// è¿æ¥æœåŠ¡å™¨
+	printf("\nLWIP connecting server %s:%d ...\n", ipaddr_ntoa(&(sg_http_update_param.http_server_addr)), sg_http_update_param.http_port);
+	ret = http_update_connect_server_by_lwip( &(sg_http_update_param.http_server_addr), sg_http_update_param.http_port );
+	if(ret){ return(-3); }
+	led_control_function(LD_LAN, LD_FLICKER);
+
+	// å‘é€httpè¯·æ±‚(HEADè¯·æ±‚)
+	ret = http_update_send_request_for_crcbin_file_size_by_lwip( &(sg_http_update_param.http_server_addr), sg_http_update_param.http_port );
+	if(ret != ERR_OK)
+	{
+		http_update_close_connect_by_lwip();
+		return(-4);
+	}
+
+	ret = http_update_finish_get_crc_bin_size(http_update_recv_reponse_by_lwip,
+	                                           http_update_close_connect_by_lwip);
+	led_control_function(LD_LAN, LD_OFF);
+	return(ret);
+}
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: http_update_send_request_for_crcbin_data_by_lwip
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡LWIPå‘é€HTTP GETè¯·æ±‚(Rangeåˆ†æ®µ)è·å–crc_binæ•°æ®å—
+*    å½¢    å‚: server_ipaddr æœåŠ¡å™¨IPåœ°å€
+*              server_port   æœåŠ¡å™¨ç«¯å£
+*    è¿” å› å€¼: ERR_OK:æˆåŠŸ  å…¶å®ƒ:å¤±è´¥
 *********************************************************************************************************
 */
 static int http_update_send_request_for_crcbin_data_by_lwip(ip_addr_t *server_ipaddr, uint16_t server_port)
 {
-    char send_buf[256]={0};
-    char *append_pt = send_buf;
-    int ret = 0;
-    unsigned int download_start = 0, download_end = 0;
-    ////
+	char send_buf[256]={0};
+	int len = 0;
 
-    sprintf(append_pt, "GET %s HTTP/1.1\r\n", sg_http_update_param.http_url); append_pt += strlen(append_pt);
-    sprintf(append_pt, "Host: %s:%d\r\n", ipaddr_ntoa(server_ipaddr), server_port); append_pt += strlen(append_pt); // ÌîĞ´IPµØÖ·(×îºÃ²»ÒªÌîĞ´ÓòÃû )
+	len = http_update_build_range_request(send_buf, sizeof(send_buf), ipaddr_ntoa(server_ipaddr), server_port);
+	if(len < 0){ return(ERR_ARG); }
 
-    download_start = (sg_http_update_param.section_current * UPDATE_CHUNK_SIZE);
-    download_end = (download_start + UPDATE_CHUNK_SIZE - 1);
-    sprintf(append_pt, "Range: bytes=%d-%d\r\n\r\n", download_start, download_end); append_pt += strlen(append_pt);
-
-    //printf("\nhttpÇëÇó:\n%s\n", send_buf);
-    ret = netconn_write(tcp_update, send_buf, (append_pt - send_buf), NETCONN_COPY);
-    return(ret);
-}
-
-/* ======================== ÓĞÏß OTA ºóÌ¨ÈÎÎñ ======================== */
-
-#define UPDATE_LWIP_TASK_PRIO           (7U)
-#define UPDATE_LWIP_TASK_STK            (4096U)
-static TaskHandle_t s_update_lwip_task = NULL;
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: update_lwip_task_done
-*    ¹¦ÄÜËµÃ÷: OTA ºóÌ¨ÈÎÎñ½áÊø,Çå³ıÈÎÎñ¾ä±ú
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
-*********************************************************************************************************
-*/
-static void update_lwip_task_done(void)
-{
-    s_update_lwip_task = NULL;
+	return netconn_write(tcp_update, send_buf, len, NETCONN_COPY);
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: update_lwip_bg_task
-*    ¹¦ÄÜËµÃ÷: FreeRTOS ÓĞÏß OTA ºóÌ¨ÈÎÎñ,Ö´ĞĞÉı¼¶²¢ÇåÀíÄ£Ê½ºó×ÔÉ¾³ı
-*    ĞÎ    ²Î: pvParameters Î´Ê¹ÓÃ
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: http_update_get_crc_bin_file_data_by_lwip
+*    åŠŸèƒ½è¯´æ˜: é€šè¿‡LWIPåˆ†æ®µä¸‹è½½crc_binæ–‡ä»¶æ•°æ®å¹¶å†™å…¥Flash
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: 0:æˆåŠŸ  <0:å‡ºé”™
 *********************************************************************************************************
 */
-static void update_lwip_bg_task(void *pvParameters)
+int http_update_get_crc_bin_file_data_by_lwip(void)
 {
-    (void)pvParameters;
+	int ret = 0;
+	unsigned int crc_check_err_times = 0, connect_times = 0;
 
-    FeedFwdgt();
+	sg_http_update_param.section_current = 0;
 
-    (void)update_lwip_task_function();
-    if (update_get_mode_function() != UPDATE_MODE_NULL)
-    {
-        update_set_update_mode(UPDATE_MODE_NULL);
-    }
-    update_lwip_task_done();
-    vTaskDelete(NULL);
+RECONNECT:
+
+	// è¿æ¥æœåŠ¡å™¨
+	printf("\nLWIP connecting server %s:%d ...\n", ipaddr_ntoa(&(sg_http_update_param.http_server_addr)), sg_http_update_param.http_port);
+	ret = http_update_connect_server_by_lwip( &(sg_http_update_param.http_server_addr), sg_http_update_param.http_port );
+	if(ret)
+	{
+		connect_times++;
+		if(connect_times > 10){ return(-1); }
+		goto RECONNECT;
+	}
+	connect_times = 0;
+	led_control_function(LD_LAN, LD_FLICKER);
+
+	// å¾ªç¯è¯·æ±‚ã€æ¥æ”¶æ•°æ®å—
+	while(sg_http_update_param.section_current < sg_http_update_param.section_total)
+	{
+		ret = http_update_send_request_for_crcbin_data_by_lwip( &(sg_http_update_param.http_server_addr), sg_http_update_param.http_port );
+		if(ret == ERR_CLSD)
+		{
+			http_update_close_connect_by_lwip();
+			goto RECONNECT;
+		}
+		else if(ret != ERR_OK)
+		{
+			http_update_close_connect_by_lwip();
+			return(-2);
+		}
+
+		ret = http_update_recv_parse_one_chunk(http_update_recv_reponse_by_lwip,
+		                                        http_update_close_connect_by_lwip);
+		if(ret == -1)
+		{
+			goto RECONNECT;
+		}
+		else if(ret == -2)
+		{
+			return(-3);
+		}
+		else if(ret == 1)
+		{
+			crc_check_err_times++;
+			if(crc_check_err_times > 10){ return(-3); }
+			continue;
+		}
+
+		crc_check_err_times = 0;
+	}
+
+	http_update_close_connect_by_lwip();
+	led_control_function(LD_LAN, LD_OFF);
+
+	return(0);
+}
+
+/* ======================== æœ‰çº¿ OTA åå°ä»»åŠ¡ç®¡ç† ======================== */
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: update_lwip_task_create
+*    åŠŸèƒ½è¯´æ˜: æœ‰çº¿ OTA åå°ä»»åŠ¡åˆ›å»º(ç”±ä¸»å¾ªç¯è°ƒç”¨)
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
+*    å¤‡    æ³¨: æ£€æµ‹åˆ° LWIP å‡çº§æ¨¡å¼ä¸”ä»»åŠ¡æœªè¿è¡Œæ—¶,åˆ›å»ºåå°ä»»åŠ¡
+*********************************************************************************************************
+*/
+void update_lwip_task_create(void)
+{
+	BaseType_t ret;
+
+	if(update_get_mode_function() != UPDATE_MODE_LWIP){ return; }
+	if(s_update_lwip_exit_req){ return; }   /* æœ‰ä»»åŠ¡å¾…å›æ”¶, æœ¬è½®å…ˆä¸åˆ›å»º */
+	if(s_update_lwip_task != NULL){ return; }
+
+	ret = xTaskCreate(  update_lwip_task,
+	                    "ota_lwip",
+	                    UPDATE_LWIP_TASK_STK,
+	                    NULL,
+	                    UPDATE_LWIP_TASK_PRIO,
+	                    &s_update_lwip_task);
+	if(ret != pdPASS){ s_update_lwip_task = NULL; }
 }
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: update_lwip_task_function
-*    ¹¦ÄÜËµÃ÷: ÓĞÏß OTA ºóÌ¨ÈÎÎñÈë¿Ú
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: 0 ³É¹¦,-1 Ê§°Ü
+*    å‡½ æ•° å: update_lwip_delete
+*    åŠŸèƒ½è¯´æ˜: å›æ”¶å·²å®Œæˆå¹¶åœåˆ°å®‰å…¨ç‚¹çš„æœ‰çº¿OTAä»»åŠ¡; é¡»ç”± eth ä»»åŠ¡ç­‰å…¶å®ƒä»»åŠ¡ä¸Šä¸‹æ–‡å‘¨æœŸè°ƒç”¨,
+*              ä»¥åœ¨å¤–éƒ¨ä¸Šä¸‹æ–‡ vTaskDelete, ç«‹å³å›æ”¶æ ˆ/TCB, é¿å…è‡ªåˆ é™¤å»¶è¿Ÿå›æ”¶å¯¼è‡´å†…å­˜ä¸è¶³
+*    å½¢    å‚: æ— 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
-int8_t update_lwip_task_function(void)
+void update_lwip_delete(void)
 {
-    ip_addr_t server_ipaddr;
-    uint16_t  server_port;
-    int8_t    ret = 0;
-    update_param_t *updateparam = NULL;
+	TaskHandle_t h;
 
-    struct update_addr *param = app_get_http_ota_function();
+	if(s_update_lwip_exit_req == 0){ return; }
 
-    if (g_lwipdev.tcp_status != LWIP_TCP_NO_CONNECT)
-    {
-        eth_set_tcp_connect_reset();
-        vTaskDelay(200);
-    }
-    updateparam = update_get_infor_data_function();
-    server_port = param->port;
-    IP4_ADDR(&server_ipaddr, param->ip[0], param->ip[1], param->ip[2], param->ip[3]);
+	taskENTER_CRITICAL();
+	h = s_update_lwip_task;
+	s_update_lwip_task = NULL;
+	s_update_lwip_exit_req = 0;
+	taskEXIT_CRITICAL();
 
-    sg_http_update_param.section_len = (UPDATE_CHUNK_SIZE - 2);
-    sg_http_update_param.http_response_recv_size = 0;
-
-    ret = http_update_get_info_txt_by_lwip(&server_ipaddr, server_port);
-    if ((ret < 0) || (ret == 2))
-    {
-        if (ret < 0)
-        {
-            printf("\n»ñµÃinfo.txtĞÅÏ¢,Ê§°Ü! ret: %d\n", ret);
-        }
-        else
-        {
-            printf("\n°æ±¾ÊÇ×îĞÂ°æ±¾,ÎŞĞè¸üĞÂ!\n");
-        }
-        goto UPDATE_END;
-    }
-
-    ret = http_update_get_crc_bin_file_size_by_lwip();
-    if (ret < 0)
-    {
-        printf("\n»ñµÃcrc_binÎÄ¼ş´óĞ¡,Ê§°Ü! ret: %d\n", ret);
-        goto UPDATE_END;
-    }
-
-    ret = http_update_get_crc_bin_file_data_by_lwip();
-    if (ret < 0)
-    {
-        printf("\n»ñµÃcrc_binÎÄ¼şÄÚÈİ,Ê§°Ü! ret: %d\n", ret);
-        goto UPDATE_END;
-    }
-
-    printf("\nÉı¼¶Íê³É,ÖØÆôÉè±¸...\n");
-    http_update_success_reboot();
-    ret = 0;
-
-UPDATE_END:
-    http_update_close_connect_by_lwip();
-    printf("update end\n");
-    updateparam->mode = UPDATE_MODE_NULL;
-    if (ret < 0)
-    {
-        http_update_failed();
-        return -1;
-    }
-    return 0;
+	if(h != NULL){ vTaskDelete(h); }
 }
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: update_lwip_poll
-*    ¹¦ÄÜËµÃ÷: ÓĞÏß OTA ºóÌ¨ÈÎÎñÂÖÑ¯
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: ÎŞ
-*********************************************************************************************************
-*/
-void update_lwip_poll(void)
-{
-    BaseType_t ret;
-    if (update_get_mode_function() != UPDATE_MODE_LWIP)
-    {
-        return;
-    }
-    if (s_update_lwip_task != NULL)
-    {
-        return;
-    }
-
-    ret = xTaskCreate(update_lwip_bg_task,
-                        "ota_lwip",
-                        UPDATE_LWIP_TASK_STK,
-                        NULL,
-                        UPDATE_LWIP_TASK_PRIO,
-                        &s_update_lwip_task);
-
-    if (ret != pdPASS)
-    {
-        s_update_lwip_task = NULL;
-    }
-}
-
-/*
-*********************************************************************************************************
-*    º¯ Êı Ãû: update_lwip_is_running
-*    ¹¦ÄÜËµÃ÷: ÓĞÏß OTA ºóÌ¨ÈÎÎñÊÇ·ñÔËĞĞÖĞ
-*    ĞÎ    ²Î: ÎŞ
-*    ·µ »Ø Öµ: 1-ÔËĞĞÖĞ 0-¿ÕÏĞ
-*********************************************************************************************************
-*/
-uint8_t update_lwip_is_running(void)
-{
-    return (uint8_t)(s_update_lwip_task != NULL);
-}
-

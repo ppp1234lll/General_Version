@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_msc_core.c
     \brief   USB MSC device class core functions
 

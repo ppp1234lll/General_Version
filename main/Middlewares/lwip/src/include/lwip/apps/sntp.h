@@ -1,10 +1,10 @@
-/**
+﻿/**
  * @file
  * SNTP client API
  */
 
 /*
- * Copyright (c) 2007-2009 Frédéric Bernon, Simon Goldschmidt
+ * Copyright (c) 2007-2009 FrÃ©dÃ©ric Bernon, Simon Goldschmidt
  * All rights reserved.
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -26,7 +26,7 @@
  * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
  * OF SUCH DAMAGE.
  * This file is part of the lwIP TCP/IP stack.
- * Author: Frédéric Bernon, Simon Goldschmidt
+ * Author: FrÃ©dÃ©ric Bernon, Simon Goldschmidt
  */
 #ifndef LWIP_HDR_APPS_SNTP_H
 #define LWIP_HDR_APPS_SNTP_H

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * NETDB API (sockets)
  */

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_transc.h
     \brief   USB transaction core functions prototype
 

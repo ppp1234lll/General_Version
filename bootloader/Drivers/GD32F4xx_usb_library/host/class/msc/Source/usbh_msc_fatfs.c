@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_msc_fatfs.c
     \brief   USB MSC host FATFS related functions
 

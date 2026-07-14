@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Dynamic memory manager
  * This is a lightweight replacement for the standard C library malloc().

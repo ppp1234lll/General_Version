@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_crc.h
     \brief   definitions for the CRC
 

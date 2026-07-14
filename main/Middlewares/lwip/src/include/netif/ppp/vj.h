@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Definitions for tcp compression routines.
  * $Id: vj.h,v 1.7 2010/02/22 17:52:09 goldsimon Exp $
  * Copyright (c) 1989 Regents of the University of California.

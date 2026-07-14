@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  * Copyright (c) 2001-2003 Swedish Institute of Computer Science.
  * All rights reserved. 
  * 
@@ -31,12 +31,12 @@
 #include "lwip/opt.h"
 #include "fs.h"
 
-//fsdata_file½á¹¹Ìå
+//fsdata_fileç»“æ„ä½“
 struct fsdata_file {
-  const struct fsdata_file *next; //Ö¸ÏòÒ»¸öfsdata_fileÎÄ¼ş
-  const unsigned char *name;  //Ãû×Ö
-  const unsigned char *data;  //Êı¾İ
-  int len;                                         //³¤¶È
+  const struct fsdata_file *next; //æŒ‡å‘ä¸€ä¸ªfsdata_fileæ–‡ä»¶
+  const unsigned char *name;  //åå­—
+  const unsigned char *data;  //æ•°æ®
+  int len;                                         //é•¿åº¦
   u8_t http_header_included;
 #if HTTPD_PRECALCULATED_CHECKSUM
   u16_t chksum_count;

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_msc_mem.h
     \brief   header file for storage memory
 

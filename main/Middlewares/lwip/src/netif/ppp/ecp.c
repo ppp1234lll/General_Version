@@ -1,4 +1,4 @@
-/*
+﻿/*
  * ecp.c - PPP Encryption Control Protocol.
  * Copyright (c) 2002 Google, Inc.
  * All rights reserved.

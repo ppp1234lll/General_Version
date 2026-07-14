@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * IGMP - Internet Group Management Protocol
  * @defgroup igmp IGMP

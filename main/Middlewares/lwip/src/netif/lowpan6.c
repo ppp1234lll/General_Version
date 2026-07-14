@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * 6LowPAN output for IPv6. Uses ND tables for link-layer addressing. Fragments packets to 6LowPAN units.
  * This implementation aims to conform to IEEE 802.15.4(-2015), RFC 4944 and RFC 6282.

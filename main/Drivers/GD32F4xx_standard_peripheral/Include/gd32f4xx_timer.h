@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_timer.h
     \brief   definitions for the TIMER
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * netconn API lwIP internal implementations (do not use in application code)
  */

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_it.c
     \brief   interrupt service routines
 

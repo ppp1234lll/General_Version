@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    drv_usbd_int.c
     \brief   USB device mode interrupt routines
 

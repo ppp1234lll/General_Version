@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * SNMP RAW API frontend.
  */

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_trng.c
     \brief   TRNG driver
 

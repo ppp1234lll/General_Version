@@ -17,10 +17,10 @@ static int8_t setting_snmp_test_function(char *pcParam[], char *pcValue[], uint8
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_login_function
-*    ¹¦ÄÜËµÃ÷: µÇÂ¼Ò³Ãæ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: ÎŞ
+*    å‡½ æ•° å: httpd_cgi_login_function
+*    åŠŸèƒ½è¯´æ˜: ç™»å½•é¡µé¢
+*    å½¢    å‚: 
+*    è¿” å› å€¼: æ— 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_login_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -31,7 +31,7 @@ int8_t httpd_cgi_login_function(int iNumParams, char *pcParam[], char *pcValue[]
     {
         for (uint8_t i=1; i< (iNumParams); i++)
         {
-            /* ¼à²âÃû³Æ */
+            /* ç›‘æµ‹åç§° */
             if (strcmp(pcParam[i], "username")==0)
             {
                 if(strcmp(pcValue[i], "root")==0)
@@ -39,7 +39,7 @@ int8_t httpd_cgi_login_function(int iNumParams, char *pcParam[], char *pcValue[]
                     login_cnt++;
                 }
             }
-            /* ¼à²âÃÜÂë */
+            /* ç›‘æµ‹å¯†ç  */
             if (strcmp(pcParam[i], "password")==0)
             {
                 if(app_match_password_function(pcValue[i]) == 0)
@@ -48,7 +48,7 @@ int8_t httpd_cgi_login_function(int iNumParams, char *pcParam[], char *pcValue[]
                 }
             }
         }
-        /* ¼à²â×´Ì¬ */
+        /* ç›‘æµ‹çŠ¶æ€ */
         if(login_cnt == 2)
         {
             if( app_match_set_code_function() == 1 ) 
@@ -71,10 +71,10 @@ int8_t httpd_cgi_login_function(int iNumParams, char *pcParam[], char *pcValue[]
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_login_mod_function
-*    ¹¦ÄÜËµÃ÷: ÃÜÂëĞŞ¸ÄÒ³Ãæ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_login_mod_function
+*    åŠŸèƒ½è¯´æ˜: å¯†ç ä¿®æ”¹é¡µé¢
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_login_mod_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -83,11 +83,11 @@ int8_t httpd_cgi_login_mod_function(int iNumParams, char *pcParam[], char *pcVal
     uint8_t i  = 0;
     uint8_t size = 0;
     
-    /* ĞŞ¸ÄÃÜÂë */
+    /* ä¿®æ”¹å¯†ç  */
     if (strcmp(pcValue[0], "changePassword")==0) {
         
         for (i=1; i< (iNumParams); i++){
-            /* ¼à²âÃÜÂë */
+            /* ç›‘æµ‹å¯†ç  */
             if (strcmp(pcParam[i], "password")==0)
             {
                 memset(param.password,0,sizeof(param.password));
@@ -98,7 +98,7 @@ int8_t httpd_cgi_login_mod_function(int iNumParams, char *pcParam[], char *pcVal
                 memcpy(param.password,pcValue[i],size);
                 
                 set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
-                /* ´æ´¢ÃÜÂë */
+                /* å­˜å‚¨å¯†ç  */
                 app_set_code_function(param);
             }
         }
@@ -110,10 +110,10 @@ int8_t httpd_cgi_login_mod_function(int iNumParams, char *pcParam[], char *pcVal
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_select_function
-*    ¹¦ÄÜËµÃ÷: ÏÂÀ­¿ò
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_select_function
+*    åŠŸèƒ½è¯´æ˜: ä¸‹æ‹‰æ¡†
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_select_function(char *pcValue[])
@@ -127,10 +127,10 @@ int8_t httpd_cgi_select_function(char *pcValue[])
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: setting_switch_status_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃ¿ª¹Ø×´Ì¬
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: setting_switch_status_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®å¼€å…³çŠ¶æ€
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 static void setting_switch_status_function(char *pcParam[], char *pcValue[],uint8_t i)
@@ -150,10 +150,10 @@ static void setting_switch_status_function(char *pcParam[], char *pcValue[],uint
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_switch_function
-*    ¹¦ÄÜËµÃ÷: ¿ª¹ØÁ¿
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_switch_function
+*    åŠŸèƒ½è¯´æ˜: å¼€å…³é‡
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_switch_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -174,10 +174,10 @@ int8_t httpd_cgi_switch_function(int iNumParams, char *pcParam[], char *pcValue[
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: setting_threshold_time
-*    ¹¦ÄÜËµÃ÷: ÅäÖÃÊ±¼ä¶Î
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: setting_threshold_time
+*    åŠŸèƒ½è¯´æ˜: é…ç½®æ—¶é—´æ®µ
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 static void setting_threshold_time(char *buff,uint8_t mode)
@@ -214,10 +214,10 @@ static void setting_threshold_time(char *buff,uint8_t mode)
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: setting_threshold_parameter_function
-*    ¹¦ÄÜËµÃ÷: ãĞÖµ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: setting_threshold_parameter_function
+*    åŠŸèƒ½è¯´æ˜: é˜ˆå€¼
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 static int8_t setting_threshold_parameter_function(char *pcParam[], char *pcValue[],uint8_t i)
@@ -225,56 +225,56 @@ static int8_t setting_threshold_parameter_function(char *pcParam[], char *pcValu
     static struct threshold_params param = {0};
     int8_t  ret  = 0;
     
-    /* ÏµÍ³ÉèÖÃ */
-    if (strcmp(pcParam[i] , "aa")==0) // µçÑ¹
+    /* ç³»ç»Ÿè®¾ç½® */
+    if (strcmp(pcParam[i] , "aa")==0) // ç”µå‹
     {
         param.volt_max = atoi(pcValue[i]); return ret;
     }
-    if (strcmp(pcParam[i] , "ab")==0) // µçÑ¹
+    if (strcmp(pcParam[i] , "ab")==0) // ç”µå‹
     {
         param.volt_min = atoi(pcValue[i]); return ret;
     }    
-    if (strcmp(pcParam[i] , "ac")==0) // µçÁ÷
+    if (strcmp(pcParam[i] , "ac")==0) // ç”µæµ
     {
         param.current = atoi(pcValue[i]); return ret;        
     }
-    if (strcmp(pcParam[i] , "ad")==0) // ½Ç¶È
+    if (strcmp(pcParam[i] , "ad")==0) // è§’åº¦
     {
         param.angle = atoi(pcValue[i]); return ret;
     }
-    if (strcmp(pcParam[i] , "ae")==0) // ¸ßÎÂ
+    if (strcmp(pcParam[i] , "ae")==0) // é«˜æ¸©
     {
         param.temp_high = atoi(pcValue[i]); return ret;
     }    
-    if (strcmp(pcParam[i] , "af")==0) // µÍÎÂ
+    if (strcmp(pcParam[i] , "af")==0) // ä½æ¸©
     {
         param.temp_low = atoi(pcValue[i]); return ret;
     }        
-    if (strcmp(pcParam[i] , "ag")==0) // ¸ßÊª
+    if (strcmp(pcParam[i] , "ag")==0) // é«˜æ¹¿
     {
         param.humi_high = atoi(pcValue[i]); return ret; 
     }        
-    if (strcmp(pcParam[i] , "ah")==0) // µÍÊª¶È
+    if (strcmp(pcParam[i] , "ah")==0) // ä½æ¹¿åº¦
     {
         param.humi_low = atoi(pcValue[i]);  return ret; 
     }
-    if (strcmp(pcParam[i] , "ak")==0) // ÏäÃÅÊ±¼ä
+    if (strcmp(pcParam[i] , "ak")==0) // ç®±é—¨æ—¶é—´
     {
         setting_threshold_time(pcValue[i],0);  return ret;
     }
-    if (strcmp(pcParam[i] , "am")==0) // Â©µç
+    if (strcmp(pcParam[i] , "am")==0) // æ¼ç”µ
     {
         param.miu = atoi(pcValue[i]); return ret;
     }    
-    if (strcmp(pcParam[i] , "bc")==0) // ÖØÆô´ÎÊı
+    if (strcmp(pcParam[i] , "bc")==0) // é‡å¯æ¬¡æ•°
     {
         param.net_reload = atoi(pcValue[i]); return ret;
     }    
-    if (strcmp(pcParam[i] , "bd")==0) // ÖØÆôÊ±¼ä¼ä¸ô
+    if (strcmp(pcParam[i] , "bd")==0) // é‡å¯æ—¶é—´é—´éš”
     {
         param.net_retime = atoi(pcValue[i]);
     }  
-    if (strcmp(pcParam[i] , "bg")==0) // ÍøÂçÑÓÊ±Ê±¼ä
+    if (strcmp(pcParam[i] , "bg")==0) // ç½‘ç»œå»¶æ—¶æ—¶é—´
     {
 		param.net_delay_time = atoi(pcValue[i]);
 		app_set_threshold_param_function(param);
@@ -284,10 +284,10 @@ static int8_t setting_threshold_parameter_function(char *pcParam[], char *pcValu
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_set_threshold_function
-*    ¹¦ÄÜËµÃ÷: ãĞÖµÉèÖÃ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_set_threshold_function
+*    åŠŸèƒ½è¯´æ˜: é˜ˆå€¼è®¾ç½®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_set_threshold_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -319,10 +319,10 @@ int8_t httpd_cgi_set_threshold_function(int iNumParams, char *pcParam[], char *p
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: urldecode
-*    ¹¦ÄÜËµÃ÷: ½âÂëurl
-*    ĞÎ    ²Î: buff - 2×Ö½Ú×Ö·û´®£¨Èç"2F"¡ú0x2F£©
-*    ·µ »Ø Öµ: ×ª»»ºóµÄÊ®Áù½øÖÆÖµ
+*    å‡½ æ•° å: urldecode
+*    åŠŸèƒ½è¯´æ˜: è§£ç url
+*    å½¢    å‚: buff - 2å­—èŠ‚å­—ç¬¦ä¸²ï¼ˆå¦‚"2F"â†’0x2Fï¼‰
+*    è¿” å› å€¼: è½¬æ¢åçš„åå…­è¿›åˆ¶å€¼
 *********************************************************************************************************
 */
 static void urldecode(char url[],char* buff)
@@ -352,10 +352,10 @@ static void urldecode(char url[],char* buff)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: setting_device_parameter_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃÉè±¸²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: setting_device_parameter_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®è®¾å¤‡å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 static int8_t setting_device_parameter_function(char *pcParam[], char *pcValue[],uint8_t i)
@@ -364,31 +364,31 @@ static int8_t setting_device_parameter_function(char *pcParam[], char *pcValue[]
     int8_t        ret      = 0;
     uint8_t       time     = 0;
     uint8_t       mode     = 0;
-    /* ÏµÍ³ÉèÖÃ */
-    if (strcmp(pcParam[i] , "a")==0) // Í¬²½Ê±¼ä
+    /* ç³»ç»Ÿè®¾ç½® */
+    if (strcmp(pcParam[i] , "a")==0) // åŒæ­¥æ—¶é—´
     {
     }
-    else if (strcmp(pcParam[i] , "b")==0) // ±¾µØID - ´æÊı×Ö
+    else if (strcmp(pcParam[i] , "b")==0) // æœ¬åœ°ID - å­˜æ•°å­—
     {
         param.id.i = 0;
         sscanf(pcValue[i],"%X",&param.id.i);
     }
-    else if (strcmp(pcParam[i] , "c")==0) // Éè±¸Ãû³Æ
+    else if (strcmp(pcParam[i] , "c")==0) // è®¾å¤‡åç§°
     {
         memset(param.name,0,sizeof(param.name));
         urldecode(pcValue[i],(char*)param.name);
     }
-    else if (strcmp(pcParam[i] , "d")==0) // µÇÂ¼ÃÜÂë
+    else if (strcmp(pcParam[i] , "d")==0) // ç™»å½•å¯†ç 
     {
         memset(param.password,0,sizeof(param.password));
         memcpy(param.password,pcValue[i],strlen(pcValue[i]));
     }
-    else if (strcmp(pcParam[i] , "tran") == 0)  // ´«ÊäÄ£Ê½
+    else if (strcmp(pcParam[i] , "tran") == 0)  // ä¼ è¾“æ¨¡å¼
     {
         mode = atoi(pcValue[i]);
         tran_changed = app_set_transfer_mode_function(mode);
     }
-	else if (strcmp(pcParam[i] , "J")==0) // ÉÏ±¨Ê±¼ä¼ä¸ô
+	else if (strcmp(pcParam[i] , "J")==0) // ä¸ŠæŠ¥æ—¶é—´é—´éš”
 	{
 		time = atoi(pcValue[i]); 	
 
@@ -400,10 +400,10 @@ static int8_t setting_device_parameter_function(char *pcParam[], char *pcValue[]
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_set_system_function
-*    ¹¦ÄÜËµÃ÷: ÏµÍ³ÉèÖÃ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_set_system_function
+*    åŠŸèƒ½è¯´æ˜: ç³»ç»Ÿè®¾ç½®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_set_system_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -430,8 +430,9 @@ int8_t httpd_cgi_set_system_function(int iNumParams, char *pcParam[], char *pcVa
                     vTaskDelay(100);
                     if (tran_changed)
                     {
-                        eth_set_tcp_connect_reset();            /* ÖØÆôTCPÁ¬½Ó */
-                        gsm_set_module_reset_function();        /* ÖØÆôÎŞÏßÁ¬½Ó */
+                        tran_changed = 0;
+                        eth_set_tcp_connect_reset();            /* é‡å¯TCPè¿æ¥ */
+                        gsm_set_module_reset_function();        /* é‡å¯æ— çº¿è¿æ¥ */
                     }
                 }
             }
@@ -443,10 +444,10 @@ int8_t httpd_cgi_set_system_function(int iNumParams, char *pcParam[], char *pcVa
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: setting_local_network_parameter_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃÍøÂç²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: setting_local_network_parameter_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®ç½‘ç»œå‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 static int8_t setting_local_network_parameter_function(char *pcParam[], char *pcValue[],uint8_t i)
@@ -467,7 +468,7 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
             ret = 0;
         }
     }
-    else if (strcmp(pcParam[i] , "g")==0) // Íø¹Ø
+    else if (strcmp(pcParam[i] , "g")==0) // ç½‘å…³
     {
         ret = sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         if(ret == 4) {
@@ -478,7 +479,7 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
             ret = 0;
         }
     }
-    else if (strcmp(pcParam[i] , "f")==0) // ×ÓÍøÑÚÂë
+    else if (strcmp(pcParam[i] , "f")==0) // å­ç½‘æ©ç 
     {
         ret = sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         if(ret == 4) {
@@ -513,7 +514,7 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
             ret = 0;
         }
     }
-    else if (strcmp(pcParam[i] , "i")==0) { // Ö÷ÍøpingµØÖ·1
+    else if (strcmp(pcParam[i] , "i")==0) { // ä¸»ç½‘pingåœ°å€1
         ret = sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         if(ret == 4) {
             param.ping_ip[0] = temp[0];
@@ -524,7 +525,7 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
         }
     }
     
-    else if (strcmp(pcParam[i] , "K")==0) { // Ö÷ÍøpingµØÖ·1
+    else if (strcmp(pcParam[i] , "K")==0) { // ä¸»ç½‘pingåœ°å€1
         ret = sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         if(ret == 4) {
             ret = 0;
@@ -546,11 +547,11 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
             ret = 0;
         }
     }
-    else if (strcmp(pcParam[i] , "P")==0) // ÄÚÍâ¶Ë¿Ú
+    else if (strcmp(pcParam[i] , "P")==0) // å†…å¤–ç«¯å£
     {
         param.multicast_port = atoi(pcValue[i]);
     }
-    else if (strcmp(pcParam[i] , "bf")==0) // ½»»»»úIP
+    else if (strcmp(pcParam[i] , "bf")==0) // äº¤æ¢æœºIP
     {
         ret = sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         if(ret == 4) 
@@ -570,10 +571,10 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_set_network_function
-*    ¹¦ÄÜËµÃ÷: ÍøÂçÉèÖÃ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_set_network_function
+*    åŠŸèƒ½è¯´æ˜: ç½‘ç»œè®¾ç½®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_set_network_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -595,8 +596,6 @@ int8_t httpd_cgi_set_network_function(int iNumParams, char *pcParam[], char *pcV
             {
                 if(i == (iNumParams-1)) {
                     set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
-                    vTaskDelay(100);
-                    eth_set_network_reset();
                 }
             }
         }
@@ -607,10 +606,10 @@ int8_t httpd_cgi_set_network_function(int iNumParams, char *pcParam[], char *pcV
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: Setting_camera_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃÏà»ú²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: Setting_camera_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®ç›¸æœºå‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i)
@@ -621,7 +620,7 @@ static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i
     int             temp[4]     = {0};
     uint8_t          mode       = 0;
 
-    if (strcmp(pcParam[i] , "m")==0) // ÉãÏñÍ·1
+    if (strcmp(pcParam[i] , "m")==0) // æ‘„åƒå¤´1
     {
         sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         ip[0][0] = temp[0];
@@ -629,11 +628,11 @@ static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i
         ip[0][2] = temp[2];
         ip[0][3] = temp[3];
     }
-    else if (strcmp(pcParam[i] , "a_b")==0) // ÉãÏñÍ·1Æ·ÅÆ
+    else if (strcmp(pcParam[i] , "a_b")==0) // æ‘„åƒå¤´1å“ç‰Œ
     {
         brand[0] = atoi(pcValue[i]);
     }    
-    else if (strcmp(pcParam[i] , "n")==0) // ÉãÏñÍ·2
+    else if (strcmp(pcParam[i] , "n")==0) // æ‘„åƒå¤´2
     {
         sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         ip[1][0] = temp[0];
@@ -641,11 +640,11 @@ static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i
         ip[1][2] = temp[2];
         ip[1][3] = temp[3];
     }
-    else if (strcmp(pcParam[i] , "b_b")==0) // ÉãÏñÍ·2Æ·ÅÆ
+    else if (strcmp(pcParam[i] , "b_b")==0) // æ‘„åƒå¤´2å“ç‰Œ
     {
         brand[1] = atoi(pcValue[i]);
     }        
-    else if (strcmp(pcParam[i] , "o")==0) // ÉãÏñÍ·3
+    else if (strcmp(pcParam[i] , "o")==0) // æ‘„åƒå¤´3
     {
         sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         ip[2][0] = temp[0];
@@ -654,11 +653,11 @@ static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i
         ip[2][3] = temp[3];
         
     }
-    else if (strcmp(pcParam[i] , "c_b")==0) // ÉãÏñÍ·3Æ·ÅÆ
+    else if (strcmp(pcParam[i] , "c_b")==0) // æ‘„åƒå¤´3å“ç‰Œ
     {
         brand[2] = atoi(pcValue[i]);
     }        
-    else if (strcmp(pcParam[i] , "p")==0) // ÉãÏñÍ·4
+    else if (strcmp(pcParam[i] , "p")==0) // æ‘„åƒå¤´4
     {
         sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         ip[3][0] = temp[0];
@@ -666,11 +665,11 @@ static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i
         ip[3][2] = temp[2];
         ip[3][3] = temp[3];
     }
-    else if (strcmp(pcParam[i] , "d_b")==0) // ÉãÏñÍ·4Æ·ÅÆ
+    else if (strcmp(pcParam[i] , "d_b")==0) // æ‘„åƒå¤´4å“ç‰Œ
     {
         brand[3] = atoi(pcValue[i]);
     }        
-    else if (strcmp(pcParam[i] , "q")==0) // ÉãÏñÍ·5
+    else if (strcmp(pcParam[i] , "q")==0) // æ‘„åƒå¤´5
     {
         sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         ip[4][0] = temp[0];
@@ -678,11 +677,11 @@ static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i
         ip[4][2] = temp[2];
         ip[4][3] = temp[3];
     }
-    else if (strcmp(pcParam[i] , "e_b")==0) // ÉãÏñÍ·5Æ·ÅÆ
+    else if (strcmp(pcParam[i] , "e_b")==0) // æ‘„åƒå¤´5å“ç‰Œ
     {
         brand[4] = atoi(pcValue[i]);
     }        
-    else if (strcmp(pcParam[i] , "r")==0) // ÉãÏñÍ·6
+    else if (strcmp(pcParam[i] , "r")==0) // æ‘„åƒå¤´6
     {
         sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         ip[5][0] = temp[0];
@@ -690,12 +689,12 @@ static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i
         ip[5][2] = temp[2];
         ip[5][3] = temp[3];
     }
-    else if (strcmp(pcParam[i] , "f_b")==0) // ÉãÏñÍ·6Æ·ÅÆ
+    else if (strcmp(pcParam[i] , "f_b")==0) // æ‘„åƒå¤´6å“ç‰Œ
     {
         brand[5] = atoi(pcValue[i]);
     }        
-    /* ÉãÏñ»ú¼ì²â·½Ê½ */
-	if (strcmp(pcParam[i] , "camera_tran") == 0) { // ËÑË÷Ä£Ê½
+    /* æ‘„åƒæœºæ£€æµ‹æ–¹å¼ */
+	if (strcmp(pcParam[i] , "camera_tran") == 0) { // æœç´¢æ¨¡å¼
 	
 		mode = atoi(pcValue[i]);
     
@@ -709,10 +708,10 @@ static int8_t setting_camera_function(char *pcParam[], char *pcValue[],uint8_t i
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_set_camera_ip_function
-*    ¹¦ÄÜËµÃ÷: ÉãÏñÍ·ipÉèÖÃ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_set_camera_ip_function
+*    åŠŸèƒ½è¯´æ˜: æ‘„åƒå¤´ipè®¾ç½®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_set_camera_ip_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -741,12 +740,90 @@ int8_t httpd_cgi_set_camera_ip_function(int iNumParams, char *pcParam[], char *p
     }
     return -1;
 }
+
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: setting_remote_network_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃ·şÎñÆ÷²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: setting_camera_user_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®ç›¸æœºè´¦å·
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
+*********************************************************************************************************
+*/
+static int8_t setting_camera_user_function(char *pcParam[], char *pcValue[],uint8_t i)
+{
+	carema_t *param = app_get_carema_param_function();
+	uint8_t index;
+	char decode_buff[64] = {0};
+
+	if ((pcParam[i][0] < 'a') || (pcParam[i][0] > 'c') ||
+		(pcParam[i][1] < '1') || (pcParam[i][1] > '6') ||
+		(pcParam[i][2] != '\0'))
+	{
+		return 0;
+	}
+
+	index = pcParam[i][1] - '1';
+	if (pcParam[i][0] == 'a')
+	{
+		memset(param->name[index],0,sizeof(param->name[index]));
+		urldecode(pcValue[i],decode_buff);
+		snprintf(param->name[index],sizeof(param->name[index]),"%s",decode_buff);
+	}
+	else if (pcParam[i][0] == 'b')
+	{
+		memset(param->pwd[index],0,sizeof(param->pwd[index]));
+		urldecode(pcValue[i],decode_buff);
+		snprintf(param->pwd[index],sizeof(param->pwd[index]),"%s",decode_buff);
+	}
+	else
+	{
+		param->port[index] = atoi(pcValue[i]);
+		app_set_camera_login_function(param->name[index],param->pwd[index],param->port[index],index);
+	}
+	return 0;
+}
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: httpd_cgi_set_camera_account_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®ç›¸æœºè´¦å·
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
+*********************************************************************************************************
+*/
+int8_t httpd_cgi_set_camera_user_function(int iNumParams, char *pcParam[], char *pcValue[])
+{
+	int8_t ret;
+	uint8_t i;
+	
+	if (strcmp(pcValue[0] , "caremapwd_save")==0)
+	{
+		for (i=1; i< (iNumParams); i++)
+		{
+			ret = setting_camera_user_function(pcParam,pcValue,i);
+			if(ret != 0)
+			{
+				set_return_status_function(PARAMETER_ERROR_NUM,(uint8_t*)PARAMETER_ERROR_STR);
+				break;
+			}
+			else
+			{
+				if(i == iNumParams-1) {
+					set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
+				}
+			}
+		}
+		return 0;
+	}
+	return -1;
+}
+
+/*
+*********************************************************************************************************
+*    å‡½ æ•° å: setting_remote_network_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®æœåŠ¡å™¨å‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 static int8_t setting_remote_network_function(char *pcParam[], char *pcValue[],uint8_t i)
@@ -754,25 +831,25 @@ static int8_t setting_remote_network_function(char *pcParam[], char *pcValue[],u
     static struct remote_ip param = {0};
     int8_t          ret  = 0;
     
-    if (strcmp(pcParam[i] , "D")==0) // ÄÚÍâIP
+    if (strcmp(pcParam[i] , "D")==0) // å†…å¤–IP
     {
         memset(param.inside_iporname,0,sizeof(param.inside_iporname));
         memcpy(param.inside_iporname,pcValue[i],strlen((const char*)pcValue[i]));
     }
     
-    if (strcmp(pcParam[i] , "E")==0) // ÄÚÍâ¶Ë¿Ú
+    if (strcmp(pcParam[i] , "E")==0) // å†…å¤–ç«¯å£
     {
         param.inside_port = atoi(pcValue[i]);
     }
     
-    if (strcmp(pcParam[i] , "F")==0) // ÍâÍøIp
+    if (strcmp(pcParam[i] , "F")==0) // å¤–ç½‘Ip
     {
         memset(param.outside_iporname,0,sizeof(param.outside_iporname));
         memcpy(param.outside_iporname,pcValue[i],strlen((const char*)pcValue[i]));
         return ret;
     }
     
-    if (strcmp(pcParam[i] , "G")==0) // ÍâÍø¶Ë¿Ú
+    if (strcmp(pcParam[i] , "G")==0) // å¤–ç½‘ç«¯å£
     {
         param.outside_port = atoi(pcValue[i]);         
         app_set_remote_network_function(param);
@@ -782,10 +859,10 @@ static int8_t setting_remote_network_function(char *pcParam[], char *pcValue[],u
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_set_remote_ip_function
-*    ¹¦ÄÜËµÃ÷: Ô¶¶ËÍøÂçÉèÖÃ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_set_remote_ip_function
+*    åŠŸèƒ½è¯´æ˜: è¿œç«¯ç½‘ç»œè®¾ç½®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_set_remote_ip_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -818,10 +895,10 @@ int8_t httpd_cgi_set_remote_ip_function(int iNumParams, char *pcParam[], char *p
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: setting_update_addr_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃ¸üĞÂµØÖ·
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: setting_update_addr_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®æ›´æ–°åœ°å€
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 static int8_t setting_update_addr_function(char *pcParam[], char *pcValue[],uint8_t i)
@@ -829,7 +906,7 @@ static int8_t setting_update_addr_function(char *pcParam[], char *pcValue[],uint
     static struct update_addr ota_param = {0};
     static struct upload_addr upload_param = {0};
     int temp[4]     = {0};    
-    if (strcmp(pcParam[i] , "ba")==0) // ÄÚÍâIP
+    if (strcmp(pcParam[i] , "ba")==0) // å†…å¤–IP
     {
 //        memset(param.update_url,0,sizeof(param.update_url));
 //        memcpy(param.update_url,pcValue[i],strlen((const char*)pcValue[i]));
@@ -839,11 +916,11 @@ static int8_t setting_update_addr_function(char *pcParam[], char *pcValue[],uint
         ota_param.ip[2] = temp[2];
         ota_param.ip[3] = temp[3];    
     }
-    else if (strcmp(pcParam[i] , "bb")==0) // ÄÚÍâ¶Ë¿Ú
+    else if (strcmp(pcParam[i] , "bb")==0) // å†…å¤–ç«¯å£
     {
         ota_param.port = atoi(pcValue[i]);
     }
-    else if (strcmp(pcParam[i] , "bg")==0) // ÄÚÍâIP
+    else if (strcmp(pcParam[i] , "bg")==0) // å†…å¤–IP
     {
 //        memset(param.update_url,0,sizeof(param.update_url));
 //        memcpy(param.update_url,pcValue[i],strlen((const char*)pcValue[i]));
@@ -853,7 +930,7 @@ static int8_t setting_update_addr_function(char *pcParam[], char *pcValue[],uint
         upload_param.ip[2] = temp[2];
         upload_param.ip[3] = temp[3];    
     }
-    else if (strcmp(pcParam[i] , "bh")==0) // ÄÚÍâ¶Ë¿Ú
+    else if (strcmp(pcParam[i] , "bh")==0) // å†…å¤–ç«¯å£
     {
         upload_param.port = atoi(pcValue[i]);
 
@@ -865,10 +942,10 @@ static int8_t setting_update_addr_function(char *pcParam[], char *pcValue[],uint
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_set_update_addr_function
-*    ¹¦ÄÜËµÃ÷: ¸üĞÂµØÖ·ÉèÖÃ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_set_update_addr_function
+*    åŠŸèƒ½è¯´æ˜: æ›´æ–°åœ°å€è®¾ç½®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_set_update_addr_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -901,90 +978,87 @@ int8_t httpd_cgi_set_update_addr_function(int iNumParams, char *pcParam[], char 
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: setting_snmp_function
-*    ¹¦ÄÜËµÃ÷: ÉèÖÃSNMP²ÎÊı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: setting_snmp_function
+*    åŠŸèƒ½è¯´æ˜: è®¾ç½®SNMPå‚æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 static int8_t setting_snmp_function(char *pcParam[], char *pcValue[],uint8_t i)
 {
     snmp_oid_t *param = app_get_snmp_oid_function();
-    static int snmp_type = 0;
-    static int snmp_cmd = 0;
     uint8_t len = 0;
-    uint8_t ber_buf[32] = {0};
+    uint8_t ber_buf[40] = {0};
+    int snmp_type = 0;
+    int snmp_cmd = 0;
+    uint8_t modified = 0;
 
-    if (strcmp(pcParam[i] , "dev_type")==0) // SNMPÀàĞÍ
-    {
-        snmp_type = atoi(pcValue[i]);
+    /* è§£æå‚æ•°åæ ¼å¼: s{type}_{cmd}ï¼Œä¾‹å¦‚ s0_0, s1_5, s3_2, s4_4 */
+    if (sscanf(pcParam[i], "s%d_%d", &snmp_type, &snmp_cmd) != 2) {
+        return 0;  /* ä¸æ˜¯æ–°æ ¼å¼ï¼Œè·³è¿‡ */
     }
-    else if (strcmp(pcParam[i] , "oid_cmd")==0) // SNMPÃüÁî
+
+    uint32_t val_len = strlen((const char*)pcValue[i]);
+
+    if (snmp_type <= 2)  /* IPC: æµ·åº·(0), å¤§å(1), å®‡è§†(2) */
     {
-        snmp_cmd = atoi(pcValue[i]);
+        if (snmp_cmd < IPC_OID_MAX) 
+        {
+            memset(param->ipc_oid[snmp_type][snmp_cmd],0,sizeof(param->ipc_oid[snmp_type][snmp_cmd]));
+            memcpy(param->ipc_oid[snmp_type][snmp_cmd],pcValue[i], val_len < 40 ? val_len : 39);
+            len = snmp_oid_str_to_ber(param->ipc_oid[snmp_type][snmp_cmd],ber_buf,40);
+            if(len > 0) 
+            {
+                memset(param->ipc_oid_ber[snmp_type][snmp_cmd],0,sizeof(param->ipc_oid_ber[snmp_type][snmp_cmd]));
+                memcpy(param->ipc_oid_ber[snmp_type][snmp_cmd],ber_buf,len);
+                param->ipc_ber_len[snmp_type][snmp_cmd] = len;
+            }
+            modified = 1;
+        }
     }
-    
-    else if (strcmp(pcParam[i] , "be")==0) // OID
+    else if(snmp_type == 3)  /* å…‰çŒ« */
     {
-        uint32_t val_len = strlen((const char*)pcValue[i]);
-        if(snmp_type <= 2)
+        if(snmp_cmd < ONV_OID_MAX) 
         {
-            if(snmp_cmd < IPC_OID_MAX) 
+            memset(param->onv_oid[0][snmp_cmd],0,sizeof(param->onv_oid[0][snmp_cmd]));
+            memcpy(param->onv_oid[0][snmp_cmd],pcValue[i], val_len < 40 ? val_len : 39);
+            len = snmp_oid_str_to_ber(param->onv_oid[0][snmp_cmd],ber_buf,40);
+            if(len > 0) 
             {
-                memset(param->ipc_oid[snmp_type][snmp_cmd],0,sizeof(param->ipc_oid[snmp_type][snmp_cmd]));
-                memcpy(param->ipc_oid[snmp_type][snmp_cmd],pcValue[i], val_len < 40 ? val_len : 39);
-                // ×ª»»ÎªBER±àÂë
-                len = snmp_oid_str_to_ber(param->ipc_oid[snmp_type][snmp_cmd],ber_buf,40);
-                if(len > 0) 
-                {
-                    memset(param->ipc_oid_ber[snmp_type][snmp_cmd],0,sizeof(param->ipc_oid_ber[snmp_type][snmp_cmd]));
-                    memcpy(param->ipc_oid_ber[snmp_type][snmp_cmd],ber_buf,len);
-                    param->ipc_ber_len[snmp_type][snmp_cmd] = len;
-                }
+                memset(param->onv_oid_ber[0][snmp_cmd],0,sizeof(param->onv_oid_ber[0][snmp_cmd]));
+                memcpy(param->onv_oid_ber[0][snmp_cmd],ber_buf,len);
+                param->onv_ber_len[0][snmp_cmd] = len;
             }
+            modified = 1;
         }
-        else if(snmp_type == 3)  // ¹âÃ¨
+    }
+    else if(snmp_type == 4)  /* äº¤æ¢æœº */
+    {
+        if(snmp_cmd < SW_OID_MAX) 
         {
-            if(snmp_cmd < ONV_OID_MAX) 
+            memset(param->switch_oid[0][snmp_cmd],0,sizeof(param->switch_oid[0][snmp_cmd]));
+            memcpy(param->switch_oid[0][snmp_cmd],pcValue[i], val_len < 40 ? val_len : 39);
+            len = snmp_oid_str_to_ber(param->switch_oid[0][snmp_cmd],ber_buf,40);
+            if(len > 0) 
             {
-                memset(param->onv_oid[0][snmp_cmd],0,sizeof(param->onv_oid[0][snmp_cmd]));
-                memcpy(param->onv_oid[0][snmp_cmd],pcValue[i], val_len < 40 ? val_len : 39);
-                // ×ª»»ÎªBER±àÂë
-                len = snmp_oid_str_to_ber(param->onv_oid[0][snmp_cmd],ber_buf,40);
-                if(len > 0) 
-                {
-                    memset(param->onv_oid_ber[0][snmp_cmd],0,sizeof(param->onv_oid_ber[0][snmp_cmd]));
-                    memcpy(param->onv_oid_ber[0][snmp_cmd],ber_buf,len);
-                    param->onv_ber_len[0][snmp_cmd] = len;
-                }
+                memset(param->switch_oid_ber[0][snmp_cmd],0,sizeof(param->switch_oid_ber[0][snmp_cmd]));
+                memcpy(param->switch_oid_ber[0][snmp_cmd],ber_buf,len);
+                param->switch_ber_len[0][snmp_cmd] = len;
             }
+            modified = 1;
         }
-        else if(snmp_type == 4)  // ½»»»»ú
-        {
-            if(snmp_cmd < SW_OID_MAX) 
-            {
-                memset(param->switch_oid[0][snmp_cmd],0,sizeof(param->switch_oid[0][snmp_cmd]));
-                memcpy(param->switch_oid[0][snmp_cmd],pcValue[i], val_len < 40 ? val_len : 39);
-                // ×ª»»ÎªBER±àÂë
-                len = snmp_oid_str_to_ber(param->switch_oid[0][snmp_cmd],ber_buf,40);
-                if(len > 0) 
-                {
-                    memset(param->switch_oid_ber[0][snmp_cmd],0,sizeof(param->switch_oid_ber[0][snmp_cmd]));
-                    memcpy(param->switch_oid_ber[0][snmp_cmd],ber_buf,len);
-                    param->switch_ber_len[0][snmp_cmd] = len;
-                }
-            }
-        }
-        app_set_save_infor_function(SAVE_SNMP_OID);
+    }
+    if(modified) {
+        app_set_save_infor_function(SAVE_FLAG_SNMP_OID);
     }
     return 0;
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_snmp_function
-*    ¹¦ÄÜËµÃ÷: SNMPÉèÖÃ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_snmp_function
+*    åŠŸèƒ½è¯´æ˜: SNMPè®¾ç½®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_snmp_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -996,9 +1070,9 @@ int8_t httpd_cgi_snmp_function(int iNumParams, char *pcParam[], char *pcValue[])
     {
         for (i=1; i< (iNumParams); i++)
         {
-            // // ´òÓ¡pcParam[i]
+            // // æ‰“å°pcParam[i]
             // printf("pcParam[%d] = %s\n",i,pcParam[i]);
-            // // ´òÓ¡pcValue[i]
+            // // æ‰“å°pcValue[i]
             // printf("pcValue[%d] = %s\n",i,pcValue[i]);
             ret = setting_snmp_function(pcParam,pcValue,i);
             if(ret != 0)
@@ -1020,17 +1094,17 @@ int8_t httpd_cgi_snmp_function(int iNumParams, char *pcParam[], char *pcValue[])
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: setting_snmp_test_function
-*    ¹¦ÄÜËµÃ÷: ²âÊÔSNMP
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: setting_snmp_test_function
+*    åŠŸèƒ½è¯´æ˜: æµ‹è¯•SNMP
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 static int8_t setting_snmp_test_function(char *pcParam[], char *pcValue[],uint8_t i)
 {
     static int snmp_type = 0;
     
-    if (strcmp(pcParam[i] , "dev_type")==0) // SNMPÀàĞÍ
+    if (strcmp(pcParam[i] , "dev_type")==0) // SNMPç±»å‹
     {
         snmp_type = atoi(pcValue[i]);
         app_set_com_send_flag_function(CR_QUERY_SNMP_INFO,snmp_type);
@@ -1039,10 +1113,10 @@ static int8_t setting_snmp_test_function(char *pcParam[], char *pcValue[],uint8_
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_snmp_test_function
-*    ¹¦ÄÜËµÃ÷: SNMP²âÊÔ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_snmp_test_function
+*    åŠŸèƒ½è¯´æ˜: SNMPæµ‹è¯•
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_snmp_test_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -1074,10 +1148,10 @@ int8_t httpd_cgi_snmp_test_function(int iNumParams, char *pcParam[], char *pcVal
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_update_function
-*    ¹¦ÄÜËµÃ÷: ¸üĞÂº¯Êı
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_update_function
+*    åŠŸèƒ½è¯´æ˜: æ›´æ–°å‡½æ•°
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_update_function(int iNumParams, char *pcParam[], char *pcValue[])
@@ -1108,15 +1182,20 @@ int8_t httpd_cgi_update_function(int iNumParams, char *pcParam[], char *pcValue[
         } 
         else 
         {
-            if(app_get_com_interface_selection_function() == 0)  // ÓĞÏßÊı¾İ
+            /* è‡ªåŠ¨é€‰æ‹©å¯ç”¨ç½‘å£: ä¼˜å…ˆæœ‰çº¿ */
+            if(eth_get_tcp_status() == 2)  // æœ‰çº¿åœ¨çº¿
             {
                 update_set_update_mode(UPDATE_MODE_LWIP);
                 set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
             }
-            else                              // ÎŞÏßÊı¾İ
+            else if(gsm_get_network_connect_status_function() == 1)  // æ— çº¿åœ¨çº¿
             {
                 update_set_update_mode(UPDATE_MODE_GPRS);
                 set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
+            }
+            else
+            {
+                set_return_status_function(0,(uint8_t*)"\"NO NETWORK!\"");
             }
         }
         return 0;
@@ -1126,15 +1205,15 @@ int8_t httpd_cgi_update_function(int iNumParams, char *pcParam[], char *pcValue[
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_system_function
-*    ¹¦ÄÜËµÃ÷: ÏµÍ³Ïà¹ØÉèÖÃ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_system_function
+*    åŠŸèƒ½è¯´æ˜: ç³»ç»Ÿç›¸å…³è®¾ç½®
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_system_function(int iNumParams, char *pcParam[], char *pcValue[])
 {
-    /* »Ö¸´³ö³§ÉèÖÃ */
+    /* æ¢å¤å‡ºå‚è®¾ç½® */
     if (strcmp(pcValue[0] , "reset")==0)
     {
         app_set_reset_function();
@@ -1143,7 +1222,7 @@ int8_t httpd_cgi_system_function(int iNumParams, char *pcParam[], char *pcValue[
         return 0;
     }
     
-    /* ÏµÍ³ÖØÆô */
+    /* ç³»ç»Ÿé‡å¯ */
     if (strcmp(pcValue[0] , "reboot")==0)
     {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
@@ -1152,7 +1231,7 @@ int8_t httpd_cgi_system_function(int iNumParams, char *pcParam[], char *pcValue[
         return 0;
     }
     
-    /* ²Á³ıW25Q128 */
+    /* æ“¦é™¤W25Q128 */
     if (strcmp(pcValue[0] , "eacres")==0)
     {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
@@ -1162,7 +1241,7 @@ int8_t httpd_cgi_system_function(int iNumParams, char *pcParam[], char *pcValue[
         return 0;
     }
 
-    /* ¶ÁÈ¡»ùÕ¾¶¨Î»ĞÅÏ¢ */
+    /* è¯»å–åŸºç«™å®šä½ä¿¡æ¯ */
     if (strcmp(pcValue[0] , "lbsgps")==0)
     {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
@@ -1173,47 +1252,55 @@ int8_t httpd_cgi_system_function(int iNumParams, char *pcParam[], char *pcValue[
         set_return_status_function(0,(uint8_t*)"[\"root\",\" \"]");
         return 0;
     }
-    // ËÑË÷ÉãÏñÍ·
+    // æœç´¢æ‘„åƒå¤´
     if ( strcmp(pcValue[0] , "carema")==0 ) {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
         app_set_com_send_flag_function(CR_QUERY_IPC_IP,1);
         return 0;
     }
-    // »ñÈ¡SNMP²ÎÊı
+    // è·å–SNMPå‚æ•°
     if ( strcmp(pcValue[0] , "snmpcamera1")==0 ) {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
         app_set_com_send_flag_function(CR_QUERY_SNMP_INFO,1);
         return 0;
     }
-    // ´òÓ¡ÈÕÖ¾
+    // æ‰“å°æ—¥å¿—
     if(strcmp(pcValue[0] , "printlog")==0)
     {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
         log_print_all_function();
         return 0;
     }
-    // ´òÓ¡ÈÕÖ¾ĞÅÏ¢
+    // æ‰“å°æ—¥å¿—ä¿¡æ¯
     if ( strcmp(pcValue[0] , "printloginfo")==0 ) {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
         log_print_dir_function();
         return 0;
     }
-    // ´òÓ¡mibĞÅÏ¢
+    // æ‰“å°mibä¿¡æ¯
     if ( strcmp(pcValue[0] , "printmib")==0 ) {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
         log_print_meta_function();
         return 0;
     }
-    // Çå³ıÈ«²¿ÈÕÖ¾Åú´Î(current+pending)
+    // æ¸…é™¤å…¨éƒ¨æ—¥å¿—æ‰¹æ¬¡(current+pending)
     if ( strcmp(pcValue[0] , "clearcurrent")==0 ) {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
         log_clear_current_function();
         return 0;
     }
-    // ÎÄ¼şÉÏ´«
+    // æ–‡ä»¶ä¸Šä¼ 
     if ( strcmp(pcValue[0] , "uploadfile")==0 ) {
         set_return_status_function(0,(uint8_t*)"\"SUCCESS!\"");
-        upload_set_upload_mode(UPLOAD_MODE_LWIP);
+        if(gsm_get_network_connect_status_function() != 0)
+            upload_set_upload_mode(UPLOAD_MODE_GPRS);
+        else
+            printf("gsm is not connect!!!\n");
+
+        if(eth_get_tcp_status() == LWIP_TCP_CONNECT)
+            upload_set_upload_mode(UPLOAD_MODE_LWIP);
+        else
+            printf("eth is not connect!!!\n");
         return 0;
     }
     return -1;
@@ -1221,77 +1308,90 @@ int8_t httpd_cgi_system_function(int iNumParams, char *pcParam[], char *pcValue[
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: httpd_cgi_show_function
-*    ¹¦ÄÜËµÃ÷: ÏÔÊ¾ÄÚÈİ
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: httpd_cgi_show_function
+*    åŠŸèƒ½è¯´æ˜: æ˜¾ç¤ºå†…å®¹
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t httpd_cgi_show_function(char *pcValue[], uint16_t *data, uint8_t *buff)
 {
-    if ( strcmp(pcValue[0] , "systemStatus")==0 ) {    /* ÏµÍ³×´Ì¬ */
+    if ( strcmp(pcValue[0] , "systemStatus")==0 ) {    /* ç³»ç»ŸçŠ¶æ€ */
         *data = 0;
         httpd_ssi_system_status_function((char*)buff);
         return 0;
     }
 
-    if ( strcmp(pcValue[0] , "VACollection")==0 ) {  // µçÑ¹µçÁ÷
+    if ( strcmp(pcValue[0] , "VACollection")==0 ) {  // ç”µå‹ç”µæµ
         *data = 0;
         httpd_ssi_volt_cur_data_collection_function((char*)buff);
         return 0;
     }
-    if ( strcmp(pcValue[0] , "switchStatus")==0 ) {    /* ¸üĞÂ¿ª¹Ø×´Ì¬ */
+    if ( strcmp(pcValue[0] , "switchStatus")==0 ) {    /* æ›´æ–°å¼€å…³çŠ¶æ€ */
         *data = 0;
         httpd_ssi_switch_status_function((char*)buff);
         return 0;
     }    
-    if ( strcmp(pcValue[0] , "sensorCollection")==0 ) {  // ´«¸ĞÆ÷Êı¾İ
+    if ( strcmp(pcValue[0] , "sensorCollection")==0 ) {  // ä¼ æ„Ÿå™¨æ•°æ®
         *data = 0;
         httpd_ssi_sensor_data_collection_function((char*)buff);
         return 0;
     }
     
-    if ( strcmp(pcValue[0] , "ThresholdData")==0 ) {    // ãĞÖµ
+    if ( strcmp(pcValue[0] , "ThresholdData")==0 ) {    // é˜ˆå€¼
         *data = 0;
         httpd_ssi_threshold_seting_function((char*)buff);
         return 0;
     }        
-    /* ±±¶·Êı¾İ¸üĞÂ */
+    /* åŒ—æ–—æ•°æ®æ›´æ–° */
     if (strcmp(pcValue[0], "BeidouData") == 0) {  
         *data = 0;
-        httpd_ssi_bd_data_collection_function((char*)buff);  // ÊÕ¼¯±±¶·Êı¾İ
+        httpd_ssi_bd_data_collection_function((char*)buff);  // æ”¶é›†åŒ—æ–—æ•°æ®
         return 0;
     }
-    if ( strcmp(pcValue[0] , "systemSetting")==0 ) {    /* ÏµÍ³ÉèÖÃ */
+    if ( strcmp(pcValue[0] , "systemSetting")==0 ) {    /* ç³»ç»Ÿè®¾ç½® */
         *data = 0;
         httpd_ssi_system_seting_function((char*)buff);
         return 0;
     }
 
-    if ( strcmp(pcValue[0] , "gprsSetting")==0 ) {    /* ÎŞÏßÍøÂçĞÅÏ¢ */
+    if ( strcmp(pcValue[0] , "gprsSetting")==0 ) {    /* æ— çº¿ç½‘ç»œä¿¡æ¯ */
         *data = 0;
         httpd_ssi_nework_gprs_show_function((char*)buff);
         return 0;
     }
 
-    if ( strcmp(pcValue[0] , "networkSetting")==0 ) {    /* ÍøÂçĞÅÏ¢ */
+    if ( strcmp(pcValue[0] , "networkSetting")==0 ) {    /* ç½‘ç»œä¿¡æ¯ */
         *data = 0;
         httpd_ssi_network_setting_function((char*)buff);
         return 0;
     }
 
-    if ( strcmp(pcValue[0] , "otherSetting")==0 ) {    /* ÉãÏñÍ·IP */
+    if ( strcmp(pcValue[0] , "caremaSetting")==0 ) {    /* æ‘„åƒå¤´IP */
         *data = 0;
-        httpd_ssi_other_setting_function((char*)buff);
+        httpd_ssi_carema_setting_function((char*)buff);
         return 0;
     }
-    /* ·şÎñÆ÷ĞÅÏ¢ */
+
+    if ( strcmp(pcValue[0] , "carema_user")==0 ) {    /* æ‘„åƒå¤´è´¦å· */
+        *data = 0;
+        httpd_ssi_carema_user_function((char*)buff);
+        return 0;
+    }
+
+    if ( strcmp(pcValue[0] , "snmp_set")==0 ) {    /* SNMP OID é…ç½® */
+        *data = 0;
+        httpd_ssi_snmp_oid_function((char*)buff);
+        return 0;
+    }
+
+    /* æœåŠ¡å™¨ä¿¡æ¯ */
     if ( strcmp(pcValue[0] , "serverset")==0 ) {
         *data = 0;
         http_ssi_server_setting_function((char*)buff);
         return 0;
     }
-    /* ¸üĞÂµØÖ· */
+    /* æ›´æ–°åœ°å€ */
     if ( strcmp(pcValue[0] , "update_addr")==0 ) {
         *data = 0;
         http_ssi_update_addr_function((char*)buff);

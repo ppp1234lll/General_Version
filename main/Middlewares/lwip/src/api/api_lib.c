@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Sequential API External module
  * @defgroup netconn Netconn API

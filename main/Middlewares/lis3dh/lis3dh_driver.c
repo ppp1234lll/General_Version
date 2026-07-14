@@ -29,10 +29,10 @@
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetWHO_AM_I
-*    ¹¦ÄÜËµÃ÷: Read identification code by WHO_AM_I register
-*    ĞÎ    ²Î: Char to empty by Device identification Value
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_GetWHO_AM_I
+*    åŠŸèƒ½è¯´æ˜: Read identification code by WHO_AM_I register
+*    å½¢    å‚: Char to empty by Device identification Value
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [value of FSS]
 *********************************************************************************************************
 */
@@ -47,10 +47,10 @@ status_t LIS3DH_GetWHO_AM_I(u8_t* val){
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetStatusAUX
-*    ¹¦ÄÜËµÃ÷: Read the AUX status register
-*    ĞÎ    ²Î: Char to empty by status register buffer
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_GetStatusAUX
+*    åŠŸèƒ½è¯´æ˜: Read the AUX status register
+*    å½¢    å‚: Char to empty by status register buffer
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -173,10 +173,10 @@ status_t LIS3DH_GetStatusAUXBit(u8_t statusBIT, u8_t* val) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetODR
-*    ¹¦ÄÜËµÃ÷: Sets LIS3DH Output Data Rate
-*    ĞÎ    ²Î: Output Data Rate
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetODR
+*    åŠŸèƒ½è¯´æ˜: Sets LIS3DH Output Data Rate
+*    å½¢    å‚: Output Data Rate
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -198,10 +198,10 @@ status_t LIS3DH_SetODR(LIS3DH_ODR_t ov){
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetTemperature
-*    ¹¦ÄÜËµÃ÷: Sets LIS3DH Output Temperature
-*    ĞÎ    ²Î: MEMS_ENABLE, MEMS_DISABLE
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetTemperature
+*    åŠŸèƒ½è¯´æ˜: Sets LIS3DH Output Temperature
+*    å½¢    å‚: MEMS_ENABLE, MEMS_DISABLE
+*    è¿” å› å€¼: None
 * Note           : For Read Temperature by LIS3DH_OUT_AUX_3, LIS3DH_SetADCAux and LIS3DH_SetBDU 
 *                   functions must be ENABLE
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
@@ -225,10 +225,10 @@ status_t LIS3DH_SetTemperature(State_t state){
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetADCAux
-*    ¹¦ÄÜËµÃ÷: Sets LIS3DH Output ADC
-*    ĞÎ    ²Î: MEMS_ENABLE, MEMS_DISABLE
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetADCAux
+*    åŠŸèƒ½è¯´æ˜: Sets LIS3DH Output ADC
+*    å½¢    å‚: MEMS_ENABLE, MEMS_DISABLE
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -250,10 +250,10 @@ status_t LIS3DH_SetADCAux(State_t state){
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetAuxRaw
-*    ¹¦ÄÜËµÃ÷: Read the Aux Values Output Registers
-*    ĞÎ    ²Î: Buffer to empty
-*    ·µ »Ø Öµ: Aux Values Registers buffer
+*    å‡½ æ•° å: LIS3DH_GetAuxRaw
+*    åŠŸèƒ½è¯´æ˜: Read the Aux Values Output Registers
+*    å½¢    å‚: Buffer to empty
+*    è¿” å› å€¼: Aux Values Registers buffer
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -291,10 +291,10 @@ status_t LIS3DH_GetAuxRaw(LIS3DH_Aux123Raw_t* buff) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetTempRaw
-*    ¹¦ÄÜËµÃ÷: Read the Temperature Values by AUX Output Registers OUT_3_H
-*    ĞÎ    ²Î: Buffer to empty
-*    ·µ »Ø Öµ: Temperature Values Registers buffer
+*    å‡½ æ•° å: LIS3DH_GetTempRaw
+*    åŠŸèƒ½è¯´æ˜: Read the Temperature Values by AUX Output Registers OUT_3_H
+*    å½¢    å‚: Buffer to empty
+*    è¿” å› å€¼: Temperature Values Registers buffer
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -316,10 +316,10 @@ status_t LIS3DH_GetTempRaw(i8_t* buff) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetMode
-*    ¹¦ÄÜËµÃ÷: Sets LIS3DH Operating Mode
-*    ĞÎ    ²Î: Modality (LIS3DH_NORMAL, LIS3DH_LOW_POWER, LIS3DH_POWER_DOWN)
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetMode
+*    åŠŸèƒ½è¯´æ˜: Sets LIS3DH Operating Mode
+*    å½¢    å‚: Modality (LIS3DH_NORMAL, LIS3DH_LOW_POWER, LIS3DH_POWER_DOWN)
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -374,10 +374,10 @@ status_t LIS3DH_SetMode(LIS3DH_Mode_t md) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetAxis
-*    ¹¦ÄÜËµÃ÷: Enable/Disable LIS3DH Axis
-*    ĞÎ    ²Î: LIS3DH_X_ENABLE/DISABLE | LIS3DH_Y_ENABLE/DISABLE | LIS3DH_Z_ENABLE/DISABLE
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetAxis
+*    åŠŸèƒ½è¯´æ˜: Enable/Disable LIS3DH Axis
+*    å½¢    å‚: LIS3DH_X_ENABLE/DISABLE | LIS3DH_Y_ENABLE/DISABLE | LIS3DH_Z_ENABLE/DISABLE
+*    è¿” å› å€¼: None
 * Note           : You MUST use all input variable in the argument, as example
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
@@ -399,10 +399,10 @@ status_t LIS3DH_SetAxis(LIS3DH_Axis_t axis) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetFullScale
-*    ¹¦ÄÜËµÃ÷: Sets the LIS3DH FullScale
-*    ĞÎ    ²Î: LIS3DH_FULLSCALE_2/LIS3DH_FULLSCALE_4/LIS3DH_FULLSCALE_8/LIS3DH_FULLSCALE_16
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetFullScale
+*    åŠŸèƒ½è¯´æ˜: Sets the LIS3DH FullScale
+*    å½¢    å‚: LIS3DH_FULLSCALE_2/LIS3DH_FULLSCALE_4/LIS3DH_FULLSCALE_8/LIS3DH_FULLSCALE_16
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -424,10 +424,10 @@ status_t LIS3DH_SetFullScale(LIS3DH_Fullscale_t fs) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetBDU
-*    ¹¦ÄÜËµÃ÷: Enable/Disable Block Data Update Functionality
-*    ĞÎ    ²Î: ENABLE/DISABLE
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetBDU
+*    åŠŸèƒ½è¯´æ˜: Enable/Disable Block Data Update Functionality
+*    å½¢    å‚: ENABLE/DISABLE
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -449,10 +449,10 @@ status_t LIS3DH_SetBDU(State_t bdu) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetBLE
-*    ¹¦ÄÜËµÃ÷: Set Endianess (MSB/LSB)
-*    ĞÎ    ²Î: BLE_LSB / BLE_MSB
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetBLE
+*    åŠŸèƒ½è¯´æ˜: Set Endianess (MSB/LSB)
+*    å½¢    å‚: BLE_LSB / BLE_MSB
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -474,10 +474,10 @@ status_t LIS3DH_SetBLE(LIS3DH_Endianess_t ble) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetSelfTest
-*    ¹¦ÄÜËµÃ÷: Set Self Test Modality
-*    ĞÎ    ²Î: LIS3DH_SELF_TEST_DISABLE/ST_0/ST_1
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetSelfTest
+*    åŠŸèƒ½è¯´æ˜: Set Self Test Modality
+*    å½¢    å‚: LIS3DH_SELF_TEST_DISABLE/ST_0/ST_1
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -499,10 +499,10 @@ status_t LIS3DH_SetSelfTest(LIS3DH_SelfTest_t st) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_HPFClick
-*    ¹¦ÄÜËµÃ÷: Enable/Disable High Pass Filter for click
-*    ĞÎ    ²Î: MEMS_ENABLE/MEMS_DISABLE
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_HPFClick
+*    åŠŸèƒ½è¯´æ˜: Enable/Disable High Pass Filter for click
+*    å½¢    å‚: MEMS_ENABLE/MEMS_DISABLE
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -524,10 +524,10 @@ status_t LIS3DH_HPFClickEnable(State_t hpfe) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_HPFAOI1
-*    ¹¦ÄÜËµÃ÷: Enable/Disable High Pass Filter for AOI on INT_1
-*    ĞÎ    ²Î: MEMS_ENABLE/MEMS_DISABLE
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_HPFAOI1
+*    åŠŸèƒ½è¯´æ˜: Enable/Disable High Pass Filter for AOI on INT_1
+*    å½¢    å‚: MEMS_ENABLE/MEMS_DISABLE
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -549,10 +549,10 @@ status_t LIS3DH_HPFAOI1Enable(State_t hpfe) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_HPFAOI2
-*    ¹¦ÄÜËµÃ÷: Enable/Disable High Pass Filter for AOI on INT_2
-*    ĞÎ    ²Î: MEMS_ENABLE/MEMS_DISABLE
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_HPFAOI2
+*    åŠŸèƒ½è¯´æ˜: Enable/Disable High Pass Filter for AOI on INT_2
+*    å½¢    å‚: MEMS_ENABLE/MEMS_DISABLE
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -600,10 +600,10 @@ status_t LIS3DH_SetHPFMode(LIS3DH_HPFMode_t hpm) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetHPFCutOFF
-*    ¹¦ÄÜËµÃ÷: Set High Pass CUT OFF Freq
-*    ĞÎ    ²Î: HPFCF [0,3]
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetHPFCutOFF
+*    åŠŸèƒ½è¯´æ˜: Set High Pass CUT OFF Freq
+*    å½¢    å‚: HPFCF [0,3]
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -629,10 +629,10 @@ status_t LIS3DH_SetHPFCutOFF(LIS3DH_HPFCutOffFreq_t hpf) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetFilterDataSel
-*    ¹¦ÄÜËµÃ÷: Set Filter Data Selection bypassed or sent to FIFO OUT register
-*    ĞÎ    ²Î: MEMS_SET, MEMS_RESET
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetFilterDataSel
+*    åŠŸèƒ½è¯´æ˜: Set Filter Data Selection bypassed or sent to FIFO OUT register
+*    å½¢    å‚: MEMS_SET, MEMS_RESET
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -747,10 +747,10 @@ status_t LIS3DH_SetClickCFG(u8_t status) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetClickTHS
-*    ¹¦ÄÜËµÃ÷: Set Click Interrupt threshold
-*    ĞÎ    ²Î: Click-click Threshold value [0-127]
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetClickTHS
+*    åŠŸèƒ½è¯´æ˜: Set Click Interrupt threshold
+*    å½¢    å‚: Click-click Threshold value [0-127]
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -768,10 +768,10 @@ status_t LIS3DH_SetClickTHS(u8_t ths) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetClickLIMIT
-*    ¹¦ÄÜËµÃ÷: Set Click Interrupt Time Limit
-*    ĞÎ    ²Î: Click-click Time Limit value [0-127]
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetClickLIMIT
+*    åŠŸèƒ½è¯´æ˜: Set Click Interrupt Time Limit
+*    å½¢    å‚: Click-click Time Limit value [0-127]
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -789,10 +789,10 @@ status_t LIS3DH_SetClickLIMIT(u8_t t_limit) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetClickLATENCY
-*    ¹¦ÄÜËµÃ÷: Set Click Interrupt Time Latency
-*    ĞÎ    ²Î: Click-click Time Latency value [0-255]
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetClickLATENCY
+*    åŠŸèƒ½è¯´æ˜: Set Click Interrupt Time Latency
+*    å½¢    å‚: Click-click Time Latency value [0-255]
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -807,10 +807,10 @@ status_t LIS3DH_SetClickLATENCY(u8_t t_latency) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetClickWINDOW
-*    ¹¦ÄÜËµÃ÷: Set Click Interrupt Time Window
-*    ĞÎ    ²Î: Click-click Time Window value [0-255]
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetClickWINDOW
+*    åŠŸèƒ½è¯´æ˜: Set Click Interrupt Time Window
+*    å½¢    å‚: Click-click Time Window value [0-255]
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -825,10 +825,10 @@ status_t LIS3DH_SetClickWINDOW(u8_t t_window) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetClickResponse
-*    ¹¦ÄÜËµÃ÷: Get Click Interrupt Response by CLICK_SRC REGISTER
-*    ĞÎ    ²Î: char to empty by Click Response Typedef
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_GetClickResponse
+*    åŠŸèƒ½è¯´æ˜: Get Click Interrupt Response by CLICK_SRC REGISTER
+*    å½¢    å‚: char to empty by Click Response Typedef
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -912,10 +912,10 @@ status_t LIS3DH_GetClickResponse(u8_t* res) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_Int1LatchEnable
-*    ¹¦ÄÜËµÃ÷: Enable Interrupt 1 Latching function
-*    ĞÎ    ²Î: ENABLE/DISABLE
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_Int1LatchEnable
+*    åŠŸèƒ½è¯´æ˜: Enable Interrupt 1 Latching function
+*    å½¢    å‚: ENABLE/DISABLE
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -937,10 +937,10 @@ status_t LIS3DH_Int1LatchEnable(State_t latch) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_ResetInt1Latch
-*    ¹¦ÄÜËµÃ÷: Reset Interrupt 1 Latching function
-*    ĞÎ    ²Î: None
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_ResetInt1Latch
+*    åŠŸèƒ½è¯´æ˜: Reset Interrupt 1 Latching function
+*    å½¢    å‚: None
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -956,10 +956,10 @@ status_t LIS3DH_ResetInt1Latch(void) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetIntConfiguration
-*    ¹¦ÄÜËµÃ÷: Interrupt 1 Configuration (without LIS3DH_6D_INT)
-*    ĞÎ    ²Î: LIS3DH_INT1_AND/OR | LIS3DH_INT1_ZHIE_ENABLE/DISABLE | LIS3DH_INT1_ZLIE_ENABLE/DISABLE...
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetIntConfiguration
+*    åŠŸèƒ½è¯´æ˜: Interrupt 1 Configuration (without LIS3DH_6D_INT)
+*    å½¢    å‚: LIS3DH_INT1_AND/OR | LIS3DH_INT1_ZHIE_ENABLE/DISABLE | LIS3DH_INT1_ZLIE_ENABLE/DISABLE...
+*    è¿” å› å€¼: None
 * Note           : You MUST use all input variable in the argument, as example
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
@@ -1008,10 +1008,10 @@ status_t LIS3DH_SetIntMode(LIS3DH_Int1Mode_t int_mode) {
     
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetInt6D4DConfiguration
-*    ¹¦ÄÜËµÃ÷: 6D, 4D Interrupt Configuration
-*    ĞÎ    ²Î: LIS3DH_INT1_6D_ENABLE, LIS3DH_INT1_4D_ENABLE, LIS3DH_INT1_6D_4D_DISABLE
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetInt6D4DConfiguration
+*    åŠŸèƒ½è¯´æ˜: 6D, 4D Interrupt Configuration
+*    å½¢    å‚: LIS3DH_INT1_6D_ENABLE, LIS3DH_INT1_4D_ENABLE, LIS3DH_INT1_6D_4D_DISABLE
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -1056,10 +1056,10 @@ status_t LIS3DH_SetInt6D4DConfiguration(LIS3DH_INT_6D_4D_t ic) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_Get6DPosition
-*    ¹¦ÄÜËµÃ÷: 6D, 4D Interrupt Position Detect
-*    ĞÎ    ²Î: Byte to empty by POSITION_6D_t Typedef
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_Get6DPosition
+*    åŠŸèƒ½è¯´æ˜: 6D, 4D Interrupt Position Detect
+*    å½¢    å‚: Byte to empty by POSITION_6D_t Typedef
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -1098,10 +1098,10 @@ status_t LIS3DH_Get6DPosition(u8_t* val){
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetInt1Threshold
-*    ¹¦ÄÜËµÃ÷: Sets Interrupt 1 Threshold
-*    ĞÎ    ²Î: Threshold = [0,31]
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetInt1Threshold
+*    åŠŸèƒ½è¯´æ˜: Sets Interrupt 1 Threshold
+*    å½¢    å‚: Threshold = [0,31]
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -1118,10 +1118,10 @@ status_t LIS3DH_SetInt1Threshold(u8_t ths) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetInt1Duration
-*    ¹¦ÄÜËµÃ÷: Sets Interrupt 1 Duration
-*    ĞÎ    ²Î: Duration value
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetInt1Duration
+*    åŠŸèƒ½è¯´æ˜: Sets Interrupt 1 Duration
+*    å½¢    å‚: Duration value
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -1250,10 +1250,10 @@ status_t LIS3DH_FIFOModeEnable(LIS3DH_FifoMode_t fm) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetTriggerInt
-*    ¹¦ÄÜËµÃ÷: Trigger event liked to trigger signal INT1/INT2
-*    ĞÎ    ²Î: LIS3DH_TRIG_INT1/LIS3DH_TRIG_INT2
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetTriggerInt
+*    åŠŸèƒ½è¯´æ˜: Trigger event liked to trigger signal INT1/INT2
+*    å½¢    å‚: LIS3DH_TRIG_INT1/LIS3DH_TRIG_INT2
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -1275,10 +1275,10 @@ status_t LIS3DH_SetTriggerInt(LIS3DH_TrigInt_t tr) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetWaterMark
-*    ¹¦ÄÜËµÃ÷: Sets Watermark Value
-*    ĞÎ    ²Î: Watermark = [0,31]
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetWaterMark
+*    åŠŸèƒ½è¯´æ˜: Sets Watermark Value
+*    å½¢    å‚: Watermark = [0,31]
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -1303,10 +1303,10 @@ status_t LIS3DH_SetWaterMark(u8_t wtm) {
   
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetStatusReg
-*    ¹¦ÄÜËµÃ÷: Read the status register
-*    ĞÎ    ²Î: char to empty by Status Reg Value
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_GetStatusReg
+*    åŠŸèƒ½è¯´æ˜: Read the status register
+*    å½¢    å‚: char to empty by Status Reg Value
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -1417,10 +1417,10 @@ status_t LIS3DH_GetStatusBit(u8_t statusBIT, u8_t* val) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetAccAxesRaw
-*    ¹¦ÄÜËµÃ÷: Read the Acceleration Values Output Registers
-*    ĞÎ    ²Î: buffer to empity by AxesRaw_t Typedef
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_GetAccAxesRaw
+*    åŠŸèƒ½è¯´æ˜: Read the Acceleration Values Output Registers
+*    å½¢    å‚: buffer to empity by AxesRaw_t Typedef
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -1459,10 +1459,10 @@ status_t LIS3DH_GetAccAxesRaw(AxesRaw_t* buff) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetInt1Src
-*    ¹¦ÄÜËµÃ÷: Reset Interrupt 1 Latching function
-*    ĞÎ    ²Î: Char to empty by Int1 source value
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_GetInt1Src
+*    åŠŸèƒ½è¯´æ˜: Reset Interrupt 1 Latching function
+*    å½¢    å‚: Char to empty by Int1 source value
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -1477,10 +1477,10 @@ status_t LIS3DH_GetInt1Src(u8_t* val) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetInt1SrcBit
-*    ¹¦ÄÜËµÃ÷: Reset Interrupt 1 Latching function
-*    ĞÎ    ²Î: statusBIT: LIS3DH_INT_SRC_IA, LIS3DH_INT_SRC_ZH, LIS3DH_INT_SRC_ZL.....
-*    ·µ »Ø Öµ: Byte to be filled with the status bit
+*    å‡½ æ•° å: LIS3DH_GetInt1SrcBit
+*    åŠŸèƒ½è¯´æ˜: Reset Interrupt 1 Latching function
+*    å½¢    å‚: statusBIT: LIS3DH_INT_SRC_IA, LIS3DH_INT_SRC_ZH, LIS3DH_INT_SRC_ZL.....
+*    è¿” å› å€¼: Byte to be filled with the status bit
 * Output         : None
 *    ? ? ?: Status of BIT [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
@@ -1572,10 +1572,10 @@ status_t LIS3DH_GetInt1SrcBit(u8_t statusBIT, u8_t* val) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetFifoSourceReg
-*    ¹¦ÄÜËµÃ÷: Read Fifo source Register
-*    ĞÎ    ²Î: Byte to empty by FIFO source register value
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_GetFifoSourceReg
+*    åŠŸèƒ½è¯´æ˜: Read Fifo source Register
+*    å½¢    å‚: Byte to empty by FIFO source register value
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */
@@ -1590,10 +1590,10 @@ status_t LIS3DH_GetFifoSourceReg(u8_t* val) {
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetFifoSourceBit
-*    ¹¦ÄÜËµÃ÷: Read Fifo WaterMark source bit
-*    ĞÎ    ²Î: statusBIT: LIS3DH_FIFO_SRC_WTM, LIS3DH_FIFO_SRC_OVRUN, LIS3DH_FIFO_SRC_EMPTY
-*    ·µ »Ø Öµ: Byte to fill  with the bit value
+*    å‡½ æ•° å: LIS3DH_GetFifoSourceBit
+*    åŠŸèƒ½è¯´æ˜: Read Fifo WaterMark source bit
+*    å½¢    å‚: statusBIT: LIS3DH_FIFO_SRC_WTM, LIS3DH_FIFO_SRC_OVRUN, LIS3DH_FIFO_SRC_EMPTY
+*    è¿” å› å€¼: Byte to fill  with the bit value
 * Output         : None
 *    ? ? ?: Status of BIT [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
@@ -1642,10 +1642,10 @@ status_t LIS3DH_GetFifoSourceBit(u8_t statusBIT,  u8_t* val){
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_GetFifoSourceFSS
-*    ¹¦ÄÜËµÃ÷: Read current number of unread samples stored in FIFO
-*    ĞÎ    ²Î: Byte to empty by FIFO unread sample value
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_GetFifoSourceFSS
+*    åŠŸèƒ½è¯´æ˜: Read current number of unread samples stored in FIFO
+*    å½¢    å‚: Byte to empty by FIFO unread sample value
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [value of FSS]
 *********************************************************************************************************
 */
@@ -1665,10 +1665,10 @@ status_t LIS3DH_GetFifoSourceFSS(u8_t* val){
       
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: LIS3DH_SetSPIInterface
-*    ¹¦ÄÜËµÃ÷: Set SPI mode: 3 Wire Interface OR 4 Wire Interface
-*    ĞÎ    ²Î: LIS3DH_SPI_3_WIRE, LIS3DH_SPI_4_WIRE
-*    ·µ »Ø Öµ: None
+*    å‡½ æ•° å: LIS3DH_SetSPIInterface
+*    åŠŸèƒ½è¯´æ˜: Set SPI mode: 3 Wire Interface OR 4 Wire Interface
+*    å½¢    å‚: LIS3DH_SPI_3_WIRE, LIS3DH_SPI_4_WIRE
+*    è¿” å› å€¼: None
 *    ? ? ?: Status [MEMS_ERROR, MEMS_SUCCESS]
 *********************************************************************************************************
 */

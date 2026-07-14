@@ -1,4 +1,4 @@
-/*
+﻿/*
 *********************************************************************************************************
 * ppp.c - Network Point to Point Protocol program file.
 * Copyright (c) 2003 by Marc Boucher, Services Informatiques (MBSI) inc.

@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file  system_gd32f4xx.c
     \brief CMSIS Cortex-M4 Device Peripheral Access Layer Source File for
            GD32F4xx Device Series

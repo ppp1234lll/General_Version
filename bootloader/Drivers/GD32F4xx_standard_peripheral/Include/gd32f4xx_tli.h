@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_tli.h
     \brief   definitions for the TLI
 

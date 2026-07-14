@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Functions to sync with TCPIP thread
  */

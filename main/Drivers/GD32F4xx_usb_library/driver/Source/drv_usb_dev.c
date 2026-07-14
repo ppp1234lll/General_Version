@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    drv_usb_dev.c
     \brief   USB device mode low level driver
 

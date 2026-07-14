@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_enet.c
     \brief   ENET driver
 

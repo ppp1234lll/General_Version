@@ -63,11 +63,11 @@ struct fsdata_chksum {
 };
 #endif /* HTTPD_PRECALCULATED_CHECKSUM */
 
-//fs_file½á¹¹Ìå
+//fs_fileç»“æ„ä½“
 struct fs_file {
-  const char *data;   //Êı¾İ
-  int len;  //³¤¶È
-  int index; //Ë÷ÒıºÅ
+  const char *data;   //æ•°æ®
+  int len;  //é•¿åº¦
+  int index; //ç´¢å¼•å·
   void *pextension;
 #if HTTPD_PRECALCULATED_CHECKSUM
   const struct fsdata_chksum *chksum;

@@ -1,4 +1,4 @@
-#ifndef __SNMP_OID_H__
+﻿#ifndef __SNMP_OID_H__
 #define __SNMP_OID_H__
 
 typedef enum {

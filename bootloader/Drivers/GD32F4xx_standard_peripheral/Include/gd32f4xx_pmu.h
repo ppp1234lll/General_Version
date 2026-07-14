@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_pmu.h
     \brief   definitions for the PMU
 

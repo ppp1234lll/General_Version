@@ -1,4 +1,4 @@
-/*
+﻿/*
  * pppcrypt.c - PPP/DES linkage for MS-CHAP and EAP SRP-SHA1
  * Extracted from chap_ms.c by James Carlson.
  * Copyright (c) 1995 Eric Rosenquist.  All rights reserved.

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * This file (together with sockets.h) aims to provide structs and functions from
  * - arpa/inet.h

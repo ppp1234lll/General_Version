@@ -1,4 +1,4 @@
-/*
+﻿/*
  * eui64.h - EUI64 routines for IPv6CP.
  * Copyright (c) 1999 Tommi Komulainen.  All rights reserved.
  * Redistribution and use in source and binary forms, with or without

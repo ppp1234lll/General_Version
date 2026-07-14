@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * DHCPv6 client: IPv6 address autoconfiguration as per
  * RFC 3315 (stateful DHCPv6) and

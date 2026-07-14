@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_can.h
     \brief   definitions for the CAN
     

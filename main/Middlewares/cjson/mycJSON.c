@@ -4,10 +4,10 @@
 #include "appconfig.h"
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: my_cjson_create_function
-*    ¹¦ÄÜËµÃ÷: ´´½¨º¯Êı
-*    ĞÎ    ²Î: @mode		: 0-head 1-tail
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: my_cjson_create_function
+*    åŠŸèƒ½è¯´æ˜: åˆ›å»ºå‡½æ•°
+*    å½¢    å‚: @mode		: 0-head 1-tail
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t my_cjson_create_function(uint8_t *buff, uint8_t mode)
@@ -41,10 +41,10 @@ int8_t my_cjson_create_function(uint8_t *buff, uint8_t mode)
 }
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: my_cjson_info_create_function
-*    ¹¦ÄÜËµÃ÷: 
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: my_cjson_info_create_function
+*    åŠŸèƒ½è¯´æ˜: 
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t my_cjson_info_create_function(uint8_t *buff, uint8_t mode)
@@ -61,10 +61,10 @@ int8_t my_cjson_info_create_function(uint8_t *buff, uint8_t mode)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: my_cjson_data_create_function
-*    ¹¦ÄÜËµÃ÷: 
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: my_cjson_data_create_function
+*    åŠŸèƒ½è¯´æ˜: 
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t my_cjson_data_create_function(uint8_t *buff, uint8_t mode)
@@ -81,10 +81,10 @@ int8_t my_cjson_data_create_function(uint8_t *buff, uint8_t mode)
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: my_cjson_join_string_function
-*    ¹¦ÄÜËµÃ÷: 
-*    ĞÎ    ²Î: 
-*    ·µ »Ø Öµ: 
+*    å‡½ æ•° å: my_cjson_join_string_function
+*    åŠŸèƒ½è¯´æ˜: 
+*    å½¢    å‚: 
+*    è¿” å› å€¼: 
 *********************************************************************************************************
 */
 int8_t my_cjson_join_string_function(uint8_t *buff,uint8_t *join_t,uint8_t *join_d, uint8_t next)
@@ -92,10 +92,10 @@ int8_t my_cjson_join_string_function(uint8_t *buff,uint8_t *join_t,uint8_t *join
 	uint8_t pbuff[128] = {0};
 	
 	if(next == 1) {
-		/* ºóÃæ»¹ÓĞ²ÎÊı */
+		/* åé¢è¿˜æœ‰å‚æ•° */
 		sprintf((char*)pbuff,"\"%s\":\"%s\",",join_t,join_d);
 	} else {
-		/* ºóÃæÃ»ÓĞ²ÎÊı */
+		/* åé¢æ²¡æœ‰å‚æ•° */
 		sprintf((char*)pbuff,"\"%s\":\"%s\"",join_t,join_d);
 	}
 	strcat((char*)buff,(char*)pbuff);
@@ -105,13 +105,13 @@ int8_t my_cjson_join_string_function(uint8_t *buff,uint8_t *join_t,uint8_t *join
 
 /*
 *********************************************************************************************************
-*    º¯ Êı Ãû: 
+*    å‡½ æ•° å: 
 my_cjson_join_int_function
-*    ¹¦ÄÜËµÃ÷: 
+*    åŠŸèƒ½è¯´æ˜: 
 
-*    ĞÎ    ²Î: 
+*    å½¢    å‚: 
 
-*    ·µ »Ø Öµ: 
+*    è¿” å› å€¼: 
 
 *********************************************************************************************************
 */
@@ -120,10 +120,10 @@ int8_t my_cjson_join_int_function(uint8_t *buff,uint8_t *join_t,int32_t number, 
 	uint8_t pbuff[128] = {0};
 	
 	if(next == 1) {
-		/* ºóÃæ»¹ÓĞ²ÎÊı */
+		/* åé¢è¿˜æœ‰å‚æ•° */
 		sprintf((char*)pbuff,"\"%s\":%d,",join_t,number);
 	} else {
-		/* ºóÃæÃ»ÓĞ²ÎÊı */
+		/* åé¢æ²¡æœ‰å‚æ•° */
 		sprintf((char*)pbuff,"\"%s\":%d",join_t,number);
 	}
 	strcat((char*)buff,(char*)pbuff);

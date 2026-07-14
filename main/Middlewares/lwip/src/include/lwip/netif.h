@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * netif API (to be used from TCPIP thread)
  */

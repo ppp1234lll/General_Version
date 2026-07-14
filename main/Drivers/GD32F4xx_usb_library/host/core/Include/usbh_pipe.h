@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_pipe.h
     \brief   USB host mode pipe header file
 

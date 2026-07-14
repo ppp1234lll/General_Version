@@ -1,167 +1,160 @@
-#ifndef _SAVE_H_
+ï»¿#ifndef _SAVE_H_
 #define _SAVE_H_
 
 #include "./SYSTEM/sys/sys.h"
 #include "./Task/inc/app.h"
 
-/* µÇÂ¼ÃÜÂë */
+/* ç™»å½•å¯†ç  */
 #define DEFALUT_DEVICE_ID           (3)
 #define DEFALUT_PASSWORD            ("88888888")
 
-/* ÓĞÏßÍøÂç */
+/* æœ‰çº¿ç½‘ç»œ */
 
-#define DEFALUT_LOCAL_IP0           (192)   // IPµØÖ·
+#define DEFALUT_LOCAL_IP0           (192)   // IPåœ°å€
 #define DEFALUT_LOCAL_IP1           (168)
 #define DEFALUT_LOCAL_IP2           (1)
 #define DEFALUT_LOCAL_IP3           (30)
 
-#define DEFALUT_NETMASK0            (255)   // ×ÓÍøÑÚÂë
+#define DEFALUT_NETMASK0            (255)   // å­ç½‘æ©ç 
 #define DEFALUT_NETMASK1            (255)
 #define DEFALUT_NETMASK2            (255)
 #define DEFALUT_NETMASK3            (0)
 
-#define DEFALUT_GATEWAY0            (192)   // Íø¹Ø
+#define DEFALUT_GATEWAY0            (192)   // ç½‘å…³
 #define DEFALUT_GATEWAY1            (168)
 #define DEFALUT_GATEWAY2            (1)
 #define DEFALUT_GATEWAY3            (1)
 
-#define DEFALUT_MULTICAST_IP0       (239)   // ¶à²¥µØÖ·
+#define DEFALUT_MULTICAST_IP0       (239)   // å¤šæ’­åœ°å€
 #define DEFALUT_MULTICAST_IP1       (255)
 #define DEFALUT_MULTICAST_IP2       (255)
 #define DEFALUT_MULTICAST_IP3       (249)
 #define DEFALUT_MULTICAST_PORT      (65000)
 
-#define DEFALUT_DNS0                (114)   // DNS·şÎñÆ÷
+#define DEFALUT_DNS0                (114)   // DNSæœåŠ¡å™¨
 #define DEFALUT_DNS1                (114)
 #define DEFALUT_DNS2                (114)
 #define DEFALUT_DNS3                (114)
 
-#define DEFALUT_SERVERMODE          (4)       // ·şÎñÆ÷Ä£Ê½
+#define DEFALUT_SERVERMODE          (4)       // æœåŠ¡å™¨æ¨¡å¼
 
-/* ãĞÖµ²ÎÊı */
-#define DEFALUT_VOLT_MAX            (0)       // ¹ıÑ¹
-#define DEFALUT_VOLT_MIN            (0)       // Ç·Ñ¹
-#define DEFALUT_CURRENT_MAX         (0)       // ¹ıÁ÷
-#define DEFAULT_ANGLE               (20)      // ½Ç¶È
-#define DEFAULT_MIU                 (25)      // Â©µçãĞÖµ
-#define DEFALUT_TEMP_HIGH           (60)      // ¹ıÎÂ
-#define DEFALUT_TEMP_LOW            (1)       // Ç·ÎÂ
-#define DEFALUT_HUMI_HIGH           (80)      // ¹ıÊª
+/* é˜ˆå€¼å‚æ•° */
+#define DEFALUT_VOLT_MAX            (0)       // è¿‡å‹
+#define DEFALUT_VOLT_MIN            (0)       // æ¬ å‹
+#define DEFALUT_CURRENT_MAX         (0)       // è¿‡æµ
+#define DEFAULT_ANGLE               (20)      // è§’åº¦
+#define DEFAULT_MIU                 (25)      // æ¼ç”µé˜ˆå€¼
+#define DEFALUT_TEMP_HIGH           (60)      // è¿‡æ¸©
+#define DEFALUT_TEMP_LOW            (1)       // æ¬ æ¸©
+#define DEFALUT_HUMI_HIGH           (80)      // è¿‡æ¹¿
 #define DEFAULT_HUMI_LOW            (10)
-// Ê±¼ä
+// æ—¶é—´
 #define DEFALUT_LIGHT_OPEN_TIME     (720) // 12:00 = 12*60
 #define DEFALUT_LIGHT_CLOSE_TIME    (720) // 12:00 = 12*60
 
 #define DEFALUT_DOOR_OPEN_TIME      (720) // 12:00 = 12*60
 #define DEFALUT_DOOR_CLOSE_TIME     (720) // 12:00 = 12*60
 
-#define DEFALUT_NETWORK_DELAY       (200)      // ÍøÂçÑÓÊ±Ê±¼ä
+#define DEFALUT_NETWORK_DELAY       (200)      // ç½‘ç»œå»¶æ—¶æ—¶é—´
 
-// Í¨ĞÅÊ±¼ä
-#define DEFALUT_HEART               (90*1000)   // ĞÄÌøÊ±¼ä
-#define DEFALUT_REPORT              (180*1000)  // ÉÏ±¨Ê±¼ä
-#define DEFALUT_PING                (20*1000)   // Ã¿ÂÖpingµÄ¼ä¸ôÊ±¼ä
-#define DEFALUT_DEV_PING            (10*1000)   // ÏÂÒ»´ÎpingµÄÊ±¼ä
-#define DEFALUT_ONVIF_TIME          (120)       // ONVIFÃ¿ÂÖËÑË÷Ê±¼ä
+// é€šä¿¡æ—¶é—´
+#define DEFALUT_HEART               (90*1000)   // å¿ƒè·³æ—¶é—´
+#define DEFALUT_REPORT              (180*1000)  // ä¸ŠæŠ¥æ—¶é—´
+#define DEFALUT_PING                (20*1000)   // æ¯è½®pingçš„é—´éš”æ—¶é—´
+#define DEFALUT_DEV_PING            (10*1000)   // ä¸‹ä¸€æ¬¡pingçš„æ—¶é—´
+#define DEFALUT_ONVIF_TIME          (120)       // ONVIFæ¯è½®æœç´¢æ—¶é—´
 
-// ÉãÏñ»ú¼ì²â·½Ê½
+// æ‘„åƒæœºæ£€æµ‹æ–¹å¼
 #define DEFALUT_IPC_DET_TYPE        (1)       
 
-// Æ½Ì¨µØÖ·
-#define DEFALUT_LWIP_PLATFORM_URL   ("47.104.250.225")   // ÄÚÍøµØÖ·
+// å¹³å°åœ°å€
+#define DEFALUT_LWIP_PLATFORM_URL   ("47.104.250.225")   // å†…ç½‘åœ°å€
 #define DEFALUT_LWIP_PLATFORM_PORT  (6012)  
-#define DEFALUT_GSM_PLATFORM_URL    ("47.104.250.225")   // ÍâÍøµØÖ·
+#define DEFALUT_GSM_PLATFORM_URL    ("47.104.250.225")   // å¤–ç½‘åœ°å€
 #define DEFALUT_GSM_PLATFORM_PORT   (6012)
 
-// OTAµØÖ·
+// OTAåœ°å€
 #define DEFALUT_OTA_IP0             (47)  
 #define DEFALUT_OTA_IP1             (104)  
 #define DEFALUT_OTA_IP2             (98)  
 #define DEFALUT_OTA_IP3             (214)  
 #define DEFALUT_OTA_PORT            (8989)
 
-// ÎÄ¼şÉÏ´«µØÖ·
+// æ–‡ä»¶ä¸Šä¼ åœ°å€
 #define DEFALUT_UPLOAD_IP0          (47)  
 #define DEFALUT_UPLOAD_IP1          (104)  
 #define DEFALUT_UPLOAD_IP2          (250)  
 #define DEFALUT_UPLOAD_IP3          (225)  
-#define DEFALUT_UPLOAD_PORT         (8080)
+#define DEFALUT_UPLOAD_PORT         (18080)
 
+// 485é…ç½®
+#define DEFALUT_RS485_BAUDRATE      (9600)  
+#define DEFALUT_RS485_PARITY_BITS   (0)  
+#define DEFALUT_RS485_WORD_BITS     (8)  
+#define DEFALUT_RS485_STOP_BITS     (1)  
 
-/* ´æ´¢Ïà¹Ø */
-#define SAVE_OTHER_PARAM            (0) // ÆäÓàÊı¾İ
-#define SAVE_LOCAL_NETWORK          (1) // ±¾µØÍøÂçĞÅÏ¢
-#define SAVE_REMOTE_IP              (2) // Ô¶¶ËÍøÂçĞÅÏ¢
-#define SAVE_COMPARISION            (3) // ÍâÉèÏà¹ØÊı¾İ
-#define SAVE_DEVICE_PARAM           (4) // ÏµÍ³Êı¾İ
-#define SAVE_COM_PARAMETER          (5) // Í¨ĞÅÊı¾İ
-#define SAVE_UPDATE                 (6) // ¸üĞÂ²ÎÊı
-#define SAVE_REPORT_SW              (7) // ÉÏ±¨¿ª¹Ø²ÎÊı
-#define SAVE_ONLY_SEND_IP           (8) // Ö»·¢ËÍ·şÎñÆ÷
-#define SAVE_CAREMA                 (9) // ÉãÏñ»ú²ÎÊı
-#define SAVE_THRESHOLD              (10) // ãĞÖµ
-#define SAVE_HTTP_OTA               (11) // ¸üĞÂµØÖ·
-#define SAVE_SNMP_OID               (12) // SNMP OID²ÎÊı
-#define SAVE_UPLOAD                 (13) // ÎÄ¼şÉÏ´«µØÖ·
-
-
-/* º¯ÊıÉùÃ÷ */
+/* å‡½æ•°å£°æ˜ */
 void save_init_function(void);
 void save_clear_file_function(uint8_t mode);
 
-// ´æ´¢
+// å­˜å‚¨
 int8_t save_stroage_local_network(struct local_ip_t *local);
 int8_t save_stroage_remote_ip_function(struct remote_ip *remote);
 int8_t save_storage_device_parameter_function(struct device_param *param);
 int8_t save_stroage_com_param_function(com_param_t *param);
 int8_t save_stroage_update_addr(uint8_t *ip,uint32_t port) ;
 
-// ¶ÁÈ¡
+// è¯»å–
 int8_t save_read_local_network(struct local_ip_t *local);
 int8_t save_read_remote_ip_function(struct remote_ip *remote);
 int8_t save_read_device_paramter_function(struct device_param *param);
 int8_t save_read_com_param_function(com_param_t *param);
 int8_t save_read_update_addr(uint8_t *ip,uint32_t *port);
-// Ä¬ÈÏ²ÎÊı
+
+// é»˜è®¤å‚æ•°
 void save_read_default_local_network(struct local_ip_t *local);
 void save_read_default_device_paramter_function(struct device_param *param);
 void save_read_default_remote_ip(struct remote_ip *remote);
 void save_read_default_com_param_function(com_param_t *param);
 
-// 20230712 ÉãÏñ»úÏà¹Ø²ÎÊı
+// 20230712 æ‘„åƒæœºç›¸å…³å‚æ•°
 int8_t save_read_carema_parameter(carema_t *param);
 void save_read_default_carema_parameter(carema_t *param);
 int8_t save_stroage_carema_parameter(carema_t *param);
 
-// 20230723 ãĞÖµ
+// 20230723 é˜ˆå€¼
 int8_t save_stroage_threshold_parameter(struct threshold_params *param);
 void save_read_default_threshold_parameter(struct threshold_params *param);
 int8_t save_read_threshold_parameter(struct threshold_params *param);    
 
-// 20231022 ±¸·İĞÅÏ¢
+// 20231022 å¤‡ä»½ä¿¡æ¯
 int8_t save_stroage_backups_function(sys_backups_t *param);
 int8_t save_read_backups_function(sys_backups_t *param);
 void save_read_default_backups(sys_backups_t *param);
 
-// 20241101 HTTPÉı¼¶
+// 20241101 HTTPå‡çº§
 int8_t save_stroage_http_ota_function(struct update_addr *param);
 int8_t save_read_http_ota_function(struct update_addr *param);
 void save_read_default_http_ota(struct update_addr *param);
 
-// ÎÄ¼şÉÏ´«µØÖ·
+// æ–‡ä»¶ä¸Šä¼ åœ°å€
 int8_t save_stroage_http_upload_function(struct upload_addr *param);
 int8_t save_read_http_upload_function(struct upload_addr *param);
 void save_read_default_http_upload(struct upload_addr *param);
 
-// ÓÃµçÁ¿
+// ç”¨ç”µé‡
 int8_t save_stroage_electricity_function(electricity_t *param);
 int8_t save_read_electricity_function(electricity_t *param);
 void save_read_default_electricity(electricity_t *param);
 
-// snmp_oid_t Ïà¹Ø´æ´¢º¯Êı
+// snmp_oid_t ç›¸å…³å­˜å‚¨å‡½æ•°
 int8_t save_stroage_snmp_oid_parameter(snmp_oid_t *param);
 void save_read_default_snmp_oid_parameter(snmp_oid_t *param);
 int8_t save_read_snmp_oid_parameter(snmp_oid_t *param);
 
+// 485é…ç½®
+int8_t save_stroage_rs485_param_function(rs485_config_t *param);
+int8_t save_read_rs485_param_function(rs485_config_t *param);
+void save_read_default_rs485_param_function(rs485_config_t *param);
 
 #endif

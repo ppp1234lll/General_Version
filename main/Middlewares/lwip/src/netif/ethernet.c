@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Ethernet common functions
  * @defgroup ethernet Ethernet

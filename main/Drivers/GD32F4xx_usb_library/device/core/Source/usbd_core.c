@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbd_core.c
     \brief   USB device mode core functions
 

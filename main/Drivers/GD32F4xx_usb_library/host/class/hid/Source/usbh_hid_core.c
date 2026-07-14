@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    usbh_hid_core.c
     \brief   USB host HID class driver
 

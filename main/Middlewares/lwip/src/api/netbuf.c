@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Network buffer management
  * @defgroup netbuf Network buffers

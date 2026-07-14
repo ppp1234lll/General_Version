@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * ACD IPv4 Address Conflict Detection
  * This is an IPv4 address conflict detection implementation for the lwIP TCP/IP

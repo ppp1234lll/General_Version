@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    dfu_core.c
     \brief   USB DFU device class core functions
 

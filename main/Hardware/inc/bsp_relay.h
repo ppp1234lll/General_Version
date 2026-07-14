@@ -1,29 +1,29 @@
-#ifndef _BSP_RELAY_H_
+ï»¿#ifndef _BSP_RELAY_H_
 #define _BSP_RELAY_H_
 
 #include "./SYSTEM/sys/sys.h"
 
 typedef enum
 {
-    RELAY_1 = 0 , // ¼ÌµçÆ÷ 1
-    RELAY_2     , // ¼ÌµçÆ÷ 2
-    RELAY_3     , // ¼ÌµçÆ÷ 3
-    RELAY_4     , // ¼ÌµçÆ÷ 4
-    RELAY_5     , // ¼ÌµçÆ÷ 5
-    RELAY_6     , // ¼ÌµçÆ÷ 6
-    RELAY_7     , // ¼ÌµçÆ÷ 7
-    RELAY_8     , // ¼ÌµçÆ÷ 8
+    RELAY_1 = 0 , // ç»§ç”µå™¨ 1
+    RELAY_2     , // ç»§ç”µå™¨ 2
+    RELAY_3     , // ç»§ç”µå™¨ 3
+    RELAY_4     , // ç»§ç”µå™¨ 4
+    RELAY_5     , // ç»§ç”µå™¨ 5
+    RELAY_6     , // ç»§ç”µå™¨ 6
+    RELAY_7     , // ç»§ç”µå™¨ 7
+    RELAY_8     , // ç»§ç”µå™¨ 8
     RELAY_NUM
 } RELAY_DEV;
 
 typedef enum
 {
-    RELAY_OFF = 0, // ¹Ø±Õ
-    RELAY_ON  = 1, // ´ò¿ª
+    RELAY_OFF = 0, // å…³é—­
+    RELAY_ON  = 1, // æ‰“å¼€
 } RELAY_STATUS;
 
-/* ¹©Íâ²¿µ÷ÓÃµÄº¯ÊýÉùÃ÷ */
-void bsp_InitRelay(void); // ³õÊ¼»¯º¯Êý
+/* ä¾›å¤–éƒ¨è°ƒç”¨çš„å‡½æ•°å£°æ˜Ž */
+void bsp_InitRelay(void); // åˆå§‹åŒ–å‡½æ•°
 void relay_control(RELAY_DEV dev, RELAY_STATUS state);
 uint8_t relay_get_status(RELAY_DEV dev);
 void relay_test(void);

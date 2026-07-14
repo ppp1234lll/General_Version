@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @file
  * Neighbor discovery and stateless address autoconfiguration for IPv6.
  * Aims to be compliant with RFC 4861 (Neighbor discovery) and RFC 4862

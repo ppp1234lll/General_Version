@@ -1,4 +1,4 @@
-/*!
+﻿/*!
     \file    gd32f4xx_dbg.h
     \brief   definitions for the DBG
     
