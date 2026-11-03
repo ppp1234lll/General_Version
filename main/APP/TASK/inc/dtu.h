@@ -12,6 +12,7 @@ extern QueueHandle_t dtu_rx_q;
 
 // 控制器配置
 #define MPPT_SLAVE_ID           0x01    // 控制器默认ID
+#define MPPT_POLL_INTERVAL_MS   60000   // 采集周期(ms)：完成一轮参数采集后的等待时间
 // 功能码定义
 #define MPPT_FUNC_READ_SWITCH    0x02    // 读开关输入状态
 #define MPPT_FUNC_READ_HOLD      0x03    // 读保持寄存器
@@ -379,6 +380,7 @@ typedef struct {
     DischargeDeviceStatus discharge;
     ChargeDeviceStatus    charge;
     BatteryStatus_t       battery;
+    MPPT_CommStatus_t     comm;     // 通信状态(供Web页面/调试查看)
 } MPPT_Data_t;
 
 extern MPPT_Data_t g_mppt;

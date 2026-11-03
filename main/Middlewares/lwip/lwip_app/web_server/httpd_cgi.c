@@ -1385,6 +1385,13 @@ int8_t httpd_cgi_show_function(char *pcValue[], uint16_t *data, uint8_t *buff)
         return 0;
     }
 
+    /* 485控制器(MPPT太阳能控制器)参数 */
+    if ( strcmp(pcValue[0] , "controllerData")==0 ) {
+        *data = 0;
+        httpd_ssi_mppt_data_collection_function((char*)buff);
+        return 0;
+    }
+
     /* 服务器信息 */
     if ( strcmp(pcValue[0] , "serverset")==0 ) {
         *data = 0;

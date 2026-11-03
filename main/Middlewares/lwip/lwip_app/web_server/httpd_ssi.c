@@ -348,6 +348,135 @@ void httpd_ssi_bd_data_collection_function(char *pcInsert)
                     buff[0],buff[1],buff[2],buff[3],buff[4],buff[5]);
 }
 
+/* 485 控制器(MPPT)参数个数, 与 index.shtml 中 controllerData 页面的节点数量保持一致 */
+#define MPPT_SSI_VALUE_NUM   (25)
+
+/*
+*********************************************************************************************************
+*    函 数 名: mppt_fixed2_to_str
+*    功能说明: 定点值(单位0.01)转字符串, 如 1234 -> "12.34"
+*    形    参: @buff : 输出缓冲区  @value : 定点值(x100)
+*    返 回 值: 无
+*********************************************************************************************************
+*/
+static void mppt_fixed2_to_str(char *buff, uint32_t value)
+{
+    sprintf(buff,"%u.%02u",(unsigned int)(value/100U),(unsigned int)(value%100U));
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: httpd_ssi_mppt_data_collection_function
+*    功能说明: 485控制器(MPPT太阳能控制器)参数界面更新
+*    形    参: @pcInsert : 输出缓冲区(JSON数组字符串)
+*    返 回 值: 无
+*********************************************************************************************************
+*/
+void httpd_ssi_mppt_data_collection_function(char *pcInsert)
+{
+#if (configUSE_SUN_POWER == 1)
+    const char *charge_state_str[4] = {"\xe6\x9c\xaa\xe5\x85\x85\xe7\x94\xb5",        /* 未充电 */
+                                       "\xe6\xb5\xae\xe5\x85\x85",                    /* 浮充   */
+                                       "\xe5\xbc\xba\xe5\x85\x85",                    /* 强充   */
+                                       "\xe5\x9d\x87\xe8\xa1\xa1\xe5\x85\x85"};      /* 均衡充 */
+    const char *volt_state_str[4]   = {"\xe6\xad\xa3\xe5\xb8\xb8",                     /* 正常 */
+                                       "\xe8\xb6\x85\xe5\x8e\x8b",                     /* 超压 */
+                                       "\xe6\xac\xa0\xe5\x8e\x8b",                     /* 欠压 */
+                                       "\xe8\xbf\x87\xe6\x94\xbe"};                    /* 过放 */
+    MPPT_Data_t *mppt = (MPPT_Data_t *)dtu_get_mppt_data_function();
+    char     buff[MPPT_SSI_VALUE_NUM][16] = {0};
+    uint32_t value = 0;
+    uint32_t age   = 0;
+    uint8_t  i     = 0;
+    uint8_t  state = 0;
+    char    *p     = pcInsert;
+
+    /* 通信状态与数据更新时间 */
+    if (mppt->comm.last_update_time == 0)
+    {
+        sprintf(buff[0],"%s","\xe6\x9c\xaa\xe9\x80\x9a\xe4\xbf\xa1");     /* 未通信 */
+        sprintf(buff[1],"%s","\xe6\x97\xa0");                             /* 无 */
+    }
+    else
+    {
+        age = (uint32_t)xTaskGetTickCount() - mppt->comm.last_update_time;
+        if (age > (uint32_t)(MPPT_POLL_INTERVAL_MS * 3U))
+        {
+            sprintf(buff[0],"%s","\xe9\x80\x9a\xe4\xbf\xa1\xe4\xb8\xad\xe6\x96\xad"); /* 通信中断 */
+        }
+        else
+        {
+            sprintf(buff[0],"%s","\xe6\xad\xa3\xe5\xb8\xb8");                          /* 正常 */
+        }
+        age = age / 1000U;
+        if (age > 9999U)                                                              /* 限制长度，防止缓冲溢出 */
+        {
+            age = 9999U;
+        }
+        sprintf(buff[1],"%u%s",(unsigned int)age,"\xe7\xa7\x92\xe5\x89\x8d");          /* n秒前 */
+    }
+
+    /* 蓄电池数据 */
+    sprintf(buff[2],"%u",(unsigned int)mppt->realtime.battery_soc);
+    mppt_fixed2_to_str(buff[3],mppt->realtime.battery_voltage);
+    mppt_fixed2_to_str(buff[4],mppt->realtime.battery_current);
+    value = ((uint32_t)mppt->realtime.battery_power_H << 16) | mppt->realtime.battery_power_L;
+    mppt_fixed2_to_str(buff[5],(uint32_t)abs((int32_t)value));
+
+    /* 负载数据 */
+    mppt_fixed2_to_str(buff[6],mppt->realtime.load_voltage);
+    mppt_fixed2_to_str(buff[7],mppt->realtime.load_current);
+    value = ((uint32_t)mppt->realtime.load_power_H << 16) | mppt->realtime.load_power_L;
+    mppt_fixed2_to_str(buff[8],value);
+
+    /* 太阳能数据 */
+    mppt_fixed2_to_str(buff[9],mppt->realtime.solar_voltage);
+    mppt_fixed2_to_str(buff[10],mppt->realtime.solar_current);
+    value = ((uint32_t)mppt->realtime.charge_power_H << 16) | mppt->realtime.charge_power_L;
+    mppt_fixed2_to_str(buff[11],value);
+
+    /* 充电量/用电量 */
+    mppt_fixed2_to_str(buff[12],mppt->realtime.daily_charge_kwh);
+    value = ((uint32_t)mppt->realtime.total_charge_kwh_H << 16) | mppt->realtime.total_charge_kwh_L;
+    mppt_fixed2_to_str(buff[13],value);
+    mppt_fixed2_to_str(buff[14],mppt->realtime.daily_discharge_kwh);
+    value = ((uint32_t)mppt->realtime.total_discharge_kwh_H << 16) | mppt->realtime.total_discharge_kwh_L;
+    mppt_fixed2_to_str(buff[15],value);
+
+    /* 温度、运行天数、昼夜状态 */
+    sprintf(buff[16],"%d",(int16_t)mppt->realtime.ambient_temp);
+    sprintf(buff[17],"%d",(int16_t)mppt->realtime.device_temp);
+    sprintf(buff[18],"%u",(unsigned int)mppt->realtime.running_days_2);
+    sprintf(buff[19],"%s",mppt->ai_state.day_night_status ? "\xe5\xa4\x9c\xe6\x99\x9a" : "\xe7\x99\xbd\xe5\xa4\xa9"); /* 夜晚/白天 */
+
+    /* 充电状态 */
+    state = mppt->charge.charge_state & 0x03;
+    sprintf(buff[20],"%s",charge_state_str[state]);
+
+    /* 蓄电池状态 */
+    state = mppt->battery.voltage_state;
+    if (state > 3)
+    {
+        state = 0;
+    }
+    sprintf(buff[21],"%s",volt_state_str[state]);
+    sprintf(buff[22],"%s",mppt->battery.high_temp_protect ? "\xe6\x98\xaf" : "\xe5\x90\xa6"); /* 是/否 */
+
+    /* 保护次数 */
+    sprintf(buff[23],"%u",(unsigned int)mppt->realtime.over_discharge_count);
+    sprintf(buff[24],"%u",(unsigned int)mppt->realtime.full_charge_count);
+
+    p += sprintf(p,"[\"%s\"",buff[0]);
+    for (i = 1; i < MPPT_SSI_VALUE_NUM; i++)
+    {
+        p += sprintf(p,",\"%s\"",buff[i]);
+    }
+    sprintf(p,"]");
+#else
+    sprintf(pcInsert,"[]");
+#endif
+}
+
 /*
 *********************************************************************************************************
 *    函 数 名: device_parameter_handler

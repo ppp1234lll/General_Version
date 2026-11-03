@@ -231,6 +231,38 @@
                 border: 1px solid #919191;
                 border-radius: 3px;
             }
+            .param-table{
+                width: 80%;
+                padding: 10px 20px 20px;
+                margin: 0 auto;
+            }
+            .param-grid{
+                display: grid;
+                grid-template-columns: repeat(2, minmax(300px, 1fr));
+                column-gap: 30px;
+                row-gap: 16px;
+                width: 100%;
+            }
+            .param-item{
+                display: flex;
+                align-items: center;
+            }
+            .param-name{
+                min-width: 140px;
+                text-align: right;
+                white-space: nowrap;
+                font-size: 16px;
+            }
+            .param-value{
+                flex: 1 1 0;
+                min-width: 0;
+                height: 30px;
+                margin-left: 8px;
+                padding-left: 6px;
+                border: 1px solid #919191;
+                border-radius: 3px;
+                background: #f7f7f7;
+            }
         </style>
     </head>
     <body>
@@ -371,9 +403,41 @@
                     ["箱门状态","",'door'],
 					["防雷器状态","",'spd'],
 					["水浸状态","",'water'],
-                    ["漏电","",'ld'],
-                ],
-            },
+					["漏电","",'ld'],
+					],
+					},
+					{
+					label:"控制器参数",
+					btntype:"controllerData",
+					divid:"content",
+					nodes:[
+					["通信状态","",'m_comm'],
+					["数据更新","",'m_upd'],
+					["蓄电池电量(%)","",'m_soc'],
+					["蓄电池电压(V)","",'m_bv'],
+					["蓄电池电流(A)","",'m_ba'],
+					["蓄电池功率(W)","",'m_bp'],
+					["负载电压(V)","",'m_lv'],
+					["负载电流(A)","",'m_la'],
+					["负载功率(W)","",'m_lp'],
+					["太阳能电压(V)","",'m_sv'],
+					["太阳能电流(A)","",'m_sa'],
+					["发电功率(W)","",'m_sp'],
+					["当日充电量(kWh)","",'m_dc'],
+					["累计充电量(kWh)","",'m_tc'],
+					["当日用电量(kWh)","",'m_dd'],
+					["累计用电量(kWh)","",'m_td'],
+					["环境温度(℃)","",'m_at'],
+					["机内温度(℃)","",'m_dt'],
+					["运行天数","",'m_rd'],
+					["昼夜状态","",'m_dn'],
+					["充电状态","",'m_cs'],
+					["蓄电池状态","",'m_bs'],
+					["高温保护","",'m_ht'],
+					["过放次数","",'m_od'],
+					["充满次数","",'m_fc'],
+					],
+					},
             {
                 label:"阈值设置",
                 btntype:"ThresholdData",
@@ -690,6 +754,17 @@
                 html.push('</div></div>')
                 return html.join('')
             },
+            renderParamGrid(data,j){
+                var html=['<div class="param-table"><div class="param-grid">']
+                for(var i=0;i<data.nodes.length;i++){
+                    html.push('<div class="param-item">')
+                    html.push('<span class="param-name">',data.nodes[i][0],':</span>')
+                    html.push('<input class="param-value" type="text" value="',data.nodes[i][1],'" name="',data.nodes[i][2],'" readonly/>')
+                    html.push('</div>')
+                }
+                html.push('</div></div>')
+                return html.join('')
+            },
             inputhtmlCameraUser(data,j,i){
                 data[1]=data[1].replace(/<.*>/g,'')
                 return [
@@ -854,6 +929,10 @@
                             html+=this.btnhtml(j,data.btns[i])
                         }
                     }
+                    document.getElementById(data.divid).innerHTML=html
+                    return
+                }else if(data.btntype=="controllerData"){
+                    html = this.renderParamGrid(data,j)
                     document.getElementById(data.divid).innerHTML=html
                     return
                 }

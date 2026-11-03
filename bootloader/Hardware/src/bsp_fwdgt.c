@@ -13,8 +13,8 @@
 #include "bsp_fwdgt.h"
 #include "bsp.h"
 
-#define configUSE_SOFT_FWDGT        0       /* 是否使用软件定时器 */
-#define configUSE_HARD_FWDGT        0       /* 是否使用硬件定时器 */
+#define configUSE_SOFT_FWDGT        1       /* 是否使用软件定时器 */
+#define configUSE_HARD_FWDGT        1       /* 是否使用硬件定时器 */
 
 /*
 *********************************************************************************************************

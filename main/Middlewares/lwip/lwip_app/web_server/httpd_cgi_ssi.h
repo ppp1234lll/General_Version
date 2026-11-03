@@ -41,6 +41,7 @@ void httpd_ssi_switch_status_function(char *pcInsert);            // 开关状�
 void httpd_ssi_sensor_data_collection_function(char *pcInsert);   // 传感器数据界面更新
 void httpd_ssi_threshold_seting_function(char *pcInsert);         // 阈值信息更新
 void httpd_ssi_bd_data_collection_function(char *pcInsert);       // BD数据更新
+void httpd_ssi_mppt_data_collection_function(char *pcInsert);     // 485控制器(MPPT)参数更新
 void httpd_ssi_system_seting_function(char *pcInsert);            // 系统设置
 void httpd_ssi_nework_gprs_show_function(char *pcInsert);         // 无线网络信息
 void httpd_ssi_network_setting_function(char *pcInsert);          // 网络信息

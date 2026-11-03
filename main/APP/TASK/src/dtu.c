@@ -119,14 +119,15 @@ void dtu_task_function(void)
 			if (s_mppt_step >= 2) {
 				if ((now_times - s_mppt_timeout) >= pdMS_TO_TICKS(2000)) {
 					DTU_DBG("[485] step=%u timeout, no response\r\n", s_mppt_step);
+					g_mppt.comm.last_error = 1;
 					s_mppt_step = 0;
 				}
 			}
 
-			/* step 0 空闲态：等待1min间隔 */
+			/* step 0 空闲态：等待采集间隔 */
 			if (s_mppt_step == 0) 
 			{
-				if ((now_times - s_mppt_last_tick) >= pdMS_TO_TICKS(60000))
+				if ((now_times - s_mppt_last_tick) >= pdMS_TO_TICKS(MPPT_POLL_INTERVAL_MS))
 					s_mppt_step = 1;
 			}
 
@@ -401,6 +402,11 @@ static void dtu_mppt_parse_electricity(uint8_t *data, uint8_t len)
 	g_mppt.realtime.daily_discharge_kwh  = temp_data[16];  // 当日累计用电量
 	g_mppt.realtime.total_discharge_kwh_L = temp_data[17]; // 总累计用电量低16位
 	g_mppt.realtime.total_discharge_kwh_H = temp_data[18]; // 总累计用电量高16位
+
+	/* 通信状态：本轮数据已成功读取 */
+	g_mppt.comm.is_connected     = 1;
+	g_mppt.comm.last_error       = 0;
+	g_mppt.comm.last_update_time = (uint32_t)xTaskGetTickCount();
 }
 
 /*
