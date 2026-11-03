@@ -1,0 +1,7 @@
+{
+  "keil": {
+    "project": "main/Projects/MDK-ARM/atk_f460.uvprojx",
+    "target": "lwIP",
+    "log_dir": ".embeddedskills/build"
+  }
+}

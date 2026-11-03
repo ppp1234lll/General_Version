@@ -10,20 +10,18 @@
 #include "./udp_multicast/udp_multicast.h"
 #include "main.h"
 
-
-
 // UDP 参数设置
-#define UDP_MULTICAST_PRIO        3
+#define UDP_MULTICAST_PRIO        6
 //任务堆栈大小
-#define UDP_MULTICAST_STK_SIZE    256
+#define UDP_MULTICAST_STK_SIZE    512
 //任务堆栈
 TaskHandle_t UdpMulticast_Task_Handler;
 
 udp_multicast_t udp_multicast_param;
 
-#define UDP_RX_LEN        500                         // udp最大接收数据长度
-uint8_t udp_recv_buf[UDP_RX_LEN];        // UDP接收
-uint8_t *udp_send_buf = NULL;                // UDP发送
+#define UDP_RX_LEN    500         // udp最大接收数据长度
+uint8_t udp_recv_buf[UDP_RX_LEN]; // UDP接收
+uint8_t *udp_send_buf = NULL;     // UDP发送
 uint16_t udp_flag;
 
 int udp_sock = -1;  // SOCKET
@@ -57,7 +55,7 @@ static void udp_multicast_thread(void *arg)
             {                    
                 sprintf(ip_param,"%d.%d.%d.%d",local->ip[0],local->ip[1],local->ip[2],local->ip[3]);
                 sprintf(multicast_addr,"%d.%d.%d.%d",local->multicast_ip[0],local->multicast_ip[1],
-                                                                                         local->multicast_ip[2],local->multicast_ip[3]);
+                                                    local->multicast_ip[2],local->multicast_ip[3]);
                 multicast_port = local->multicast_port;
                 local_addr.sin_family = AF_INET;
                 local_addr.sin_addr.s_addr = htonl(INADDR_ANY); /*<! 待与 socket 绑定的本地网络接口 IP */   
@@ -68,7 +66,7 @@ static void udp_multicast_thread(void *arg)
                 {    }
                 else
                 {                
-                    mreq.imr_multiaddr.s_addr    =    inet_addr(multicast_addr); /*<! 多播组 IP 地址设置 */
+                    mreq.imr_multiaddr.s_addr = inet_addr(multicast_addr); /*<! 多播组 IP 地址设置 */
                     mreq.imr_interface.s_addr = inet_addr(ip_param); /*<! 待加入多播组的 IP 地址 */   
 
                     // 添加多播组成员（该语句之前，socket 只与 某单播IP地址相关联 执行该语句后 将与多播地址相关联）
@@ -122,23 +120,23 @@ static void udp_multicast_thread(void *arg)
 //返回值:0 UDP创建成功
 //        其他 UDP创建失败
 unsigned char udp_multicast_init(void)
-{
-                                        
+{                               
     BaseType_t res;
     
     if(s_udp_multicast_exit_req){ return 0; }               /* 有任务待回收, 本轮先不创建 */
     if(UdpMulticast_Task_Handler != NULL){ return pdPASS; } /* 已存在, 不重复创建 */
-    
-    taskENTER_CRITICAL();    /*进入临界区*/
-    
-    xTaskCreate((TaskFunction_t )udp_multicast_thread,
-                            (const char *   )"udp_multicast_thread",
-                            (uint16_t       )UDP_MULTICAST_STK_SIZE,
-                            (void *         )NULL,
-                            (UBaseType_t    )UDP_MULTICAST_PRIO,
-                            (TaskHandle_t * )&UdpMulticast_Task_Handler);
-
-    taskEXIT_CRITICAL();    /*退出临界区*/
+        
+    res = xTaskCreate(  (TaskFunction_t )udp_multicast_thread,
+                        (const char *   )"udp_multicast_thread",
+                        (uint16_t       )UDP_MULTICAST_STK_SIZE,
+                        (void *         )NULL,
+                        (UBaseType_t    )UDP_MULTICAST_PRIO,
+                        (TaskHandle_t * )&UdpMulticast_Task_Handler);
+    if (res != pdPASS)
+    {
+        printf("udp_multicast_thread: xTaskCreate failed\n");
+        UdpMulticast_Task_Handler = NULL;
+    }
     
     return res;
 }

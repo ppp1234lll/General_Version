@@ -168,7 +168,7 @@ void ebtn_APP_Event(struct ebtn_btn *btn, ebtn_evt_t evt)
         }
         break;
 #endif
-#if (configUSE_KEY_MCB == 1)
+#if (configUSE_KEY_MCB_COUPLING == 1)
         /* ----------------------------------- MCB_KEY ---------------------------------- */
     case MCB_KEY:
         if (evt == EBTN_EVT_KEEPALIVE)

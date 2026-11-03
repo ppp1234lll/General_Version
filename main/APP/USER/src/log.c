@@ -1472,6 +1472,7 @@ static int log_recover_current_to_pending(void)
 *********************************************************************************************************
 *    函 数 名: log_append_record
 *    功能说明: 向日志文件和目录索引追加一条记录。
+*              落盘 payload 格式: "[YYYYMMDDhhmmss] " + 原始内容 + "\r\n"。
 *    形    参: 见函数声明
 *    返 回 值: 0 表示成功，其他表示错误码。
 *********************************************************************************************************
@@ -1486,6 +1487,8 @@ static int log_append_record(const char *file_path,
     lfs_file_t lfs_fp = {0};
     char catalog_path[LOG_PATH_NAME_MAX] = {0};
     lfs_soff_t record_offset = 0;
+    uint16_t stored_len = 0U;
+    int prefix_len = 0;
     int err = 0;
 
     if ((payload_len > 0U) && (payload == NULL))
@@ -1493,14 +1496,35 @@ static int log_append_record(const char *file_path,
         return LOG_ERR_INVALID_PARAM;
     }
 
+    /* 原始内容 + 时间前缀 + 换行 不得超过单条上限 */
+    if (payload_len > LOG_PAYLOAD_RAW_MAX)
+    {
+        return LOG_ERR_DATA_TOO_LARGE;
+    }
+
     memset(&header, 0, sizeof(header));
     log_get_time(&time_info);
+
+    /* 组装落盘明文: [保存时间] 原始内容\r\n (复用查询缓冲, 调用方已持锁) */
+    prefix_len = snprintf((char *)s_query_payload_buf, LOG_QUERY_PAYLOAD_MAX,
+                          "[%s] ", time_info.time_text);
+    if (prefix_len != (int)LOG_TEXT_LINE_PREFIX_LEN)
+    {
+        return LOG_ERR_APPEND;
+    }
+    if (payload_len > 0U)
+    {
+        memcpy(s_query_payload_buf + (uint32_t)prefix_len, payload, payload_len);
+    }
+    s_query_payload_buf[(uint32_t)prefix_len + payload_len] = (uint8_t)'\r';
+    s_query_payload_buf[(uint32_t)prefix_len + payload_len + 1U] = (uint8_t)'\n';
+    stored_len = (uint16_t)((uint32_t)prefix_len + (uint32_t)payload_len + LOG_TEXT_LINE_SUFFIX_LEN);
 
     header.magic = LOG_RECORD_MAGIC;
     header.index = s_current_meta.next_index;
     header.timestamp = time_info.timestamp;
-    header.payload_len = payload_len;
-    header.checksum = log_record_checksum_calc(&header, payload);
+    header.payload_len = stored_len;
+    header.checksum = log_record_checksum_calc(&header, s_query_payload_buf);
 
     err = lfs_file_open(&g_lfs_t, &lfs_fp, file_path, LFS_O_WRONLY | LFS_O_CREAT);
     if (err != 0)
@@ -1522,14 +1546,11 @@ static int log_append_record(const char *file_path,
         return LOG_ERR_APPEND;
     }
 
-    if (payload_len > 0U)
+    err = lfs_file_write(&g_lfs_t, &lfs_fp, s_query_payload_buf, stored_len);
+    if (err != (int)stored_len)
     {
-        err = lfs_file_write(&g_lfs_t, &lfs_fp, payload, payload_len);
-        if (err != payload_len)
-        {
-            (void)lfs_file_close(&g_lfs_t, &lfs_fp);
-            return LOG_ERR_APPEND;
-        }
+        (void)lfs_file_close(&g_lfs_t, &lfs_fp);
+        return LOG_ERR_APPEND;
     }
 
     err = lfs_file_close(&g_lfs_t, &lfs_fp);
@@ -2094,9 +2115,9 @@ static int8_t log_write_common(const uint8_t *payload, uint16_t len)
 /*
 *********************************************************************************************************
 *    函 数 名: log_device_write
-*    功能说明: 追加一条设备日志记录。
-*    形    参: data : 日志数据
-*              len  : 数据长度
+*    功能说明: 追加一条设备日志记录(自动加保存时间前缀与换行后落盘)。
+*    形    参: data : 日志原始数据
+*              len  : 数据长度(不含时间前缀/换行, 最大 LOG_PAYLOAD_RAW_MAX)
 *    返 回 值: 0 表示成功，其他表示错误码。
 *********************************************************************************************************
 */
@@ -2309,9 +2330,17 @@ static void log_text_size_callback(const log_record_header_t *header,
         return;
     }
 
-    ctx->total_size += header->payload_len;
+    /* 落盘时已写入 "[time] raw\r\n", 上报直接累加 payload 长度 */
+    ctx->total_size += (uint32_t)header->payload_len;
 }
 
+/*
+*********************************************************************************************************
+*    函 数 名: log_text_stream_load_next_payload
+*    功能说明: 加载下一条有效记录的 payload(已含保存时间与换行)。
+*    返 回 值: 1 有数据, 0 结束, <0 错误。
+*********************************************************************************************************
+*/
 static int log_text_stream_load_next_payload(void)
 {
     log_catalog_item_t item;
@@ -2384,6 +2413,7 @@ static int log_text_stream_load_next_payload(void)
         }
 
         s_pending_text_stream.payload_remain = header.payload_len;
+        s_pending_text_stream.payload_off = 0U;
         return 1;
     }
 }
@@ -2402,7 +2432,7 @@ static void log_text_stream_reset(void)
 /*
 *********************************************************************************************************
 *    函 数 名: log_get_pending_text_size
-*    功能说明: 计算 pending 批次全部 payload 明文总长度(供 HTTP 上传用)。
+*    功能说明: 计算 pending 批次上报明文总长度(与落盘 payload 一致)。
 *    形    参: text_size 输出总字节数
 *    返 回 值: 0 表示成功，其他表示错误码。
 *********************************************************************************************************
@@ -2451,7 +2481,7 @@ int8_t log_get_pending_text_size(uint32_t *text_size)
 /*
 *********************************************************************************************************
 *    函 数 名: log_open_pending_text_stream
-*    功能说明: 打开 pending 批次 payload 明文流(供 HTTP 分片顺序读取)。
+*    功能说明: 打开 pending 批次明文流(供 HTTP 分片顺序读取)。
 *    形    参: 无
 *    返 回 值: 0 表示成功，其他表示错误码。
 *********************************************************************************************************

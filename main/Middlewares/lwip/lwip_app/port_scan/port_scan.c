@@ -7,7 +7,7 @@
 #include "lwip/tcp.h"
 #include <lwip/sockets.h>
 
-#define PORT_DEBUG  1// 调试
+#define PORT_DEBUG  0   // 调试
 
 // 常见摄像头使用的端口列表
 static const uint16_t camera_ports[] = {80, 554, 8000, 37777, 5000, 8080, 8899};

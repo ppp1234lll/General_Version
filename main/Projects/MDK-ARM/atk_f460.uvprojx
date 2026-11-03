@@ -49,7 +49,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>..\..\Output\</OutputDirectory>
-          <OutputName>atk_f429</OutputName>
+          <OutputName>atk_f460</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -1362,6 +1362,11 @@
               <FileName>onvif_tcp.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Middlewares\lwip\lwip_app\onvif\onvif_tcp.c</FilePath>
+            </File>
+            <File>
+              <FileName>sadp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Middlewares\lwip\lwip_app\onvif\sadp.c</FilePath>
             </File>
           </Files>
         </Group>

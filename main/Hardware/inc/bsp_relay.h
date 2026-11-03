@@ -13,6 +13,7 @@ typedef enum
     RELAY_6     , // 继电器 6
     RELAY_7     , // 继电器 7
     RELAY_8     , // 继电器 8
+    RELAY_9     , // 交换机控制
     RELAY_NUM
 } RELAY_DEV;
 

@@ -22,6 +22,11 @@
 #define LOG_PATH_NAME_MAX           (96U)
 #define LOG_TIME_STR_LEN            (15U)
 #define LOG_QUERY_PAYLOAD_MAX       (2048U)
+/* 保存明文格式: "[YYYYMMDDhhmmss] " + 原始内容 + "\r\n" */
+#define LOG_TEXT_LINE_PREFIX_LEN    (17U)
+#define LOG_TEXT_LINE_SUFFIX_LEN    (2U)
+#define LOG_TEXT_LINE_OVERHEAD      (LOG_TEXT_LINE_PREFIX_LEN + LOG_TEXT_LINE_SUFFIX_LEN)
+#define LOG_PAYLOAD_RAW_MAX         (LOG_QUERY_PAYLOAD_MAX - LOG_TEXT_LINE_OVERHEAD)
 
 /* 文件内容与元数据校验标识 */
 #define LOG_META_MAGIC              (0x4C4F474DU)
@@ -147,7 +152,7 @@ int8_t log_get_pending_upload_function(log_upload_bundle_t *bundle);
 int8_t log_upload_success_function(void);
 int8_t log_upload_fail_function(void);
 
-/* pending 明文流接口(HTTP 分片上传) */
+/* pending 明文流接口(HTTP 分片上传; 内容与落盘 payload 一致, 已含保存时间与换行) */
 int8_t log_get_pending_text_size(uint32_t *text_size);
 int8_t log_open_pending_text_stream(void);
 int8_t log_read_pending_text_stream(uint8_t *buf, uint32_t buf_size, int *read_len);

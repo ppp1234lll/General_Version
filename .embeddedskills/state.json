@@ -1,0 +1,24 @@
+{
+  "last_build": {
+    "provider": "keil",
+    "action": "build",
+    "project": "main/Projects/MDK-ARM/atk_f460.uvprojx",
+    "target": "lwIP",
+    "log_dir": ".embeddedskills/build",
+    "artifacts": {
+      "axf_file": "main/Output/atk_f460.axf",
+      "hex_file": "main/Output/atk_f460.hex",
+      "flash_file": "main/Output/atk_f460.hex",
+      "debug_file": "main/Output/atk_f460.axf",
+      "output_dir": "main/Output",
+      "log_file": ".embeddedskills/build/atk_f460-lwIP-build.log"
+    },
+    "axf_file": "main/Output/atk_f460.axf",
+    "hex_file": "main/Output/atk_f460.hex",
+    "flash_file": "main/Output/atk_f460.hex",
+    "debug_file": "main/Output/atk_f460.axf",
+    "output_dir": "main/Output",
+    "log_file": ".embeddedskills/build/atk_f460-lwIP-build.log",
+    "timestamp": "2026-10-12T16:49:21+08:00"
+  }
+}

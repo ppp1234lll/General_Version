@@ -1,4 +1,4 @@
-﻿#include "main.h"
+#include "main.h"
 #include "./Task/inc/gprs_rx.h"
 
 #define GPRS_RX_TASK_PRIO      (15)
@@ -26,15 +26,21 @@ static void gprs_rx_task_function(void *pvParameters);
 */
 void gprs_rx_queue_init_function(void)
 {
+    BaseType_t res;
     g_gprs_rx_queue = xQueueCreate(GPRS_RX_QUEUE_SIZE, sizeof(uint16_t));
     configASSERT(g_gprs_rx_queue);
 
-    xTaskCreate((TaskFunction_t  )gprs_rx_task_function,
+    res = xTaskCreate((TaskFunction_t  )gprs_rx_task_function,
                 (const char *    )"gprs_rx_task",
                 (uint16_t        )GPRS_RX_STK_SIZE,
                 (void *          )NULL,
                 (UBaseType_t     )GPRS_RX_TASK_PRIO,
                 (TaskHandle_t *  )&s_gprs_rx_task_handler);
+    if (res != pdPASS)
+    {
+        printf("gprs_rx_task: xTaskCreate failed\n");
+        s_gprs_rx_task_handler = NULL;
+    }          
 }
 
 /*

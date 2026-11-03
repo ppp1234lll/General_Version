@@ -229,42 +229,7 @@ void enet_hard_reset(void)
     gpio_bit_set(ENET_RESET_GPIO_PORT, ENET_RESET_PIN);
     delay_ms(100);
 
-    enet_mac_dma_config();
-}
-
-/*
-*********************************************************************************************************
-*    函 数 名: enet_hard_reinit
-*    功能说明: 运行时硬件重初始化(PHY硬复位 + MAC/DMA重配 + 描述符链重建 + 中断使能).
-*              用于网络异常恢复, 调用前需先执行 lwip_stop_function() 停止网络。
-*    形    参: 无
-*    返 回 值: 无
-*********************************************************************************************************
-*/
-extern enet_descriptors_struct rxdesc_tab[ENET_RXBUF_NUM];
-
-void enet_hard_reinit(void)
-{
-    uint8_t i;
-
-    /* PHY硬复位 + MAC/DMA重新初始化 */
-    enet_hard_reset();
-
-    /* enet_hard_reset() -> enet_mac_dma_config() -> enet_deinit() 清空了DMA描述符基址寄存器,
-       需要重新初始化描述符链(描述符结构体在RAM中保持有效, 仅需重建链表并写入基址寄存器) */
-    enet_descriptors_chain_init(ENET_DMA_TX);
-    enet_descriptors_chain_init(ENET_DMA_RX);
-
-    /* 重新使能每个Rx描述符的接收完成中断 */
-    for(i = 0; i < ENET_RXBUF_NUM; i++) {
-        enet_rx_desc_immediate_receive_complete_interrupt(&rxdesc_tab[i]);
-    }
-
-    /* 使能ENET DMA中断 */
-    enet_interrupt_enable(ENET_DMA_INT_NIE);
-    enet_interrupt_enable(ENET_DMA_INT_RIE);
-
-    printf("Ethernet hardware reinit done.\r\n");
+    enet_system_setup();
 }
 
 

@@ -240,6 +240,7 @@ void app_detect_function(void);                                  /* 检测函数
 void app_set_switch_control_function(uint8_t mode, uint8_t cmd); /* 设置开关状态 */
 void app_set_com_send_flag_function(uint8_t cmd, uint8_t data);  /* 设置通信发送标志位 */
 void app_set_reply_parameters_function(uint8_t cmd, uint8_t error); /* 设置回复参数 */
+void app_report_reply_parameters_function(uint8_t cmd, uint8_t error); /* 设备主动上报ACK,自动选通道 */
 void app_set_reply_src(uint8_t src);                             /* 记录指令来源通道(回复原路返回) */
 void app_set_send_result_function(send_result_e data);           /* 设置发送结果 */
 void app_set_peripheral_switch(uint8_t cmd, uint8_t data, uint8_t num); /* 设置外设开关状态 */

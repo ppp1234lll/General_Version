@@ -1,4 +1,4 @@
-﻿#ifndef _ETH_H_
+#ifndef _ETH_H_
 #define _ETH_H_
 
 #include "./SYSTEM/sys/sys.h"
@@ -43,7 +43,9 @@ int8_t eth_carema_search_function(void);         /* 摄像机搜索、查询处�
 int8_t eth_ping_remote_ip_function(void);        /* 远程指定 IP ping 检测 */
 void eth_set_tcp_cmd(uint8_t cmd);               /* 有线网络 TCP 通信使能 */
 void eth_set_tcp_connect_reset(void);            /* 重启 TCP 连接 */
-void eth_set_network_reset(void);                /* 触发网络重启 */
+void eth_set_network_reset(void);                /* 触发协议栈重启 */
+void eth_set_network_hw_reset(void);             /* 触发ETH硬件重启 */
+void eth_set_udp_multicast_reset(void);          /* 触发UDP组播任务重启 */
 uint8_t eth_get_network_cable_status(void);      /* 获取网线连接状态 */
 uint8_t eth_get_tcp_status(void);                /* 获取 TCP 连接状态 */
 uint8_t eth_get_udp_status(void);                /* 获取 UDP 组播连接状态 */

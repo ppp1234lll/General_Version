@@ -1,4 +1,4 @@
-﻿/*!
+ï»¿/*!
     \file    gd32f4xx_adc.c
     \brief   ADC driver
 

@@ -1,4 +1,4 @@
-﻿#include "bsp_key.h"
+#include "bsp_key.h"
 #include "bsp.h"
 /*
     4、输入检测

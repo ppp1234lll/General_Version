@@ -272,9 +272,9 @@ static int8_t setting_threshold_parameter_function(char *pcParam[], char *pcValu
     }    
     if (strcmp(pcParam[i] , "bd")==0) // 重启时间间隔
     {
-        param.net_retime = atoi(pcValue[i]);
+        param.net_retime = atoi(pcValue[i]); return ret;
     }  
-    if (strcmp(pcParam[i] , "bg")==0) // 网络延时时间
+    if (strcmp(pcParam[i] , "N")==0) // 网络延时时间
     {
 		param.net_delay_time = atoi(pcValue[i]);
 		app_set_threshold_param_function(param);
@@ -524,7 +524,7 @@ static int8_t setting_local_network_parameter_function(char *pcParam[], char *pc
             ret = 0;
         }
     }
-    
+
     else if (strcmp(pcParam[i] , "K")==0) { // 主网ping地址1
         ret = sscanf(pcValue[i],"%d.%d.%d.%d",&temp[0],&temp[1],&temp[2],&temp[3]);
         if(ret == 4) {

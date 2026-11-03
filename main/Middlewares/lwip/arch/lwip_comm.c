@@ -170,6 +170,8 @@ uint8_t lwip_comm_init(void)
     else                                            /* 网口添加成功后,设置netif为默认值,并且打开netif网口 */
     {
         g_lwipdev.init = 1;
+        memcpy(g_lwip_netif.hwaddr, g_lwipdev.mac, 6);
+        enet_mac_address_set(ENET_MAC_ADDRESS0, g_lwip_netif.hwaddr);
         netif_set_default(&g_lwip_netif);           /* 设置netif为默认网口 */
 
 #if LWIP_NETIF_LINK_CALLBACK
@@ -227,19 +229,19 @@ void lwip_link_thread( void * argument )
             link_again_num ++ ;
             if (link_again_num >= 2)                    /* 网线一段时间没有插入 */
             {
+                vTaskDelay(200);
                 continue;
             }
             else                                        /* 关闭虚拟网卡及以太网中断 */
             {
                 led_control_function(LD_LAN,LD_OFF);
                 led_control_function(LD_LAN_EXT,LD_OFF);
-				g_lwipdev.netif_state = 0;			  
+                g_lwipdev.netif_state = 0;			  
                 enet_disable();
                 enet_interrupt_disable(ENET_DMA_INT_NIE);
                 enet_interrupt_disable(ENET_DMA_INT_RIE);                
                 netif_set_down(netif);
                 netif_set_link_down(netif);
-                eth_set_network_reset();  // 关闭网络链接
                 printf("ETH链路断开\r\n");
             }
         }
@@ -251,23 +253,25 @@ void lwip_link_thread( void * argument )
             {
                 led_control_function(LD_LAN,LD_ON);
                 led_control_function(LD_LAN_EXT,LD_ON);
-				g_lwipdev.netif_state = 1;
+                
+                if (g_lwipdev.netif_state == 0)
+                {
+                    lwip_start_function();
+                }
+                else
+                {
+                    enet_enable();
+                    enet_interrupt_enable(ENET_DMA_INT_NIE);
+                    enet_interrupt_enable(ENET_DMA_INT_RIE);
+                    netif_set_up(netif);
+                    netif_set_link_up(netif);
+                }
+                
+                g_lwipdev.netif_state = 1;
                 g_lwipdev.link_status = LWIP_LINK_ON;
-                enet_enable();
-                enet_interrupt_enable(ENET_DMA_INT_NIE);
-                enet_interrupt_enable(ENET_DMA_INT_RIE);
-                netif_set_up(netif);
-                netif_set_link_up(netif);
 
                 printf("ETH链路插入\r\n");
             }
-
-            if(g_lwipdev.netif_state == 0) // 重新插入网线后，需要重新初始化网络
-            {
-                printf("重新配置，需要重新初始化网络\r\n");
-                lwip_start_function();
-            }
-
         }
         vTaskDelay(100);
     }
@@ -384,18 +388,48 @@ int8_t lwip_start_function(void)
     
     if(g_lwipdev.init == 1) 
 	{
-//        enet_mac_dma_config();
         lwip_comm_default_ip_set(&g_lwipdev);        // 设置默认IP等信息
 
         printf("\nThis device IP: %d.%d.%d.%d\n", g_lwipdev.ip[0],g_lwipdev.ip[1],g_lwipdev.ip[2],g_lwipdev.ip[3]);
         IP4_ADDR(&g_lwip_netif.ip_addr,g_lwipdev.ip[0],g_lwipdev.ip[1],g_lwipdev.ip[2],g_lwipdev.ip[3]);
         IP4_ADDR(&g_lwip_netif.netmask,g_lwipdev.netmask[0],g_lwipdev.netmask[1] ,g_lwipdev.netmask[2],g_lwipdev.netmask[3]);
         IP4_ADDR(&g_lwip_netif.gw,g_lwipdev.gateway[0],g_lwipdev.gateway[1],g_lwipdev.gateway[2],g_lwipdev.gateway[3]);
+        memcpy(g_lwip_netif.hwaddr, g_lwipdev.mac, 6);
+        enet_mac_address_set(ENET_MAC_ADDRESS0, g_lwip_netif.hwaddr);
         
         g_lwipdev.netif_state = 1;
         enet_enable();
         enet_interrupt_enable(ENET_DMA_INT_NIE);
         enet_interrupt_enable(ENET_DMA_INT_RIE);
+        netif_set_up(&g_lwip_netif);
+        netif_set_link_up(&g_lwip_netif);
+    }
+    
+    return 0;
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: lwip_stack_restart_function
+*    功能说明: 只刷新协议栈网络参数，不重启ETH硬件
+*    形    参: 
+*    返 回 值: 
+*********************************************************************************************************
+*/
+int8_t lwip_stack_restart_function(void)
+{
+    if(g_lwipdev.init == 0) {
+        return lwip_comm_init();
+    }
+    
+    lwip_comm_default_ip_set(&g_lwipdev);
+    IP4_ADDR(&g_lwip_netif.ip_addr,g_lwipdev.ip[0],g_lwipdev.ip[1],g_lwipdev.ip[2],g_lwipdev.ip[3]);
+    IP4_ADDR(&g_lwip_netif.netmask,g_lwipdev.netmask[0],g_lwipdev.netmask[1] ,g_lwipdev.netmask[2],g_lwipdev.netmask[3]);
+    IP4_ADDR(&g_lwip_netif.gw,g_lwipdev.gateway[0],g_lwipdev.gateway[1],g_lwipdev.gateway[2],g_lwipdev.gateway[3]);
+    
+    if(g_lwipdev.link_status == LWIP_LINK_ON)
+    {
+        g_lwipdev.netif_state = 1;
         netif_set_up(&g_lwip_netif);
         netif_set_link_up(&g_lwip_netif);
     }

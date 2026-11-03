@@ -50,11 +50,11 @@ typedef struct
     float humi_inside;            // 内部湿度值
     uint16_t attitude_acc;        // 加速度
     uint8_t key_s[KEYS_COUNT];    // 按键数量定义
-    
+    uint16_t mcb_voltage;         // 空气开关前电压值
+
     uint8_t camera[6];       // 摄像机网络状态：0-无IP 1-正常 2-故障 4-延时 5-丢包
     uint8_t main_ip;         // 主网络状态：   0-无IP 1-正常 2-故障 4-延时 5-丢包
     uint8_t main_sub_ip;     // 主网络2状态：  0-无IP 1-正常 2-故障 4-延时 5-丢包
-    uint8_t ping_status;     // ping结束标志位
     
     uint8_t residual_c;    // 剩余电流
     energy_t total_energy; // 总用电量
@@ -88,7 +88,6 @@ void det_set_total_energy_bl0906(uint8_t num,float data);
 void det_set_total_energy_bl0942(uint8_t num,float data);
 void det_set_total_energy_bl0939(uint8_t num,float data);
 void det_set_total_energy_bl0972(uint8_t num,float data);
-void det_set_ping_status(uint8_t status);
 
 void *det_get_collect_data(void);
 float det_get_total_energy_handler(uint8_t num);            // 获取总电量参数
@@ -100,5 +99,7 @@ void det_set_key_value(uint8_t key_id,uint8_t key_value);
 uint8_t det_get_key_value(uint8_t key_id);
 uint8_t det_get_miu_value(void);
 uint16_t det_get_cabinet_posture(void);                      // 获取箱体姿态
+uint8_t det_get_cabinet_door_status(void);                   // 获取箱门状态: 0=无 1=开 2=关
+uint8_t det_get_water_status(void);                          // 获取水浸状态: 0=正常 1=水浸
 
 #endif

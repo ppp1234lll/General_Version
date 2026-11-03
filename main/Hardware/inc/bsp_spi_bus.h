@@ -43,6 +43,7 @@ void bsp_spiTransfer(void);
 void bsp_SpiBusEnter(void);
 void bsp_SpiBusExit(void);
 uint8_t bsp_SpiBusBusy(void);
+void bsp_SpiBusRecover(void);
 
 #endif
 

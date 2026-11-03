@@ -56,7 +56,7 @@ typedef enum
 #if (configUSE_KEY_SPD == 1)
     SPD_KEY,
 #endif
-#if (configUSE_KEY_MCB == 1)
+#if (configUSE_KEY_MCB_COUPLING == 1)
     MCB_KEY,
 #endif
     // 更多按键......

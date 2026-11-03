@@ -124,6 +124,7 @@ static void send_task(void *pv)
 */
 void send_task_init(void)
 {
+    BaseType_t res;
     /* 初始化消息池 */
     memset(g_msg_pool, 0, sizeof(g_msg_pool));
 
@@ -143,15 +144,17 @@ void send_task_init(void)
     xQueueAddToSet(g_normal_q, g_qset);
 
     /* 创建发送任务 */
-    xTaskCreate((TaskFunction_t)send_task,
+    res = xTaskCreate((TaskFunction_t)send_task,
                 (const char *)"send_task",
                 (uint16_t)SEND_STK_SIZE,
                 (void *)NULL,
                 (UBaseType_t)SEND_TASK_PRIO,
                 (TaskHandle_t *)&g_send_task_handle);
-
-    printf("send task init ok, pool=%d high_q=%d normal_q=%d\n",
-            SEND_MSG_POOL_NUM, SEND_HIGH_Q_DEPTH, SEND_NORMAL_Q_DEPTH);
+    if (res != pdPASS)
+    {
+        printf("send_task: xTaskCreate failed\n");
+        g_send_task_handle = NULL;
+    }
 }
 
 /*
@@ -298,6 +301,14 @@ static void send_handle_fail(send_msg_t *msg)
         send_msg_enqueue(msg);
     } else {
         /* 重试耗尽 */
+				if (send_msg_channel(msg) == 0) 
+				{
+           eth_set_tcp_connect_reset();        // 有线：复位 TCP 连接
+        } 
+				else 
+				{
+           gsm_set_network_reset_function();   // 4G：触发网络复位
+        }
         send_msg_free(msg);
     }
 }

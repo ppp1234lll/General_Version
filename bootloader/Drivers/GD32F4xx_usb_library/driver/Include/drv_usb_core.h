@@ -1,4 +1,4 @@
-﻿/*!
+ï»¿/*!
     \file    drv_usb_core.h
     \brief   USB core low level driver header file
 

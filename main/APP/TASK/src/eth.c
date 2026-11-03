@@ -17,6 +17,7 @@ typedef enum
     ETH_CONNECT_ONVIF_UDP,
     ETH_CONNECT_ONVIF_TCP,
     ETH_CONNECT_SNMP,
+    ETH_CONNECT_RTSP,
 } eth_connect_t;
 
 static void eth_connect_control_function(eth_connect_t connect);
@@ -113,11 +114,12 @@ void eth_task_function(void)
 void eth_network_reset_function(void)
 {
     /* 网络重启 */
-    if(g_lwipdev.reset == 1) 
+    if(g_lwipdev.reset != LWIP_RESET_NONE) 
     {
-        g_lwipdev.reset = 0;
+        uint8_t reset_type = g_lwipdev.reset;
+        g_lwipdev.reset = LWIP_RESET_NONE;
         g_lwipdev.resetting = 1;   /* 通知 link 线程不要干扰 */
-        vTaskDelay(1000);  // 保证重启前数据及时发出 
+        vTaskDelay(100);  // 保证重启前数据及时发出 
         
 #ifdef WIRED_PRIORITY_CONNECTION
         gsm_set_tcp_cmd(1);     // 检测到网口无网线    
@@ -142,231 +144,23 @@ void eth_network_reset_function(void)
             eth_connect_reset(ETH_CONNECT_ONVIF_TCP);
         }
         
-        if (g_lwipdev.snmp_status != LWIP_UDP_NO_CONNECT)   // 重启UDP连接
+        if (g_lwipdev.snmp_status != LWIP_UDP_NO_CONNECT)   // 重启SNMP连接
         {
             eth_connect_reset(ETH_CONNECT_SNMP);
         }
 
-        lwip_stop_function();
-        vTaskDelay(100);
-        /* PHY硬复位 + MAC/DMA/描述符链重初始化, 解决PHY进入异常状态后软件复位无法恢复的问题 */
-        enet_hard_reinit();
-        vTaskDelay(100);
-        /* 网线仍连接时主动恢复网口,避免仅依赖 link 线程导致长时间不可达 */
-        if (g_lwipdev.link_status == LWIP_LINK_ON)
+        rtsp_thread_stop();   // 网络重启时停止RTSP
+
+        if(reset_type == LWIP_RESET_ETH)
         {
-            lwip_start_function();
-            /* 等待 PHY 完成自动协商(约需 1-3s), 否则 link 线程恢复后会读到
-             * link down 而误触发二次网络复位 */
-            vTaskDelay(2000);
+            lwip_stop_function();
+            vTaskDelay(100);
         }
         else
         {
-            vTaskDelay(100);
+            lwip_stack_restart_function();
         }
         g_lwipdev.resetting = 0;   /* 复位完成, 允许 link 线程恢复工作 */
-    }
-}
-
-
-struct eth_ping
-{
-    uint8_t  cnt;
-    uint32_t count;
-    uint8_t  ping_next;
-    uint8_t  dev_next;
-};
-
-struct eth_ping sg_ethping_t = {0};
-
-/*
-*********************************************************************************************************
-*    函 数 名: eth_ping_timer_function
-*    功能说明: ping相关函数- timer
-*    形    参: 
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void eth_ping_timer_function(void)
-{
-    if(sg_ethping_t.ping_next == 0)
-    {
-        sg_ethping_t.count++;
-        if(sg_ethping_t.count > app_get_next_ping_time())
-        {
-            /* 开始一次ping */
-            sg_ethping_t.cnt = 0;
-            sg_ethping_t.ping_next = 1;
-            sg_ethping_t.dev_next  = 1;
-        }
-    }
-    else
-    {
-        if(sg_ethping_t.dev_next == 0)
-        {
-            sg_ethping_t.count++;
-            if(sg_ethping_t.count > app_get_next_dev_ping_time())
-            {
-                sg_ethping_t.dev_next = 1;
-            }
-        }
-    }
-}
-#define PING_IP_MAX_NUM 12
-
-/*
-*********************************************************************************************************
-*    函 数 名: eth_ping_detection_function
-*    功能说明: ping检测函数
-*    形    参: 
-*    返 回 值: 
-*********************************************************************************************************
-*/
-void eth_ping_detection_function(void)
-{
-    static  uint8_t ping_cmd = 0;
-    static  uint8_t ping_dev_num = 0;
-    static uint8_t  ip[4]      = {0};
-    int8_t          ret        = 0;
-
-    uint16_t times = 0;
-    uint8_t delay_time = app_get_network_delay_time(); // 网络延时时间  20220308
-    
-    if( app_get_carema_search_mode() == 1 ) // 判断摄像机搜索协议
-        ping_dev_num = PING_IP_MAX_NUM;
-    else
-        ping_dev_num = 2;
-    
-    /* 检测是否可以开始一轮ping */
-    if(sg_ethping_t.ping_next == 0 || sg_ethping_t.dev_next == 0)
-    {
-        return;
-    }
-
-    if ( ping_cmd == 0) 
-    {
-        switch(sg_ethping_t.cnt)
-        {
-            case 0:                     // 主机
-                app_get_main_network_ping_ip_addr(ip);
-                if(ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0)            /* 未主机ping地址 */
-                {
-                    det_set_main_network_status(0);
-                    sg_ethping_t.cnt++;
-                    if(sg_ethping_t.cnt >= ping_dev_num)
-                    {
-                        det_set_ping_status(1);
-                        sg_ethping_t.cnt = 0;
-                        /* 开始新的一轮计时 */
-                        sg_ethping_t.ping_next = 0;
-                    }
-                    ping_cmd = 0;
-                }
-                else
-                {
-                    lwip_ping_clear();                    /* 检测到主机ip，开始ping */
-                    ping_cmd = 1;
-                }
-                break;
-            case 1:
-                app_get_main_network_sub_ping_ip_addr(ip);
-                if(ip[0] == 0 && ip[1] == 0 && ip[2] == 0 && ip[3] == 0)                    /* 未主机ping地址 */
-                {
-                    det_set_main_network_sub_status(0);
-                    sg_ethping_t.cnt++;
-                    if(sg_ethping_t.cnt >= ping_dev_num)
-                    {
-                        det_set_ping_status(1);
-                        sg_ethping_t.cnt = 0;                        /* 开始新的一轮计时 */
-                        sg_ethping_t.ping_next = 0;
-                    }
-                    ping_cmd = 0;
-                }
-                else                    /* 检测到主机ip，开始ping */
-                {
-                    lwip_ping_clear();
-                    ping_cmd = 1;
-                }
-                break;
-            default:                     // 摄像头
-                ret = app_get_camera_function(ip,sg_ethping_t.cnt-2);
-                if(ret <0)                    /* 未检测摄像头ip，直接标记 */
-                {
-                    det_set_camera_status(sg_ethping_t.cnt-2,0);
-                    sg_ethping_t.cnt++;
-                    if(sg_ethping_t.cnt >= ping_dev_num)
-                    {
-                        det_set_ping_status(1);
-                        sg_ethping_t.cnt = 0;
-                        sg_ethping_t.ping_next = 0;                        /* 开始新的一轮计时 */
-                    }
-                    ping_cmd = 0;
-                }
-                else                    /* 检测到摄像头ip，开始ping */
-                {
-                    lwip_ping_clear();
-                    ping_cmd = 1;
-                }
-                break;
-        }
-    }
-    if(ping_cmd == 1)
-    {
-        ret = lwip_ping_the_specified_ip_function(ip);
-        if(ret != LWIP_PING_WAIT)    // 获取到结果
-        {
-            ping_cmd = 0;            // 结束一次ping
-            times = get_lwip_ping_times();
-            if(ret == LWIP_PING_SUCCESS)
-            {
-                switch(sg_ethping_t.cnt)
-                {
-                    case 0:
-                        if(times <= delay_time)               // 网络延时时间  20220308
-                            det_set_main_network_status(1);
-                        else
-                            det_set_main_network_status(2);
-                        break;
-                    case 1:
-                        if(times <= delay_time) 
-                            det_set_main_network_sub_status(1);                            
-                        else
-                            det_set_main_network_sub_status(2);
-                        break;
-                    default:
-                        if(times <= delay_time) 
-                            det_set_camera_status(sg_ethping_t.cnt-2,1);
-                        else
-                            det_set_camera_status(sg_ethping_t.cnt-2,2);
-                        break;
-
-                }
-            }
-            else
-            {
-                switch(sg_ethping_t.cnt)
-                {
-                    case 0:
-                        det_set_main_network_status(0);
-                        break;
-                    case 1:
-                        det_set_main_network_sub_status(0);
-                        break;
-                    default:
-                        det_set_camera_status(sg_ethping_t.cnt-2,0);
-                        break;
-                }
-            }
-            /* 开始下一个设备的ping计时 */
-            sg_ethping_t.dev_next = 0;
-            sg_ethping_t.cnt++;
-            if(sg_ethping_t.cnt >= ping_dev_num)
-            {
-                det_set_ping_status(1);
-                sg_ethping_t.cnt = 0;                /* 开始新的一轮计时 */
-                sg_ethping_t.ping_next = 0;
-            }
-        }
     }
 }
 
@@ -576,9 +370,8 @@ int8_t eth_carema_search_function(void)
 
     IPC_Info_t *ipc_t = onvif_get_ipc_param();
     /* 摄像机搜索、查询函数 */
-    if(g_lwipdev.netif_state == 0)    /* 检测网口状态 */
+    if(g_lwipdev.netif_state == 0)    /* 网口未就绪，保持 eth_carema_start 等待链路 up */
     {
-        eth_carema_start = ETH_ONVIF_INIT;
         return -1;
     }
     switch(eth_carema_start)
@@ -743,6 +536,10 @@ static void eth_connect_reset(eth_connect_t connect)
             g_lwipdev.snmp_reset = 1;
             break;
 
+        case ETH_CONNECT_RTSP:
+            g_lwipdev.rtsp_reset = 1;
+            break;
+
         default:
             break;
     }
@@ -785,7 +582,36 @@ void eth_set_tcp_cmd(uint8_t cmd)
 */
 void eth_set_network_reset(void)
 {
-    g_lwipdev.reset = 1;
+    if(g_lwipdev.reset != LWIP_RESET_ETH)
+    {
+        g_lwipdev.reset = LWIP_RESET_STACK;
+    }
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: eth_set_network_hw_reset
+*    功能说明: 重启ETH硬件
+*    形    参: 
+*    返 回 值: 
+*********************************************************************************************************
+*/
+void eth_set_network_hw_reset(void)
+{
+    g_lwipdev.reset = LWIP_RESET_ETH;
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: eth_set_udp_multicast_reset
+*    功能说明: 触发UDP组播任务重启
+*    形    参: 无
+*    返 回 值: 无
+*********************************************************************************************************
+*/
+void eth_set_udp_multicast_reset(void)
+{
+    eth_connect_reset(ETH_CONNECT_UDP_MULTICAST);
 }
 
 /*
@@ -964,5 +790,6 @@ static void eth_reap_stopped_tasks(void)
     onvif_udp_delete();
     onvif_tcp_delete();
     snmp_delete();
+    rtsp_delete();
 }
 

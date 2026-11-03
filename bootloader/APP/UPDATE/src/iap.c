@@ -35,14 +35,14 @@ void iap_write_appbin(uint32_t appxaddr,uint8_t *appbuf,uint32_t appsize)
         if(i==128)
         {
             i=0;
-            bsp_WriteCpuFlash(fwaddr,(uint8_t*)iapbuf,128);    
+            bsp_WriteCpuFlash_Erase(fwaddr,iapbuf,128);    
             fwaddr+=512;//偏移2048  16=2*8.所以要乘以2.
         }
     }
     if(i)
-        bsp_WriteCpuFlash(fwaddr,(uint8_t*)iapbuf,i);//将最后的一些内容字节写进去.  
+        bsp_WriteCpuFlash_Erase(fwaddr,iapbuf,i);//将最后的一些内容字节写进去.  
 }
-
+  
 /*
 *********************************************************************************************************
 *    函 数 名: iap_load_app

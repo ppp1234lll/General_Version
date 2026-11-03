@@ -24,11 +24,11 @@ void update_status_detection(void)
     switch(boot_update_param.update_status)
     {
         case UPDATE_SUCCESS:
-            app_set_reply_parameters_function(CONFIGURE_UPDATE_SYSTEM,0x01);  // 更新成功
+            app_report_reply_parameters_function(CONFIGURE_UPDATE_SYSTEM,0x01);  // 更新成功
             http_update_clear_param();
             break;
         case UPDATE_FAILED:
-            app_set_reply_parameters_function(CONFIGURE_UPDATE_SYSTEM,0x00);  // 更新失败
+            app_report_reply_parameters_function(CONFIGURE_UPDATE_SYSTEM,0x00);  // 更新失败
             http_update_clear_param();
             break;
         default:

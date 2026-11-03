@@ -1,4 +1,4 @@
-﻿#ifndef __IAP_H__
+#ifndef __IAP_H__
 #define __IAP_H__
 
 #include "./SYSTEM/sys/sys.h"

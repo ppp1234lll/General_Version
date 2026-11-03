@@ -484,7 +484,13 @@ void update_lwip_task_create(void)
 	                    NULL,
 	                    UPDATE_LWIP_TASK_PRIO,
 	                    &s_update_lwip_task);
-	if(ret != pdPASS){ s_update_lwip_task = NULL; }
+    if (ret != pdPASS)
+    {
+        printf("update_lwip_task: xTaskCreate failed\n");
+        s_update_lwip_task = NULL;
+			  http_update_failed();                           /* 升级状态改为失败 */
+        update_set_update_mode(UPDATE_MODE_NULL);       /* 程序恢复正常运行上报模式 */
+    }
 }
 
 /*

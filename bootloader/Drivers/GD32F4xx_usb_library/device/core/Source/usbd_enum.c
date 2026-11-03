@@ -1,4 +1,4 @@
-﻿/*!
+ï»¿/*!
     \file    usbd_enum.c
     \brief   USB enumeration function
 

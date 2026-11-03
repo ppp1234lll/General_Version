@@ -1,4 +1,4 @@
-﻿/*!
+ï»¿/*!
     \file    usb_iap_core.c
     \brief   IAP driver
 

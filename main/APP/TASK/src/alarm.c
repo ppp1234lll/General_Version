@@ -262,37 +262,57 @@ void alarm_elec_collection_param(void)
 			}
 		}	
 	}	
-
+#if (configUSE_KEY_MCB == 1)
+#if (configUSE_KEY_MCB_METRIC_CHIP == 1)
+	/* 空开前电压正常、空开后电压低 → 空开跳闸；否则正常 */
+	if((sg_alarm_data_t->mcb_voltage >= 50) &&
+	   (det_get_total_energy_handler(ENERGY_VOLTAGE) < 50))
+	{
+		if((elec_error & 0x40) == 0)
+		{
+			elec_error  |= 0x40;
+			elec_normal &=~0x40;
+			sg_alarm_code_t.mcb = 2;
+			Error_Set(ELEC_AC_MCB);
+			app_report_information_immediately(1);
+		}
+	}
+	else
+	{
+		if((elec_normal & 0x40) == 0)
+		{
+			elec_normal |= 0x40;
+			elec_error  &=~0x40;
+			sg_alarm_code_t.mcb = 0;
+			Error_Clear(ELEC_AC_MCB);
+			app_report_information_immediately(0);
+		}
+	}
+#elif (configUSE_KEY_MCB_COUPLING == 1)
 	if(det_get_key_value(MCB_KEY) == KEY_EVNT)
 	{
-		if(det_get_total_energy_handler(0) < 50)
+		if((elec_error & 0x40) == 0)
 		{
-			if((elec_error & 0x40) == 0) 
-			{
-				elec_error  |= 0x40;
-				elec_normal &=~0x40;
-				sg_alarm_code_t.mcb = 2;
-				Error_Set(SENSOR_WATER_LEAK);				
-				app_report_information_immediately(1);
-			}
+			elec_error  |= 0x40;
+			elec_normal &=~0x40;
+			sg_alarm_code_t.mcb = 2;
+			Error_Set(ELEC_AC_MCB);
+			app_report_information_immediately(1);
 		}
-		else
-		{
-			if((elec_normal & 0x40) == 0) 
-			{
-				elec_normal |= 0x40;
-				elec_error  &=~0x40;
-				Error_Clear(SENSOR_WATER_LEAK);
-				sg_alarm_code_t.mcb = 1;	
-				app_report_information_immediately(0);
-			}		
-		}
-	} 
-	else  
+	}
+	else
 	{
-		Error_Clear(SENSOR_WATER_LEAK);
-		sg_alarm_code_t.mcb = 0;	
-	}				
+		if((elec_normal & 0x40) == 0)
+		{
+			elec_normal |= 0x40;
+			elec_error  &=~0x40;
+			sg_alarm_code_t.mcb = 0;
+			Error_Clear(ELEC_AC_MCB);
+			app_report_information_immediately(0);
+		}
+	}
+#endif
+#endif	
 }
 
 /*

@@ -1,4 +1,4 @@
-﻿#ifndef _TOOL_H_
+#ifndef _TOOL_H_
 #define _TOOL_H_
 
 #include "./SYSTEM/sys/sys.h"

@@ -8,7 +8,7 @@
 #define RTSP_STK_SIZE       512                  // 任务堆栈大小
 TaskHandle_t RTSP_Task_Handler;
 
-#define RTSP_DEBUG  1         // 调试
+#define RTSP_DEBUG  0         // 调试
 
 #define RTSP_MAX_CAMERAS     10
 #define RTSP_SCAN_TIME       30     // 每轮扫描时间间隔 30s
@@ -28,6 +28,7 @@ typedef struct
 
 rtsp_t sg_rtsp_t; 
 int sg_socket = -1;
+static volatile uint8_t rtsp_exit_req = 0;
 
 //udp任务函数
 static void rtsp_thread(void *arg)
@@ -39,6 +40,19 @@ static void rtsp_thread(void *arg)
     
     while (1) 
     {
+        /* 检测复位请求: 清理资源后挂起, 由 eth 任务回收 */
+        if(g_lwipdev.rtsp_reset)
+        {
+            g_lwipdev.rtsp_reset = 0;
+            if(sg_socket >= 0)
+            {
+                closesocket(sg_socket);
+                sg_socket = -1;
+            }
+            rtsp_exit_req = 1;
+            vTaskSuspend(NULL);
+        }
+
         switch(sg_rtsp_t.rtsp_steps)
         {
             case 0:  // 获取IP地址
@@ -47,7 +61,7 @@ static void rtsp_thread(void *arg)
                     sg_rtsp_t.rtsp_steps++;
                 else if(ret == -1) 
                 {
-                    sg_rtsp_t.result = 0;
+                    sg_rtsp_t.result = 2;  // 无IP
                     sg_rtsp_t.rtsp_steps = 9;
                 }
             break;
@@ -101,6 +115,8 @@ static void rtsp_thread(void *arg)
             
                 if(sg_rtsp_t.result == 1)
                     det_set_camera_status(sg_rtsp_t.ipc_idx,NET_STATUS_NORMAL);  // 网络正常
+                else if(sg_rtsp_t.result == 2)
+                    det_set_camera_status(sg_rtsp_t.ipc_idx,NET_STATUS_NO_IP);   // 无IP
                 else
                     det_set_camera_status(sg_rtsp_t.ipc_idx,NET_STATUS_FAULT);  // 网络故障
                 
@@ -316,18 +332,33 @@ int rtsp_deal_recv_data(char *data)
 unsigned char rtsp_thread_init(void)
 {                     
     BaseType_t res;                                        
-    taskENTER_CRITICAL();    /*进入临界区*/
-    
-    xTaskCreate((TaskFunction_t )rtsp_thread,
-                            (const char *   )"rtsp_thread",
-                            (uint16_t       )RTSP_STK_SIZE,
-                            (void *         )NULL,
-                            (UBaseType_t    )RTSP_PRIO,
-                            (TaskHandle_t * )&RTSP_Task_Handler);
 
-    taskEXIT_CRITICAL();    /*退出临界区*/
+    /* 待回收任务尚未删除，拒绝重建 */
+    if(rtsp_exit_req)
+    {
+        return 1;
+    }
+
+    /* 已存在任务，不重复创建 */
+    if(RTSP_Task_Handler != NULL)
+    {
+        return 1;
+    }
+
+    res = xTaskCreate((TaskFunction_t )rtsp_thread,
+                    (const char *   )"rtsp_thread",
+                    (uint16_t       )RTSP_STK_SIZE,
+                    (void *         )NULL,
+                    (UBaseType_t    )RTSP_PRIO,
+                    (TaskHandle_t * )&RTSP_Task_Handler);
+    if (res != pdPASS)
+    {
+        printf("rtsp_thread: xTaskCreate failed\n");
+        RTSP_Task_Handler = NULL;
+        return 1;
+    }
     
-    return res;
+    return 0;
 }
 
 /*
@@ -360,9 +391,32 @@ void rtsp_thread_stop(void)
     if(sg_rtsp_t.rtsp_falg == 1)
     {
         sg_rtsp_t.rtsp_falg = 0;
-        taskENTER_CRITICAL();    /*进入临界区*/
-        vTaskDelete(RTSP_Task_Handler);        // 删除TCP任务
-        taskEXIT_CRITICAL();    /*退出临界区*/
+        g_lwipdev.rtsp_reset = 1;   /* 通知RTSP线程安全退出, 由 eth 任务回收 */
     }
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: rtsp_delete
+*    功能说明: 在 eth 任务上下文删除已挂起的 RTSP 任务, 立即回收栈/TCB
+*    形    参: 
+*    返 回 值: 
+*********************************************************************************************************
+*/
+void rtsp_delete(void)
+{
+    TaskHandle_t h;
+
+    if(rtsp_exit_req == 0)
+        return;
+
+    taskENTER_CRITICAL();
+    h = RTSP_Task_Handler;
+    RTSP_Task_Handler = NULL;
+    rtsp_exit_req = 0;
+    taskEXIT_CRITICAL();
+
+    if(h != NULL)
+        vTaskDelete(h);
 }
 

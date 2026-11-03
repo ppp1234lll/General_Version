@@ -3,9 +3,9 @@
 #include "./Task/inc/send.h"
 
 /* 发送缓冲区 */
-#define APP_SEND_BUFF_SIZE  (2048)
-#define SERVER_LINK_TIME    (30000) // 服务器连接时间  5min = 30000ms/10ms
-#define NETWAOK_RELOAD_TIME   60
+#define APP_SEND_BUFF_SIZE    (2048)
+#define SERVER_LINK_TIME      (30000) // 服务器连接时间  5min = 30000ms/10ms
+#define NETWAOK_RELOAD_TIME   (60)
 
 
 typedef struct
@@ -23,6 +23,7 @@ typedef struct
     struct
     {
         uint32_t status;    /* 存储标志位，按位使用 */
+        uint8_t local_network_reset;
     } save_flag;
     struct
     {
@@ -70,6 +71,7 @@ __attribute__((section (".RAM_D1"))) snmp_oid_t  sg_snmp_oid_t = {0};       // S
 void app_task_function(void)
 {
     uint32_t last_get_time = 0;
+    // static uint32_t task_list_tick = 0;
     
     /* 开启系统指示灯 */
     led_control_function(LD_STATE,LD_FLICKER);
@@ -78,10 +80,10 @@ void app_task_function(void)
     {
         app_task_save_function();           // 存储相关任务
         com_deal_main_function();           // 处理接收数据
+        app_sys_operate_relay();            // 继电器复位处理(先于发送: 断电/上电立即上报与回复ACK同轮组包, 上报先发出)
         app_com_send_function();            // 通信发送
         app_open_exec_task_function();        
         app_sys_net_operate_relay();
-        app_sys_operate_relay();
         
         if(HAL_GetTick() - last_get_time >= 1000)
         {
@@ -91,6 +93,14 @@ void app_task_function(void)
             /* 内存利用率 */
             sg_sysoperate_t.memory = my_mem_perused(SRAMIN);
         }
+        /* 每5s打印一次任务列表 */
+        // if (HAL_GetTick() - task_list_tick >= 5000)
+        // {
+        //     task_list_tick = HAL_GetTick();
+        //     char task_buf[1024];
+        //     vTaskList(task_buf);
+        //     printf("%s", task_buf);
+        // }
         FeedFwdgt();    
         // 接收已事件驱动: 阻塞点在 com_deal_main_function 内的帧队列等待(≤10ms), 不再固定延时
     }
@@ -142,6 +152,22 @@ void app_set_reply_parameters_function(uint8_t cmd, uint8_t error)
 {
     sg_sysoperate_t.com.return_cmd   = cmd;
     sg_sysoperate_t.com.return_error = error;
+    sg_sysoperate_t.com_flag.status |= COM_FLAG_CONFIG_RETURN;
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: app_report_reply_parameters_function
+*    功能说明: 设备主动上报的 ACK 类数据(如升级结果), 与心跳相同自动选择在线通道
+*    形    参: cmd/error 同 app_set_reply_parameters_function
+*    返 回 值: 无
+*********************************************************************************************************
+*/
+void app_report_reply_parameters_function(uint8_t cmd, uint8_t error)
+{
+    sg_sysoperate_t.com.return_cmd   = cmd;
+    sg_sysoperate_t.com.return_error = error;
+    sg_sysoperate_t.com.return_src   = SEND_DST_AUTO;
     sg_sysoperate_t.com_flag.status |= COM_FLAG_CONFIG_RETURN;
 }
 
@@ -266,11 +292,17 @@ void app_deal_com_flag_function(void)
         if (onvif_time == 0)
         {
             printf("..........start onvif............\n");
-            eth_set_onvif_flag(1);
+            eth_set_onvif_flag(ETH_ONVIF_START);
             onvif_time = HAL_GetTick();
         }
         else
         {
+            /* 网口未就绪时 eth 侧可能尚未开始，重新置 START 确保请求不丢失 */
+            if (eth_get_onvif_flag() == ETH_ONVIF_INIT)
+            {
+                eth_set_onvif_flag(ETH_ONVIF_START);
+            }
+
             if ((eth_get_onvif_flag() == ETH_ONVIF_END) || (HAL_GetTick() - onvif_time > 15000))
             {
                 printf(".........end onvif............\n");
@@ -476,14 +508,16 @@ void app_set_peripheral_switch(uint8_t cmd, uint8_t data,uint8_t num)
             if (num == 1)
             {
                 relay_control((RELAY_DEV)(data-1),RELAY_ON); // 开外设1
+                app_report_information_immediately(0);       // 继电器开-立即上报状态
             }
             else if(num == 2)
             {
                 relay_control((RELAY_DEV)(data-1),RELAY_OFF);
+                app_report_information_immediately(0);       // 继电器关-立即上报状态
             }
             else if(num == 3)
             {
-                app_opeare_relay_function(data);
+                app_opeare_relay_function(data);             // 复位: 实际断/上电在 app_sys_operate_relay() 内立即上报
             }
             break;
         default:
@@ -586,7 +620,7 @@ void app_set_sys_opeare_function(uint8_t cmd, uint8_t data)
             gsm_set_module_reset_function();
             break;
             
-            case CR_GPRS_NETWORK_V_RESET:
+        case CR_GPRS_NETWORK_V_RESET:
             sg_sysoperate_t.com.return_error = 1;
             /* ACK回传 */
             {
@@ -773,10 +807,19 @@ void app_task_save_function(void)
     
     if(sg_sysoperate_t.save_flag.status & SAVE_FLAG_LOCAL_NETWORK)
     {
+        uint8_t reset_type = sg_sysoperate_t.save_flag.local_network_reset;
         sg_sysoperate_t.save_flag.status &= ~SAVE_FLAG_LOCAL_NETWORK;
+        sg_sysoperate_t.save_flag.local_network_reset = LWIP_RESET_NONE;
         save_stroage_local_network(&sg_sysparam_t.local);
         vTaskDelay(100);
-        eth_set_network_reset();
+        if(reset_type == LWIP_RESET_ETH)
+        {
+            eth_set_network_hw_reset();
+        }
+        else if(reset_type == LWIP_RESET_STACK)
+        {
+            eth_set_network_reset();
+        }
     }
     
     if(sg_sysoperate_t.save_flag.status & SAVE_FLAG_REMOTE_NETWORK)
@@ -867,30 +910,62 @@ void *app_get_local_network_function(void)
 */
 void app_set_local_network_function(struct local_ip_t param)
 {
-    memcpy(sg_sysparam_t.local.ip,param.ip,4);
-    memcpy(sg_sysparam_t.local.gateway,param.gateway,4);
-    memcpy(sg_sysparam_t.local.netmask,param.netmask,4);
-    memcpy(sg_sysparam_t.local.dns,param.dns,4);
-    {
-        uint8_t mac_zero = 1;
-        uint8_t mac_diff = 0;
-        for (uint8_t j = 0; j < 6; j++)
-        {
-            if (param.mac[j] != 0) mac_zero = 0;
-            if (param.mac[j] != sg_sysparam_t.local.mac[j]) mac_diff = 1;
-        }
-        if (!mac_zero && mac_diff)
-        {
-            bsp_WriteCpuFlash_Save(DEVICE_FLASH_STORE, DEVICE_MAC_ADDR, (uint8_t *)param.mac, 6);
-        }
-    }
-    memcpy(sg_sysparam_t.local.mac,param.mac,6);
-    memcpy(sg_sysparam_t.local.ping_ip,param.ping_ip,4);
-    memcpy(sg_sysparam_t.local.ping_sub_ip,param.ping_sub_ip,4);
+    uint8_t mac_zero = 1;
+    uint8_t mac_diff = 0;
+    uint8_t ip_diff = 0;
+    uint8_t multicast_diff = 0;
     
-    memcpy(sg_sysparam_t.local.multicast_ip,param.multicast_ip,4);
+    for (uint8_t j = 0; j < 6; j++)
+    {
+        if (param.mac[j] != 0) mac_zero = 0;
+        if (param.mac[j] != sg_sysparam_t.local.mac[j]) mac_diff = 1;
+    }
+    
+    /* 检查IP/网关/掩码/DNS是否变化 */
+    if (memcmp(param.ip, sg_sysparam_t.local.ip, 4) != 0 ||
+        memcmp(param.gateway, sg_sysparam_t.local.gateway, 4) != 0 ||
+        memcmp(param.netmask, sg_sysparam_t.local.netmask, 4) != 0 ||
+        memcmp(param.dns, sg_sysparam_t.local.dns, 4) != 0)
+    {
+        ip_diff = 1;
+    }
+    
+    /* 检查组播参数是否变化 */
+    if (memcmp(param.multicast_ip, sg_sysparam_t.local.multicast_ip, 4) != 0 ||
+        param.multicast_port != sg_sysparam_t.local.multicast_port)
+    {
+        multicast_diff = 1;
+    }
+    
+    /* 写入所有参数 */
+    memcpy(sg_sysparam_t.local.ip, param.ip, 4);
+    memcpy(sg_sysparam_t.local.gateway, param.gateway, 4);
+    memcpy(sg_sysparam_t.local.netmask, param.netmask, 4);
+    memcpy(sg_sysparam_t.local.dns, param.dns, 4);
+    memcpy(sg_sysparam_t.local.mac, param.mac, 6);
+    memcpy(sg_sysparam_t.local.ping_ip, param.ping_ip, 4);
+    memcpy(sg_sysparam_t.local.ping_sub_ip, param.ping_sub_ip, 4);
+    memcpy(sg_sysparam_t.local.multicast_ip, param.multicast_ip, 4);
     sg_sysparam_t.local.multicast_port = param.multicast_port;
-
+    sg_sysparam_t.local.search_mode = param.search_mode;
+    
+    /* 根据变化类型决定复位策略 */
+    if (!mac_zero && mac_diff)
+    {
+        bsp_WriteCpuFlash_Save(DEVICE_FLASH_STORE, DEVICE_MAC_ADDR, (uint8_t *)param.mac, 6);
+        sg_sysoperate_t.save_flag.local_network_reset = LWIP_RESET_ETH;
+    }
+    else if (ip_diff)
+    {
+        sg_sysoperate_t.save_flag.local_network_reset = LWIP_RESET_STACK;
+    }
+    
+    /* 组播参数变化时，仅重启组播任务 */
+    if (multicast_diff)
+    {
+        eth_set_udp_multicast_reset();
+    }
+    
     app_set_save_infor_function(SAVE_FLAG_LOCAL_NETWORK);
 }
 
@@ -1957,15 +2032,14 @@ void app_save_backups_remote_param_function(void)
 */
 void app_power_fail_protection_function(void)
 {
-    /* 开关全部关闭 */
-    if(relay_get_status(RELAY_1) == RELAY_ON) 
-        relay_control(RELAY_1,RELAY_OFF);
-    
-    if(relay_get_status(RELAY_2) == RELAY_ON) 
-        relay_control(RELAY_2,RELAY_OFF);
+    uint8_t relay_index = 0;
 
-    if(relay_get_status(RELAY_3) == RELAY_ON) 
-        relay_control(RELAY_3,RELAY_OFF);
+    /* 开关全部关闭 */
+    for (relay_index = RELAY_1; relay_index <= RELAY_NUM; relay_index++)
+    {
+        relay_control((RELAY_DEV)relay_index, RELAY_OFF); // 开继电器
+        vTaskDelay(1000); // 延时10ms
+    }
 }
 /*
 *********************************************************************************************************
@@ -1980,10 +2054,10 @@ void app_power_open_protection_function(void)
     uint8_t relay_index = 0;
 
     /* 开关全部打开 */
-    for (relay_index = RELAY_1; relay_index <= RELAY_3; relay_index++)
+    for (relay_index = RELAY_1; relay_index <= RELAY_NUM; relay_index++)
     {
         relay_control((RELAY_DEV)relay_index, RELAY_ON); // 开继电器
-        vTaskDelay(10); // 延时10ms
+        vTaskDelay(1000); // 延时10ms
     }
 }
 /*
@@ -1997,11 +2071,14 @@ void app_power_open_protection_function(void)
 void app_open_exec_task_function(void)
 {
     /* 检测设备是否需要散热 */
-    if( det_get_inside_temp() < (sg_sysparam_t.threshold.temp_high-10))
+    float temp = det_get_inside_temp();
+
+    /* 只比较启动温度temp_high: 大于temp_high开风扇, 小于temp_high-回差关风扇, 中间保持原状态避免抖动 */
+    if(temp < (sg_sysparam_t.threshold.temp_high - 1))
     {
         fan_control(FAN_OFF);
     }
-    else if( det_get_inside_temp() > sg_sysparam_t.threshold.temp_high)
+    else if(temp > sg_sysparam_t.threshold.temp_high)
     {
         fan_control(FAN_ON);
     }
@@ -2132,6 +2209,7 @@ void app_sys_operate_relay(void)
         if(sg_sysoperate_t.sys_flag.relay_reset[i] == 1)
         {
             relay_control((RELAY_DEV)i,RELAY_OFF);
+            app_report_information_immediately(0);   // 复位断电-立即上报状态
             relay_timess[i] = HAL_GetTick();
             sg_sysoperate_t.sys_flag.relay_reset[i] = 2;
         }
@@ -2142,8 +2220,23 @@ void app_sys_operate_relay(void)
             if((current_times - relay_timess[i]) > 15000)
             {        
                 relay_control((RELAY_DEV)i,RELAY_ON);
+                app_report_information_immediately(0);   // 复位上电-立即上报状态
                 sg_sysoperate_t.sys_flag.relay_reset[i]    = 0;            
             }
         }    
     }
 }
+
+/*
+*********************************************************************************************************
+*    函 数 名: app_get_miu_protec_status
+*    功能说明: 获取漏电保护状态
+*    形    参: 无
+*    返 回 值: 漏电保护状态
+*********************************************************************************************************
+*/
+uint8_t app_get_miu_protec_status(void)
+{
+    return alarm_get_miu_protec_status();
+}
+

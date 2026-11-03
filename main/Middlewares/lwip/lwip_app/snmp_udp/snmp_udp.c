@@ -1,14 +1,14 @@
 #include "./snmp_udp/snmp_udp.h"
 #include "main.h"
 
-#define SNMP_DEBUG           1
+#define SNMP_DEBUG           0
 
 #define SNMP_PRIO            9
 #define SNMP_STK_SIZE        512
 unsigned int SNMP_TASK_STK[SNMP_STK_SIZE];
 
 __attribute__((section (".RAM_D1")))  uint8_t snmp_send_buff[128] = {0};  // 发送缓存
-__attribute__((section (".RAM_D1")))  uint8_t snmp_recv_buff[128] = {0};  // 接收缓存
+__attribute__((section (".RAM_D1")))  uint8_t snmp_recv_buff[512] = {0};  // 接收缓存
 
 int snmp_sock = -1;
 static volatile uint8_t snmp_exit_req = 0;  /* 1: 任务已停到安全点, 待外部同步删除 */
@@ -46,6 +46,7 @@ static void snmp_thread(void *arg)
 
     snmp_oid_param = app_get_snmp_oid_function();
     uint32_t recv_times = 0; // 接收计时
+    uint32_t recv_start_times = 0;
 
     while (1) 
     {
@@ -104,7 +105,7 @@ static void snmp_thread(void *arg)
                     }
                     break;
                 case SNMP_SEND:
-                    // 3、发送SNMP请求
+                    // 3、发送SNMP请求（全部发送后再接收）
                     switch(sg_snmp_status_t.snmp_dev_type)
                     {
                         case SNMP_IPC:
@@ -115,10 +116,8 @@ static void snmp_thread(void *arg)
                                 {
                                     snmp_send_function((char*)sg_snmp_status_t.snmp_ipbuf,SNMP_PORT,(char*)snmp_send_buff,send_len);
                                 }
-                                vTaskDelay(50);              // 发送间隔50ms, 接收统一在 SNMP_RECV 阶段处理
+                                vTaskDelay(50);
                             }
-                            recv_times = 0; // 接收计时重置
-                            sg_snmp_status_t.status = SNMP_RECV;
                             break;
                         case SNMP_ONV:
                             break;
@@ -136,7 +135,8 @@ static void snmp_thread(void *arg)
                                             if(send_len > 0)
                                             {
                                                 snmp_send_function((char*)sg_snmp_status_t.snmp_ipbuf,SNMP_PORT,(char*)snmp_send_buff,send_len);
-                                            }    
+                                            }
+                                            vTaskDelay(50);
                                         }
                                         break;
                                     default:
@@ -144,36 +144,44 @@ static void snmp_thread(void *arg)
                                         if(send_len > 0)
                                         {
                                             snmp_send_function((char*)sg_snmp_status_t.snmp_ipbuf,SNMP_PORT,(char*)snmp_send_buff,send_len);
-                                        }    
+                                        }
+                                        vTaskDelay(50);
                                         break;
                                 }
                             }
-                            recv_times = 0; // 接收计时重置
-                            sg_snmp_status_t.status = SNMP_RECV;
                             break;
                         default:
                             sg_snmp_status_t.status = SNMP_END;
                             break;
                     }
+                    // 设置短超时(200ms), 进入接收阶段
+                    {
+                        struct timeval timeout;
+                        timeout.tv_sec = 0;
+                        timeout.tv_usec = 200000;
+                        setsockopt(snmp_sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+                    }
+                    recv_times = HAL_GetTick();
+                    recv_start_times = recv_times;
+                    sg_snmp_status_t.status = SNMP_RECV;
                 break;
-                case SNMP_RECV:// 4、接收SNMP响应
-                    if(recv_times == 0)
+                case SNMP_RECV:// 4、接收SNMP响应（空闲500ms结束，最大等待5秒）
+                {
+                    int recv_ret = 0;
+                    do
                     {
-                        recv_times = HAL_GetTick();
-                    }
-                    else    
+                        recv_ret = snmp_recv_function(0);
+                        if (recv_ret > 0)
+                        {
+                            recv_times = HAL_GetTick(); // 收到数据则刷新计时
+                        }
+                    } while (recv_ret > 0);
+                    
+                    if ((HAL_GetTick() - recv_times > 500) || (HAL_GetTick() - recv_start_times > 5000))
                     {
-                        // 循环读取，直到UDP接收缓冲区为空
-                        while(snmp_recv_function(0) > 0) 
-                        {
-                            // 如果还有数据就一直收
-                        }    
-                        if(HAL_GetTick() - recv_times > 5000)
-                        {
-                            recv_times = 0; // 接收计时重置
-                            sg_snmp_status_t.status = SNMP_END;
-                        }                    
+                        sg_snmp_status_t.status = SNMP_END;
                     }
+                }
                 break;
                 case SNMP_END:
                     if(snmp_sock >= 0)
@@ -192,6 +200,22 @@ static void snmp_thread(void *arg)
                     }
                 default:
                     break;
+            }
+        }
+
+        if(g_lwipdev.snmp_reset == 1)
+        {
+            g_lwipdev.snmp_reset = 0;
+            if(snmp_sock >= 0)
+            {
+                close(snmp_sock);
+                snmp_sock = -1;
+            }
+            sg_snmp_status_t.status = SNMP_NONE;
+            snmp_exit_req = 1;
+            for(;;)
+            {
+                vTaskSuspend(NULL);
             }
         }
         FeedFwdgt();    
@@ -223,6 +247,7 @@ unsigned char snmp_task_init(void)
                         (TaskHandle_t * )&snmp_task_handle);
     if (res != pdPASS)
     {
+        printf("snmp_thread: xTaskCreate failed\n");
         snmp_task_handle = NULL;
     }
     return res;
@@ -336,8 +361,10 @@ int snmp_link_function(char *ip,int port)
         }
         else
         {
+            int rcvbuf = 4096;
             tv_out.tv_sec = 5;
             tv_out.tv_usec = 0;
+            setsockopt(snmp_sock, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf));
             setsockopt(snmp_sock, SOL_SOCKET, SO_RCVTIMEO, &tv_out, sizeof(tv_out));
             if(SNMP_DEBUG) printf("udp bind...success... \n");
         }    
@@ -569,11 +596,12 @@ int snmp_oid_str_to_ber(const char *oid_str, uint8_t *ber, int max_len)
 int snmp_recv_function(uint8_t oid)
 {
     uint8_t *rcvData = NULL;
-    int sender_len = 0;
     int len = 0;
     struct sockaddr_in recv_addr;
+    int sender_len = sizeof(recv_addr);
 
     memset(snmp_recv_buff,0,sizeof(snmp_recv_buff));
+    memset(&recv_addr,0,sizeof(recv_addr));
     rcvData = snmp_recv_buff;
 
     len = recvfrom(snmp_sock,rcvData,sizeof(snmp_recv_buff),0,(struct sockaddr*)&recv_addr,(socklen_t *)&sender_len);

@@ -1,4 +1,4 @@
-﻿#ifndef _BSP_DEBUG_H_
+#ifndef _BSP_DEBUG_H_
 #define _BSP_DEBUG_H_
 
 #include "./SYSTEM/sys/sys.h"

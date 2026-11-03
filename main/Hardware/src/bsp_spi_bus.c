@@ -303,6 +303,64 @@ uint8_t bsp_spiTransfer_Byte(uint8_t TxData)
 
 /*
 *********************************************************************************************************
+*    函 数 名: bsp_SpiDmaFinishTransfer
+*    功能说明: 结束一次 SPI DMA 传输并清理通道/标志
+*    形    参: 无
+*    返 回 值: 无
+*********************************************************************************************************
+*/
+#ifdef USE_SPI_DMA
+static void bsp_SpiDmaFinishTransfer(void)
+{
+    dma_interrupt_flag_clear(SPIx_DMAx, SPIx_RX_DMA_CHANNEL, DMA_INT_FLAG_FTF);
+    dma_interrupt_flag_clear(SPIx_DMAx, SPIx_TX_DMA_CHANNEL, DMA_INT_FLAG_FTF);
+    dma_channel_disable(SPIx_DMAx, SPIx_TX_DMA_CHANNEL);
+    dma_channel_disable(SPIx_DMAx, SPIx_RX_DMA_CHANNEL);
+    wTransferState = TRANSFER_COMPLETE;
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: bsp_SpiDmaWaitComplete
+*    功能说明: 等待 SPI DMA 传输完成，轮询 FTF 防止中断丢失导致死等
+*    形    参: 无
+*    返 回 值: 无
+*********************************************************************************************************
+*/
+static void bsp_SpiDmaWaitComplete(void)
+{
+    uint32_t timeout = 0;
+
+    while (wTransferState == TRANSFER_WAIT)
+    {
+        if (dma_interrupt_flag_get(SPIx_DMAx, SPIx_RX_DMA_CHANNEL, DMA_INT_FLAG_FTF) != RESET)
+        {
+            bsp_SpiDmaFinishTransfer();
+            break;
+        }
+
+        if ((++timeout > 1000000U) ||
+            ((DMA_CHCTL(SPIx_DMAx, SPIx_RX_DMA_CHANNEL) & DMA_CHXCTL_CHEN) == 0U &&
+             dma_transfer_number_get(SPIx_DMAx, SPIx_RX_DMA_CHANNEL) == 0U))
+        {
+            if (dma_interrupt_flag_get(SPIx_DMAx, SPIx_RX_DMA_CHANNEL, DMA_INT_FLAG_FTF) != RESET)
+            {
+                bsp_SpiDmaFinishTransfer();
+            }
+            else
+            {
+                wTransferState = TRANSFER_ERROR;
+                dma_channel_disable(SPIx_DMAx, SPIx_TX_DMA_CHANNEL);
+                dma_channel_disable(SPIx_DMAx, SPIx_RX_DMA_CHANNEL);
+            }
+            break;
+        }
+    }
+}
+#endif
+
+/*
+*********************************************************************************************************
 *    函 数 名: bsp_spiTransfer
 *    功能说明: 启动数据传输
 *    形    参: 无
@@ -311,7 +369,7 @@ uint8_t bsp_spiTransfer_Byte(uint8_t TxData)
 */
 void bsp_spiTransfer(void)
 {
-    if (g_spiLen > SPI_BUFFER_SIZE)
+    if ((g_spiLen == 0) || (g_spiLen > SPI_BUFFER_SIZE))
     {
         return;
     }
@@ -323,6 +381,23 @@ void bsp_spiTransfer(void)
     // 关闭SPI DMA
     dma_channel_disable(SPIx_DMAx, SPIx_TX_DMA_CHANNEL);
     dma_channel_disable(SPIx_DMAx, SPIx_RX_DMA_CHANNEL);
+    while ((DMA_CHCTL(SPIx_DMAx, SPIx_TX_DMA_CHANNEL) & DMA_CHXCTL_CHEN) != 0U)
+    {
+        ;
+    }
+    while ((DMA_CHCTL(SPIx_DMAx, SPIx_RX_DMA_CHANNEL) & DMA_CHXCTL_CHEN) != 0U)
+    {
+        ;
+    }
+
+    if (SET == spi_i2s_flag_get(SPIx, SPI_FLAG_RXORERR))
+    {
+        (void)spi_i2s_data_receive(SPIx);
+        (void)SPI_STAT(SPIx);
+    }
+
+    dma_memory_address_config(SPIx_DMAx, SPIx_TX_DMA_CHANNEL, 0, (uint32_t)g_spiTxBuf);
+    dma_memory_address_config(SPIx_DMAx, SPIx_RX_DMA_CHANNEL, 0, (uint32_t)g_spiRxBuf);
 
     // 设置发送数据量
     dma_transfer_number_config(SPIx_DMAx, SPIx_TX_DMA_CHANNEL, g_spiLen);
@@ -337,10 +412,7 @@ void bsp_spiTransfer(void)
     dma_channel_enable(SPIx_DMAx, SPIx_TX_DMA_CHANNEL);
     dma_channel_enable(SPIx_DMAx, SPIx_RX_DMA_CHANNEL);
 
-    while (wTransferState == TRANSFER_WAIT)
-    {
-        ;
-    }
+    bsp_SpiDmaWaitComplete();
 #endif
 
     /* 中断方式传输 */    
@@ -408,6 +480,33 @@ uint8_t bsp_SpiBusBusy(void)
 
 /*
 *********************************************************************************************************
+*    函 数 名: bsp_SpiBusRecover
+*    功能说明: 复位 SPI/DMA 状态，用于 Flash 编程后恢复外部 SPI Flash 访问
+*    形    参: 无
+*    返 回 值: 无
+*********************************************************************************************************
+*/
+void bsp_SpiBusRecover(void)
+{
+#ifdef USE_SPI_DMA
+    dma_channel_disable(SPIx_DMAx, SPIx_TX_DMA_CHANNEL);
+    dma_channel_disable(SPIx_DMAx, SPIx_RX_DMA_CHANNEL);
+    dma_interrupt_flag_clear(SPIx_DMAx, SPIx_TX_DMA_CHANNEL, DMA_INT_FLAG_FTF);
+    dma_interrupt_flag_clear(SPIx_DMAx, SPIx_RX_DMA_CHANNEL, DMA_INT_FLAG_FTF);
+#endif
+
+    if (SET == spi_i2s_flag_get(SPIx, SPI_FLAG_RXORERR))
+    {
+        (void)spi_i2s_data_receive(SPIx);
+        (void)SPI_STAT(SPIx);
+    }
+
+    wTransferState = TRANSFER_COMPLETE;
+    g_spi_busy = 0;
+}
+
+/*
+*********************************************************************************************************
 *    函 数 名: SPIx_IRQHandler，SPIx_DMA_RX_IRQHandler，SPIx_DMA_TX_IRQHandler
 *    功能说明: 中断服务程序
 *    形    参: 无
@@ -465,8 +564,10 @@ uint8_t bsp_SpiBusBusy(void)
         if(dma_interrupt_flag_get(SPIx_DMAx, SPIx_RX_DMA_CHANNEL, DMA_INT_FLAG_FTF) != RESET)
         {
             dma_interrupt_flag_clear(SPIx_DMAx, SPIx_RX_DMA_CHANNEL, DMA_INT_FLAG_FTF);
-            wTransferState = TRANSFER_COMPLETE;
+            dma_interrupt_flag_clear(SPIx_DMAx, SPIx_TX_DMA_CHANNEL, DMA_INT_FLAG_FTF);
             dma_channel_disable(SPIx_DMAx, SPIx_RX_DMA_CHANNEL);
+            dma_channel_disable(SPIx_DMAx, SPIx_TX_DMA_CHANNEL);
+            wTransferState = TRANSFER_COMPLETE;
         }
 
         // 传输错误

@@ -45,7 +45,7 @@ void start_bsp_init(void)
     ebtn_APP_Keys_Init();            // 初始化按键模块（已测试）
     
 #if (configUSE_RS485 == 1)
-    RS485_Init(115200);          // 485初始化（已测试）
+    RS485_Init(9600);          // 485初始化（已测试）
 #endif
 #if (configUSE_AHT20 == 1)
     aht20_init();             // 温湿度初始化(已测试)   
@@ -171,7 +171,7 @@ void print_task(void *pvParameters);
  * 包括: 任务句柄 任务优先级 堆栈大小 创建任务
  */
 #define DTU_TASK_PRIO     			7       
-#define DTU_STK_SIZE      			1024      
+#define DTU_STK_SIZE      			2048      
 TaskHandle_t DTU_Task_Handler;     
 void dtu_task(void *pvParameters); 
 
@@ -210,6 +210,7 @@ void start_task_create(void)
 void start_task(void *pvParameters)
 {
     pvParameters = pvParameters;
+    int lwip_retry = 0;
     
     save_init_function();    
     com_recevie_function_init();        // 初始化接收缓冲区
@@ -218,26 +219,21 @@ void start_task(void *pvParameters)
     log_init_function();
     
     /* 有线网络初始化: 硬件 + lwIP协议栈 */
-    if (enet_system_setup() != 0)
-    {
-        /* 硬件初始化成功, 尝试lwIP协议栈初始化 (最多重试5次, 每次间隔1秒) */
-        int lwip_retry = 0;
-        while (lwip_comm_init() != 0)
-        {
-            printf("lwIP Init failed!!\n");
-            if (++lwip_retry >= 5)
-            {
-                printf("lwIP Init failed after 5 retries, skip ethernet!\r\n");
-                break;
-            }
-            delay_ms(1000);
-        }
-    }
-    else
+    if (enet_system_setup() == 0)
     {
         printf("Ethernet hardware init failed, system running in wireless-only mode!\r\n");
     }
     
+    while (lwip_comm_init() != 0)
+    {
+        printf("lwIP Init failed!!\n");
+        if (++lwip_retry >= 5)
+        {
+            printf("lwIP Init failed after 5 retries, skip ethernet!\r\n");
+            break;
+        }
+        delay_ms(1000);
+    }    
     printf("run here!!\n");
     FeedFwdgt();  
     taskENTER_CRITICAL();           /* 进入临界区 */

@@ -93,7 +93,7 @@ static void update_gsm_task(void *pvParameters)
 UPDATE_END:
 	if(ret < 0){ 
 		http_update_failed(); 
-		app_set_reply_parameters_function(CONFIGURE_UPDATE_SYSTEM, 0x00);  // 立即通知平台升级失败
+		app_report_reply_parameters_function(CONFIGURE_UPDATE_SYSTEM, 0x00);  // 立即通知平台升级失败
 		http_update_clear_param();  // 清除Flash状态, 防止重启后 update_status_detection 重复发送
 	}
 
@@ -458,7 +458,13 @@ void update_gsm_task_create(void)
 						NULL,
 						UPDATE_GSM_TASK_PRIO,
 						&s_update_gsm_task);
-	if(ret != pdPASS){ s_update_gsm_task = NULL; }
+    if (ret != pdPASS)
+    {
+        printf("update_gsm_task: xTaskCreate failed\n");
+        s_update_gsm_task = NULL;
+        http_update_failed();                           /* 升级状态改为失败 */
+        update_set_update_mode(UPDATE_MODE_NULL);       /* 程序恢复正常运行上报模式 */
+    }
 }
 
 /*

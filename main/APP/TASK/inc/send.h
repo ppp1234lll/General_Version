@@ -16,7 +16,7 @@
 #define SEND_HIGH_Q_DEPTH   4          /* 高优先队列深度 */
 #define SEND_NORMAL_Q_DEPTH 8          /* 普通队列深度 */
 #define SEND_RETRY_MAX      3          /* 默认最大重试次数 */
-#define SEND_TIMEOUT_MS     5000       /* 单次发送超时时间(ms) */
+#define SEND_TIMEOUT_MS     10000       /* 单次发送超时时间(ms) */
 
 /* -------------------------------------------------------
  * 优先级

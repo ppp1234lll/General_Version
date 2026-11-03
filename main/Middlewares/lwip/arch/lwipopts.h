@@ -1,4 +1,4 @@
-﻿/**
+/**
   ******************************************************************************
   * @file    LwIP/LwIP_HTTP_Server_Netconn_RTOS/Inc/lwipopts.h
   * @author  MCD Application Team
@@ -52,6 +52,7 @@ SYS_LIGHTWEIGHT_PROT==1:如果您确实需要任务间保护
 
 /* MEMP_NUM_PBUF: 设置内存池的数量  */
 #define MEMP_NUM_PBUF                   25
+#define MEMP_NUM_NETBUF                 32
 /* MEMP_NUM_UDP_PCB: UDP协议控制块的数量. */
 #define MEMP_NUM_UDP_PCB                4
 /* MEMP_NUM_TCP_PCB: TCP的数量. */
@@ -103,7 +104,7 @@ SYS_LIGHTWEIGHT_PROT==1:如果您确实需要任务间保护
 #define LWIP_DNS                        1
 
 /* ---------- 组播 选项 ---------- */
-#define LWIP_IGMP                         1    // 开启组播功能
+#define LWIP_IGMP                       1    // 开启组播功能
 #define LWIP_RAW                        1
 
 /* ---------- DHCP 选项 ---------- */
@@ -206,7 +207,7 @@ The STM32F4x7 allows computing and verifying the IP, UDP, TCP and ICMP checksums
    ---------------------------------
 */
 
-#define DEFAULT_UDP_RECVMBOX_SIZE       10
+#define DEFAULT_UDP_RECVMBOX_SIZE       32
 #define DEFAULT_TCP_RECVMBOX_SIZE       10
 #define DEFAULT_ACCEPTMBOX_SIZE         10
 #define DEFAULT_THREAD_STACKSIZE        1024
@@ -215,8 +216,10 @@ The STM32F4x7 allows computing and verifying the IP, UDP, TCP and ICMP checksums
 #define TCPIP_THREAD_NAME              "TCP/IP"
 #define TCPIP_THREAD_STACKSIZE          2048
 #define TCPIP_MBOX_SIZE                 8
-#define TCPIP_THREAD_PRIO              20
+#define TCPIP_THREAD_PRIO               20
 #define LWIP_SO_RCVTIMEO                1
+#define LWIP_SO_RCVBUF                  1
+#define RECV_BUFSIZE_DEFAULT            8192
 
 // ==============================================
 //  LWIP 调试总开关（必须打开）

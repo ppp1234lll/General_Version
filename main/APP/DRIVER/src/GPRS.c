@@ -60,6 +60,7 @@
 ////
 
 static int gprs_wait_feedback(const unsigned char *feedback, int feedback_len, int waittime);
+static void gprs_on_module_ready_urc(void);
 ////
 
 gprs_rx_t sg_gprs_rx_t[GPRS_LINK_MAX] = {0};  // 数据平台接收数据缓冲
@@ -948,6 +949,25 @@ uint8_t gprs_network_data_send_function(uint8_t *data, uint16_t len)
 
 /*
 *********************************************************************************************************
+*	函 数 名: gprs_on_module_ready_urc
+*	功能说明: 处理 +MATREADY(模块重启/AT就绪), 置 mount=0 触发上层完整重初始化
+*********************************************************************************************************
+*/
+static void gprs_on_module_ready_urc(void)
+{
+	uint8_t i;
+
+	for(i = 0; i < GPRS_LINK_MAX; i++)
+	{
+		sg_gprs_status_t.disconn[i] = 1;
+		sg_gprs_status_t.network[i] = 0;
+	}
+	sg_gprs_status_t.mount = 0;
+	sg_gprs_status_t.status.com = 0;
+}
+
+/*
+*********************************************************************************************************
 *    函 数 名: gprs_wait_feedback
 *    功能说明: 等待服务器反馈
 *    形    参: @feedback    : 反馈字符串指针
@@ -959,6 +979,7 @@ static int gprs_wait_feedback(const unsigned char *feedback, int feedback_len, i
 {
 	char *pt;
 	char *disconn_pt;
+	char *matready_pt;
 
 	if(!feedback || !feedback_len){ return(GPRS_SEND_OK); } // 空操作
 
@@ -971,6 +992,19 @@ static int gprs_wait_feedback(const unsigned char *feedback, int feedback_len, i
 		 * 550(TCP发送失败)视为链路断开, 其它(如551连接失败)返回一般错误, 由已知 client_id 的调用方处理 */
 		if(avail > 0)
 		{
+			/* 缓冲中残留的 +MATREADY 跳过, 不参与期望回馈匹配 */
+			matready_pt = strstr((char *)(gprs_at_buff + s_gprs_at_take), "+MATREADY");
+			if(matready_pt)
+			{
+				pt = strstr(matready_pt, "\r\n");
+				if(pt)
+				{
+					gprs_on_module_ready_urc();
+					s_gprs_at_take = (pt + 2 - (char *)gprs_at_buff);
+					continue;
+				}
+			}
+
 			pt = strstr((char *)(gprs_at_buff + s_gprs_at_take), "+CME ERROR:");
 			if(pt)
 			{
@@ -979,8 +1013,9 @@ static int gprs_wait_feedback(const unsigned char *feedback, int feedback_len, i
 			}
 		}
 
-		/* 只有在有新数据到达后才搜索匹配 */
-		if(avail >= (unsigned short)feedback_len)
+		/* 有数据即搜索: URC 先到时 avail 可能已满足长度但期望回馈尚未到达,
+		 * 继续等待直至匹配/超时/缓冲将满, 避免旧逻辑提前 MISMATCH */
+		if(avail > 0)
 		{
 			pt = strstr((char *)(gprs_at_buff + s_gprs_at_take), (const char *)feedback);
 			if(pt)
@@ -997,7 +1032,11 @@ static int gprs_wait_feedback(const unsigned char *feedback, int feedback_len, i
 				return(GPRS_SEND_DISCONN);
 			}
 
-			return(GPRS_SEND_ERROR);
+			/* 缓冲将满仍未匹配则失败, 防止死等 */
+			if(s_gprs_at_idx >= (GPRS_AT_BUFF_SIZE - 32))
+			{
+				return(GPRS_SEND_ERROR);
+			}
 		}
 
 		if(waittime <= 0){ break; }
@@ -1212,6 +1251,27 @@ void gprs_get_receive_data_function(uint8_t *buff, uint16_t len)
 			sg_gprs_status_t.disconn[client_id] = 1;
 		}
 		return;
+	}
+
+	/* 1c. +MATREADY: 模块重启/AT就绪 URC, 不进 AT 缓冲; 若同帧还带其它应答则剥掉后再继续处理 */
+	if(strncmp((char *)buff, "\r\n+MATREADY", 11) == 0 ||
+	   strncmp((char *)buff, "+MATREADY", 9) == 0)
+	{
+		char *rest;
+
+		gprs_on_module_ready_urc();
+
+		rest = strstr((char *)buff, "+MATREADY");
+		if(!rest){ return; }
+		rest = strstr(rest, "\r\n");
+		if(!rest){ return; }
+		rest += 2;
+		while(*rest == '\r' || *rest == '\n'){ rest++; }
+
+		len = (uint16_t)(len - (rest - (char *)buff));
+		buff = (uint8_t *)rest;
+		if(len == 0){ return; }
+		/* 余下数据继续按 URC/AT 应答处理 */
 	}
 
 	/* 2. 非 rtcp 数据: 若有命令在途, 作为 AT 应答存入 gprs_at_buff, 供 gprs_wait_feedback 匹配

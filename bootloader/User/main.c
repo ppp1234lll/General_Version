@@ -126,6 +126,13 @@ static void update_check_function(void)
     write_boot_update_param(&boot_update_param); // 保存升级参数
 
     app_buff = (unsigned char *)mymalloc(SRAMIN, (boot_update_param.section_size + 64));
+    if (app_buff == NULL)
+    {
+        printf("\n升级缓存分配失败！\n");
+        boot_update_param.update_status = UPDATE_FAILED;
+        write_boot_update_param(&boot_update_param);
+        return;
+    }
 
     printf("\n执行升级参数,section_count: %u, section_size: %u\n", boot_update_param.section_count, boot_update_param.section_size);
     
@@ -145,9 +152,12 @@ static void update_check_function(void)
     }  
     
     myfree(SRAMIN, (void *)app_buff);
-
+    
     FeedFwdgt();
-
+    boot_update_param.update_status = UPDATE_SUCCESS;
+    sf_SetCS(1);
+    bsp_SpiBusRecover();
+    write_boot_update_param(&boot_update_param); // 保存升级参数 
     printf("\n升级完毕！跳转 ...\n");
     iap_load_app(MAIN_APP_ADDR); // 执行FLASH APP代码
 }

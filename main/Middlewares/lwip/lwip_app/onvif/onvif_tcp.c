@@ -118,7 +118,11 @@ unsigned char onvif_tcp_client_init(void)
                         (void *         )NULL,
                         (UBaseType_t    )ONVIF_TCP_PRIO,
                         (TaskHandle_t * )&OnvifTcp_Task_Handler); //创建UDP线程
-    if(res != pdPASS){ OnvifTcp_Task_Handler = NULL; }
+    if (res != pdPASS)
+    {
+        printf("onvif_tcp_thread: xTaskCreate failed\n");
+        OnvifTcp_Task_Handler = NULL;
+    }
 
     return res;
 }
@@ -173,6 +177,47 @@ void onvif_tcp_delete(void)
 
 /*
 *********************************************************************************************************
+*    函 数 名: connectTimeOut
+*    功能说明: 非阻塞TCP连接，避免不通IP长时间阻塞
+*    形    参: 
+*    返 回 值: 0成功，其他失败
+*********************************************************************************************************
+*/
+int connectTimeOut(int sock_t, struct sockaddr *sock_addr, int timeout)
+{
+    int ret = 0;
+    fd_set set;
+    struct timeval tv;
+    unsigned long mode = 1;
+    int error = 0;
+    socklen_t len = sizeof(error);
+
+    ioctlsocket(sock_t, FIONBIO, &mode);
+    ret = connect(sock_t, sock_addr, sizeof(struct sockaddr_in));
+    if(ret == 0)
+    {
+        return 0;
+    }
+
+    FD_ZERO(&set);
+    FD_SET(sock_t, &set);
+    tv.tv_sec = timeout / 1000;
+    tv.tv_usec = (timeout % 1000) * 1000;
+
+    ret = select(sock_t + 1, NULL, &set, NULL, &tv);
+    if(ret > 0)
+    {
+        getsockopt(sock_t, SOL_SOCKET, SO_ERROR, &error, &len);
+        if(error == 0)
+        {
+            return 0;
+        }
+    }
+    return -1;
+}
+
+/*
+*********************************************************************************************************
 *    函 数 名: onvif_tcp_link_carema
 *    功能说明: tcp连接
 *    形    参: 
@@ -182,41 +227,34 @@ void onvif_tcp_delete(void)
 int onvif_tcp_link_carema(int sockt,char *ip,int port)
 {
     struct sockaddr_in server_addr;
-//    struct timeval tv_out;
+    int value = 1;
     
     onvif_tcp_sockt = socket(AF_INET, SOCK_STREAM, 0); // SOCK_STREAM:提供面向连接的稳定数据传输，即TCP协议 
     if (onvif_tcp_sockt < 0)
     {
         if(ONVIF_DEBUG) printf("Socket error\n");
-        close(onvif_tcp_sockt);
         return -1;  // 失败
     }            
-    else
+
+    /* 设置要访问的服务器的信息 */
+    server_addr.sin_family = AF_INET;            // IPv4
+    server_addr.sin_addr.s_addr = inet_addr(ip); // 服务器IP
+    server_addr.sin_port = htons(port);          // 端口
+    memset(&(server_addr.sin_zero), 0, sizeof(server_addr.sin_zero));
+
+    setsockopt(onvif_tcp_sockt, SOL_SOCKET, SO_BROADCAST, &value, sizeof(value));
+    
+    /* 连接到服务端，300ms超时 */
+    if (connectTimeOut(onvif_tcp_sockt, (struct sockaddr *)&server_addr, 300) != 0)
     {
-        /* 设置要访问的服务器的信息 */
-        server_addr.sin_family = AF_INET;            // IPv4
-        server_addr.sin_addr.s_addr = inet_addr(ip); // 服务器IP
-        server_addr.sin_port = htons(port);          // 端口
-        memset(&(server_addr.sin_zero), 0, sizeof(server_addr.sin_zero));
-        
-        /* 连接到服务端 */
-        if (connect(onvif_tcp_sockt, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in)))
-        {
-            if(ONVIF_DEBUG) printf("Unable to connect\n");
-            close(onvif_tcp_sockt);
-            return -1;  // 失败
-        }            
-
-        int value = 1; //1 开启端口复用 0关闭
-                    setsockopt(onvif_tcp_sockt, SOL_SOCKET, SO_BROADCAST, &value, sizeof(value));
-
-                    unsigned long mode = 1;
-                    ioctlsocket(onvif_tcp_sockt, FIONBIO, &mode); // 设置为非阻塞模式
-        
-        
-        if(ONVIF_DEBUG) printf("connect...success... \n");
-        return 0;  
+        if(ONVIF_DEBUG) printf("Unable to connect\n");
+        close(onvif_tcp_sockt);
+        onvif_tcp_sockt = -1;
+        return -1;  // 失败
     }
+    
+    if(ONVIF_DEBUG) printf("connect...success... \n");
+    return 0;  
 }
 
 /*

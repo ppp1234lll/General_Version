@@ -1,4 +1,4 @@
-﻿#include "./Upload/inc/upload.h"
+#include "./Upload/inc/upload.h"
 #include "./Upload/inc/upload_http.h"
 #include "main.h"
 
@@ -97,7 +97,10 @@ void upload_gsm_task_create(void)
                       &s_upload_gsm_task);
     if (ret != pdPASS)
     {
+        printf("upload_gsm_task: xTaskCreate failed\n");
         s_upload_gsm_task = NULL;
+			  upload_set_upload_mode(UPLOAD_MODE_NULL);
+			  (void)log_upload_fail_function();
     }
 }
 

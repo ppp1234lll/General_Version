@@ -58,7 +58,7 @@
     #define SPD_KEY_ACTIVE_LEVEL      EBTN_ACTIVE_LOW
 #endif
 
-#if (configUSE_KEY_MCB == 1)
+#if (configUSE_KEY_MCB_COUPLING == 1)
     #define MCB_KEY_PIN               GPIO_PIN_15
     #define MCB_KEY_GPIO_PORT         GPIOD                      
     #define MCB_KEY_GPIO_CLK          RCU_GPIOD    
@@ -104,7 +104,7 @@ key_config_t keys_config_list[] = {
 #if (configUSE_KEY_SPD == 1)
     {SPD_KEY,    SPD_KEY_GPIO_PORT,  SPD_KEY_PIN,  SPD_KEY_ACTIVE_LEVEL}, // 防雷检测 PD14，低电平触发
 #endif
-#if (configUSE_KEY_MCB == 1)
+#if (configUSE_KEY_MCB_COUPLING == 1)
     {MCB_KEY,    MCB_KEY_GPIO_PORT,  MCB_KEY_PIN,  MCB_KEY_ACTIVE_LEVEL}, // 空开检测 PD15，高电平触发
 #endif
 };

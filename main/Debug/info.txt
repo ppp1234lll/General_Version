@@ -1,0 +1,1 @@
+{"version":"FN-YJTY-PY-8-2.0.5.20261012";"url":"http://47.104.98.214:8989/FN-YJTY-PY-8/FN-YJTY-PY-8-2.0.5.20261012_crc.bin";}

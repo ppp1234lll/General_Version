@@ -1,4 +1,4 @@
-﻿/*!
+ï»¿/*!
     \file    gd32f4xx_dac.c
     \brief   DAC driver
 

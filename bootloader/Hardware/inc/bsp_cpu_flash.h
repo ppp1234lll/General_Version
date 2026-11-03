@@ -53,6 +53,7 @@ uint8_t bsp_WriteCpuFlash(uint32_t _ulFlashAddr, uint8_t *_ucpSrc, uint32_t _ulS
 uint8_t bsp_CmpCpuFlash(uint32_t _ulFlashAddr, uint8_t *_ucpBuf, uint32_t _ulSize);
 uint8_t bsp_WriteCpuFlash_Save(uint32_t _ulReadAddr, uint32_t _ulWriteAddr, uint8_t *_ucpBuf, uint32_t _ulSize);
 void bsp_EraseCpuFlash(uint32_t _ulFlashAddr);
+void bsp_WriteCpuFlash_Erase(uint32_t WriteAddr,uint32_t *pBuffer,uint32_t NumToWrite);
 
 void flash_test(void);
 #endif

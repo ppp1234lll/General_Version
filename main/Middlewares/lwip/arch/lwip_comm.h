@@ -33,6 +33,11 @@
 #define LWIP_LINK_ON                    (uint8_t) 1     /* 链接开启状态 */
 #define LWIP_LINK_AGAIN                 (uint8_t) 2     /* 重复开启 */
 
+/* 网络重启类型 */
+#define LWIP_RESET_NONE                 (uint8_t) 0     /* 无重启 */
+#define LWIP_RESET_STACK                (uint8_t) 1     /* 只重启协议栈 */
+#define LWIP_RESET_ETH                  (uint8_t) 2     /* 重启ETH硬件 */
+
 typedef void (*display_fn)(uint8_t index);
 
 /* TCP客户端相关参数 */
@@ -73,7 +78,7 @@ typedef struct
     
     uint8_t link_status;             /* 连接状态 */
     
-    uint8_t reset;             // 网络复位：检测到1对网口进行复位
+    uint8_t reset;             // 网络复位类型: LWIP_RESET_STACK/LWIP_RESET_ETH
     uint8_t tcp_reset;       // tcp复位: 检测到1对tcp客户端进行复位
     uint8_t udp_reset;       // udp复位: 检测到1对udp客户端进行复位
     uint8_t udp_multicast_reset;
@@ -83,11 +88,13 @@ typedef struct
     uint8_t onvif_tcp_status;  
     uint8_t udp_onvif_flag;    // onvif主动搜索标志位，防止ping模式下开始onvif任务，随后被关闭
     uint8_t onvif_tcp_reset;
+    uint8_t rtsp_reset;        // rtsp复位
     
     uint8_t resetting;         // 网络复位进行中，防止link线程干扰
 }__lwip_dev;
 
 extern __lwip_dev g_lwipdev;                            /* lwip控制结构体 */
+extern struct netif g_lwip_netif;                       /* 全局网络接口 */
         
 void    lwip_comm_default_ip_set(__lwip_dev *lwipx);    /* lwip 默认IP设置 */
 uint8_t lwip_comm_init(void);                           /* LWIP初始化(LWIP启动的时候使用) */
@@ -96,5 +103,6 @@ uint8_t *lwip_get_mac_addr(void);
 void lwip_stop_function(void);
 void lwip_updata_remote_network_infor(__lwip_dev *lwipx);
 int8_t lwip_start_function(void);
+int8_t lwip_stack_restart_function(void);
 void lwip_stop_function(void);
 #endif

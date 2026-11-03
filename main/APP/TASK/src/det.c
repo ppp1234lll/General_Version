@@ -68,45 +68,44 @@ uint8_t det_main_network_and_camera_network(void)
     static uint8_t main_ip[2] = {0};
     static uint8_t camera[6]  = {0};
     uint8_t i = 0;
-    uint8_t error = 0;
+    uint8_t cur, prev;
+    uint8_t changed = 0;
+    uint8_t reload_main = 0;
+    uint8_t reload_carema = 0;
     
     /* 检测主网络 */
-    if(sg_datacollec_t.main_ip == 0 && sg_datacollec_t.main_sub_ip == 0) 
+    for (i = 0; i < 2; i++)
     {
-        if(main_ip[0] == 1 || main_ip[1] == 1) {
-            main_ip[0] = sg_datacollec_t.main_ip;
-            main_ip[1] = sg_datacollec_t.main_sub_ip;
-            
-            // 重启设备
-            app_set_net_reload_num(RELAY_1); // 重启路由端口    
-            return 1;
+        cur  = (i == 0) ? sg_datacollec_t.main_ip : sg_datacollec_t.main_sub_ip;
+        prev = main_ip[i];
+        if (prev != cur)
+        {
+            changed = 1;
+            if (prev == NET_STATUS_NORMAL && cur == NET_STATUS_FAULT)
+            {
+                reload_main = 1;
+            }
         }
     }
     main_ip[0] = sg_datacollec_t.main_ip;
     main_ip[1] = sg_datacollec_t.main_sub_ip;
     
-    /* 检测摄像头 */
-    for(i=0; i<6; i++) 
-    {
-        if(camera[i] == 1 && sg_datacollec_t.camera[i] == 0) 
-        {
-            camera[0] = sg_datacollec_t.camera[0];
-            camera[1] = sg_datacollec_t.camera[1];
-            camera[2] = sg_datacollec_t.camera[2];
-            camera[3] = sg_datacollec_t.camera[3];
-            camera[4] = sg_datacollec_t.camera[4];
-            camera[5] = sg_datacollec_t.camera[5];
-            
-            error++;
-        }
-    }
+    if (reload_main)
+        app_set_net_reload_num(RELAY_1);
     
-    if(error > 0)
+    /* 检测摄像头 */
+    for (i = 0; i < 6; i++)
     {
-        error = 0;
-        app_set_net_reload_num(RELAY_2); // 摄像机网络
-        app_set_net_reload_num(RELAY_3); // 摄像机网络
-        return 1;        
+        cur  = sg_datacollec_t.camera[i];
+        prev = camera[i];
+        if (prev != cur)
+        {
+            changed = 1;
+            if (prev == NET_STATUS_NORMAL && cur == NET_STATUS_FAULT)
+            {
+                reload_carema = 1;
+            }
+        }
     }
     camera[0] = sg_datacollec_t.camera[0];
     camera[1] = sg_datacollec_t.camera[1];
@@ -115,7 +114,18 @@ uint8_t det_main_network_and_camera_network(void)
     camera[4] = sg_datacollec_t.camera[4];
     camera[5] = sg_datacollec_t.camera[5];
     
-    return 0;
+    if (reload_carema)
+    {
+        app_set_net_reload_num(RELAY_2);
+        app_set_net_reload_num(RELAY_3);
+        app_set_net_reload_num(RELAY_4);
+        app_set_net_reload_num(RELAY_5);
+        app_set_net_reload_num(RELAY_6);
+        app_set_net_reload_num(RELAY_7);
+        app_set_net_reload_num(RELAY_8);
+    }
+    
+    return changed;
 }
 
 /*
@@ -193,7 +203,7 @@ void det_set_camera_status(uint8_t num,uint8_t status)
     {
         case NET_STATUS_FAULT: Error_Set(code_fault); break;   // 2 故障
         case NET_STATUS_DELAY: Error_Set(code_delay); break;   // 4 延时
-        case NET_STATUS_LOSS:  Error_Set(code_loss);  break;   // 5 丢包
+        case NET_STATUS_LOSS:  break;                          // 5 丢包: 只检测不上报，不置故障码
         default:                                               // 1 正常 / 0 无IP: 清除全部故障码
             Error_Clear(code_fault);
             Error_Clear(code_delay);
@@ -231,8 +241,8 @@ void det_set_main_network_status(uint8_t status)
     {
         case NET_STATUS_FAULT: Error_Set(NET_MAIN_FAULT);        break;   // 2 故障
         case NET_STATUS_DELAY: Error_Set(NET_MAIN_DELAY);        break;   // 4 延时
-        case NET_STATUS_LOSS:  Error_Set(NET_MAIN_LOSS);         break;   // 5 丢包
-        case NET_STATUS_NO_IP: Error_Set(NET_MAIN_IP_UNCONFIG);  break;   // 0 无IP
+        case NET_STATUS_LOSS:  break;                                     // 5 丢包: 只检测不上报，不置故障码
+//        case NET_STATUS_NO_IP: Error_Set(NET_MAIN_IP_UNCONFIG);  break;   // 0 无IP
         default:                                                          // 1 正常: 清除全部故障码
             Error_Clear(NET_MAIN_FAULT);
             Error_Clear(NET_MAIN_DELAY);
@@ -271,8 +281,8 @@ void det_set_main_network_sub_status(uint8_t status)
     {
         case NET_STATUS_FAULT: Error_Set(NET_MAIN2_FAULT);        break;   // 2 故障
         case NET_STATUS_DELAY: Error_Set(NET_MAIN2_DELAY);        break;   // 4 延时
-        case NET_STATUS_LOSS:  Error_Set(NET_MAIN2_LOSS);         break;   // 5 丢包
-        case NET_STATUS_NO_IP: Error_Set(NET_MAIN2_IP_UNCONFIG);  break;   // 0 无IP
+        case NET_STATUS_LOSS:  break;                                     // 5 丢包: 只检测不上报，不置故障码
+//        case NET_STATUS_NO_IP: Error_Set(NET_MAIN2_IP_UNCONFIG);  break;   // 0 无IP
         default:                                                           // 1 正常: 清除全部故障码
             Error_Clear(NET_MAIN2_FAULT);
             Error_Clear(NET_MAIN2_DELAY);
@@ -319,33 +329,35 @@ void det_set_total_energy_bl0910(uint8_t num,uint32_t data)
 		case 7: sg_datacollec_t.acport_energy[5].current = data / BL0910_CURR_KP; 		break;
 		case 8: sg_datacollec_t.acport_energy[6].current = data / BL0910_CURR_KP; 		break;
 		case 9: sg_datacollec_t.acport_energy[7].current = data / BL0910_CURR_KP; 		break;
-		case 10:sg_datacollec_t.acport_energy[0].power = complement_to_original(data) / BL0910_POWER_KP;	break;
-		case 11:sg_datacollec_t.acport_energy[1].power = complement_to_original(data) / BL0910_POWER_KP;	break;
-		case 12:sg_datacollec_t.acport_energy[2].power = complement_to_original(data) / BL0910_POWER_KP;	break;
-		case 13:sg_datacollec_t.acport_energy[3].power = complement_to_original(data) / BL0910_POWER_KP;	break;
-		case 14:sg_datacollec_t.acport_energy[4].power = complement_to_original(data) / BL0910_POWER_KP;	break;
-		case 15:sg_datacollec_t.acport_energy[5].power = complement_to_original(data) / BL0910_POWER_KP;	break;
-		case 16:sg_datacollec_t.acport_energy[6].power = complement_to_original(data) / BL0910_POWER_KP;	break;
-		case 17:sg_datacollec_t.acport_energy[7].power = complement_to_original(data) / BL0910_POWER_KP;	break;
-		case 18:sg_datacollec_t.total_energy.power = complement_to_original(data) / BL0910_POWER_KP;break;
-		case 19: sg_datacollec_t.electricity_current.port[0] = data * BL0910_ELEC_Ke;
+		/* WATT1~WATT9: 芯片通道1接主回路(总)，通道2~9对应输出通道1~8(与电流映射一致) */
+		case 10:sg_datacollec_t.total_energy.power = complement_to_original(data) / BL0910_POWER_KP;	break;
+		case 11:sg_datacollec_t.acport_energy[0].power = complement_to_original(data) / BL0910_POWER_KP;	break;
+		case 12:sg_datacollec_t.acport_energy[1].power = complement_to_original(data) / BL0910_POWER_KP;	break;
+		case 13:sg_datacollec_t.acport_energy[2].power = complement_to_original(data) / BL0910_POWER_KP;	break;
+		case 14:sg_datacollec_t.acport_energy[3].power = complement_to_original(data) / BL0910_POWER_KP;	break;
+		case 15:sg_datacollec_t.acport_energy[4].power = complement_to_original(data) / BL0910_POWER_KP;	break;
+		case 16:sg_datacollec_t.acport_energy[5].power = complement_to_original(data) / BL0910_POWER_KP;	break;
+		case 17:sg_datacollec_t.acport_energy[6].power = complement_to_original(data) / BL0910_POWER_KP;	break;
+		case 18:sg_datacollec_t.acport_energy[7].power = complement_to_original(data) / BL0910_POWER_KP;	break;
+		/* CF1~CF9: 与功率映射一致，CF1接主回路(总)，CF2~CF9对应输出通道1~8 */
+		case 19: sg_datacollec_t.electricity_current.total = data * BL0910_ELEC_Ke;
+                sg_datacollec_t.electricity_current.total += sg_datacollec_t.electricity_all.total;		break;
+		case 20: sg_datacollec_t.electricity_current.port[0] = data * BL0910_ELEC_Ke;		
                 sg_datacollec_t.electricity_current.port[0] += sg_datacollec_t.electricity_all.port[0];		break;
-		case 20: sg_datacollec_t.electricity_current.port[1] = data * BL0910_ELEC_Ke;		
+		case 21: sg_datacollec_t.electricity_current.port[1] = data * BL0910_ELEC_Ke;		
                 sg_datacollec_t.electricity_current.port[1] += sg_datacollec_t.electricity_all.port[1];		break;
-		case 21: sg_datacollec_t.electricity_current.port[2] = data * BL0910_ELEC_Ke;		
+		case 22: sg_datacollec_t.electricity_current.port[2] = data * BL0910_ELEC_Ke;		
                 sg_datacollec_t.electricity_current.port[2] += sg_datacollec_t.electricity_all.port[2];		break;
-		case 22: sg_datacollec_t.electricity_current.port[3] = data * BL0910_ELEC_Ke;		
+		case 23: sg_datacollec_t.electricity_current.port[3] = data * BL0910_ELEC_Ke;		
                 sg_datacollec_t.electricity_current.port[3] += sg_datacollec_t.electricity_all.port[3];		break;
-		case 23: sg_datacollec_t.electricity_current.port[4] = data * BL0910_ELEC_Ke;		
+		case 24: sg_datacollec_t.electricity_current.port[4] = data * BL0910_ELEC_Ke;		
                 sg_datacollec_t.electricity_current.port[4] += sg_datacollec_t.electricity_all.port[4];		break;
-		case 24: sg_datacollec_t.electricity_current.port[5] = data * BL0910_ELEC_Ke;		
+		case 25: sg_datacollec_t.electricity_current.port[5] = data * BL0910_ELEC_Ke;		
                 sg_datacollec_t.electricity_current.port[5] += sg_datacollec_t.electricity_all.port[5];		break;
-		case 25: sg_datacollec_t.electricity_current.port[6] = data * BL0910_ELEC_Ke;		
+		case 26: sg_datacollec_t.electricity_current.port[6] = data * BL0910_ELEC_Ke;		
                 sg_datacollec_t.electricity_current.port[6] += sg_datacollec_t.electricity_all.port[6];		break;
-		case 26: sg_datacollec_t.electricity_current.port[7] = data * BL0910_ELEC_Ke;		
+		case 27: sg_datacollec_t.electricity_current.port[7] = data * BL0910_ELEC_Ke;		
                 sg_datacollec_t.electricity_current.port[7] += sg_datacollec_t.electricity_all.port[7];		break;
-		case 27: sg_datacollec_t.electricity_current.total   = data * BL0910_ELEC_Ke;	
-                sg_datacollec_t.electricity_current.total += sg_datacollec_t.electricity_all.total;break;
         default:
             break;
     }
@@ -393,6 +405,9 @@ void det_set_total_energy_bl0939(uint8_t num,float data)
 {
     switch(num)
     {
+#if (configUSE_KEY_MCB_METRIC_CHIP == 1)
+        case 0: sg_datacollec_t.mcb_voltage = (uint16_t)(data / BL0939_VOLT_KP); break;
+#endif
         case 1: sg_datacollec_t.residual_c  = data / BL0939_CURR_KP ; 	break;
     }
 }
@@ -410,19 +425,6 @@ void det_set_total_energy_bl0972(uint8_t num,float data)
 {
 
 }
-/*
-*********************************************************************************************************
-*    函 数 名: det_set_ping_status
-*    功能说明: 设置ping状态
-*    形    参: 无
-*    返 回 值: 无
-*********************************************************************************************************
-*/
-void det_set_ping_status(uint8_t status)
-{
-    sg_datacollec_t.ping_status = status;
-}
-
 /*
 *********************************************************************************************************
 *    函 数 名: det_get_collect_data
@@ -553,6 +555,42 @@ uint8_t det_get_miu_value(void)
 uint16_t det_get_cabinet_posture(void)
 {
     return sg_datacollec_t.attitude_acc;
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: det_get_cabinet_door_status
+*    功能说明: 获取箱门状态(协议 DS: 0=无, 1=开, 2=关)
+*    形    参: 无
+*    返 回 值: 0=无, 1=开, 2=关
+*********************************************************************************************************
+*/
+uint8_t det_get_cabinet_door_status(void)
+{
+    if (det_get_key_value(DOOR_KEY) == KEY_EVNT)
+    {
+        return 1;   /* 开 */
+    }
+    return 2;       /* 关 */
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: det_get_water_status
+*    功能说明: 获取水浸状态 (协议 WATER: 0=正常, 1=水浸/漏水)
+*    形    参: 无
+*    返 回 值: 0=正常, 1=水浸
+*********************************************************************************************************
+*/
+uint8_t det_get_water_status(void)
+{
+#if (configUSE_KEY_WATER == 1)
+    if (det_get_key_value(WATER_KEY) == KEY_EVNT)
+    {
+        return 1;
+    }
+#endif
+    return 0;
 }
 
 

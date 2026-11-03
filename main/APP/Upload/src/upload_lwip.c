@@ -1,4 +1,4 @@
-﻿#include "./Upload/inc/upload.h"
+#include "./Upload/inc/upload.h"
 #include "./Upload/inc/upload_http.h"
 #include "main.h"
 
@@ -47,6 +47,9 @@ static int upload_lwip_transport_connect(const char *host, uint16_t port)
     {
         return -1;
     }
+
+    /* 重连场景下先关掉残留连接,避免句柄泄漏 */
+    upload_lwip_transport_close();
 
     for (retry = 0U; retry < 3U; retry++)
     {
@@ -251,7 +254,10 @@ void upload_lwip_task_create(void)
                         &s_upload_lwip_task);
     if (ret != pdPASS)
     {
+        printf("upload_lwip_task: xTaskCreate failed\n");
         s_upload_lwip_task = NULL;
+			  upload_set_upload_mode(UPLOAD_MODE_NULL);
+			  (void)log_upload_fail_function();
     }
 }
 

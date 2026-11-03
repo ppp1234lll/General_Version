@@ -1,4 +1,4 @@
-﻿/********************************************************************************
+/********************************************************************************
 * @File name  : BL0939电能计量驱动
 * @Description: SPI通信
 * @Author     : ZHLE
@@ -65,7 +65,7 @@ struct bl0939_data_t sg_bl0939data_t = {0};
 #endif
 
 /* 宏定义数据 */
-#define BL0939_DET_NUM           5          // 采集次数 
+#define BL0939_DET_NUM           2          // 采集次数 
 #define BL0939_SEND_TIME         100        // 发送时间 100ms
 
 /*
@@ -125,8 +125,8 @@ void bl0939_write_reg_function(uint8_t reg,uint8_t *data, uint8_t len)
 *    函 数 名: bl0942_read_reg_function
 *    功能说明: 寄存器读取命令
 *    形    参: 
-*    @reg        : 寄存器值
-*    @mode        : 0-更新标志 other-不更新
+*    @reg    : 寄存器值
+*    @mode   : 0-更新标志 other-不更新
 *    返 回 值: 无
 *********************************************************************************************************
 */
@@ -173,7 +173,7 @@ uint8_t bl0939_read_reg_function(uint8_t reg, uint32_t *data)
 
 /*
 *********************************************************************************************************
-*    函 数 名: bl0942_run_timer_function
+*    函 数 名: bl0939_run_timer_function
 *    功能说明: 运行计时相关函数
 *    形    参: 无
 *    返 回 值: 无
@@ -199,7 +199,7 @@ void bl0939_run_timer_function(void)
 
 /*
 *********************************************************************************************************
-*    函 数 名: bl0942_work_process_function
+*    函 数 名: bl0939_work_process_function
 *    功能说明: 工作进程函数
 *    形    参: 无
 *    返 回 值: 无
@@ -218,16 +218,23 @@ void bl0939_work_process_function(void)
 			case 1: 
 				if(bl0939_read_reg_function(BL0939_V_RMS,&data))
 					det_set_total_energy_bl0939(0,data);
-//					voltage = (float)data / BL0939_VOLT_KP;
-//					det_set_total_energy_bl0939(0,voltage);
-
 				break;  // 电压
 			case 2: 
-				if(bl0939_read_reg_function(BL0939_IA_RMS,&data))
+				if(bl0939_read_reg_function(BL0939_IB_RMS,&data))
 					det_set_total_energy_bl0939(1,data); 
-//					current = (float)data / BL0939_CURR_KP;
-//					det_set_total_energy_bl0939(1,current);
 				break; // 电流 A
+			case 3:
+				if(bl0939_read_reg_function(BL0939_B_WATT,&data))
+					det_set_total_energy_bl0939(2,data);
+				break; // 功率 1
+			case 4:
+				if(bl0939_read_reg_function(BL0939_CFB_CNT,&data))
+					det_set_total_energy_bl0939(3,data);
+				break; // 有功脉冲 1
+			case 5:
+				if(bl0939_read_reg_function(BL0939_IB_RMS,&data))
+					det_set_total_energy_bl0939(4,data);
+				break; // 电流 2
 			default: break;			
 		}
 	}
@@ -235,7 +242,7 @@ void bl0939_work_process_function(void)
 
 /*
 *********************************************************************************************************
-*    函 数 名: bl0942_write_enable_function
+*    函 数 名: bl0939_write_enable_function
 *    功能说明: 写使能控制函数
 *    形    参: 
 *    @cmd        : 0-失能 1-使能

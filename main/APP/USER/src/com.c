@@ -126,15 +126,21 @@ void com_report_normally_function(uint8_t *data, uint16_t *len, uint8_t cmd)
     }
     
     /* 设备唯一标识TID */
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     memset(str,0,sizeof(str));
     sprintf((char*)str,"TID=%x;",device->id.i);
     strcat((char*)data,(char*)str);
+#else
+    memset(str,0,sizeof(str));
+    sprintf((char*)str,"TID=%d;",device->id.i);
+    strcat((char*)data,(char*)str);
+#endif
     /* 版本号 */
     memset(str,0,sizeof(str));
     sprintf((char*)str,"VER=%02x;",COM_DATA_VERSION);
     strcat((char*)data,(char*)str);
-//    strcat((char*)data,"VER=11;");
-#if (configUSE_DEVICE_TYPE == 1)
+
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     /** 设备类型 **/
     memset(str,0,sizeof(str));
     sprintf((char*)str,"DEVTYPE=%04x;",DEVICE_TYPE);
@@ -204,6 +210,11 @@ void com_report_normally_function(uint8_t *data, uint16_t *len, uint8_t cmd)
     sprintf((char*)str,"P=%d;",det_get_cabinet_posture());
     strcat((char*)data,(char*)str);    
 
+    /** 箱门状态 DS: 0=无, 1=开, 2=关 **/
+    memset(str,0,sizeof(str));
+    sprintf((char*)str,"DS=%d;",det_get_cabinet_door_status());
+    strcat((char*)data,(char*)str);    
+
 	/** 继电器状态 **/
     strcat((char*)data, "RELAY=");
     for (uint8_t i = 0; i < RELAY_NUM; i++)
@@ -258,7 +269,24 @@ void com_report_normally_function(uint8_t *data, uint16_t *len, uint8_t cmd)
     memset(str,0,sizeof(str));
     sprintf((char*)str,"CSQ=%d;",gprs_get_csq_function());
     strcat((char*)data,(char*)str);    
-    
+
+	/** 漏电 **/
+	memset(str, 0, sizeof(str));
+	sprintf((char*)str, "MIU=%d;", det_get_miu_value());
+	strcat((char*)data, (char*)str);
+
+    // /** PM2.5 测试字段 **/
+    // memset(str,0,sizeof(str));
+    // sprintf((char*)str,"PM25=%d;",20);
+    // strcat((char*)data,(char*)str);
+
+#if (configUSE_KEY_WATER == 1)
+	/** 水浸检测 **/
+	memset(str, 0, sizeof(str));
+	sprintf((char*)str, "WATER=%01d;", det_get_water_status());
+	strcat((char*)data, (char*)str);
+#endif
+
     /** 北斗定位信息只包含经纬度即可 */
 #if (configUSE_EXT_GPS == 1)
     atgm336h_data_t *gnss_data = atgm336h_get_gnss_data();
@@ -324,9 +352,11 @@ void com_query_configuration_function(uint8_t *pdata, uint16_t *len)
     
     /* 生成校验码 */
 #if (configUSE_DEVICE_TYPE == 1)
+    sprintf(crc_buff, "%02x%04x%xE1", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
+#elif (configUSE_DEVIDE_TYPE_DEC == 1)
     sprintf(crc_buff, "%02x%04x%dE1", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
 #else
-    sprintf(crc_buff, "%02x%dE1", COM_DATA_VERSION, device->id.i);
+    sprintf(crc_buff, "%02x%04x%dE1", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
 #endif
     crc = calc_crc8((uint8_t *)crc_buff, strlen(crc_buff));
     
@@ -338,13 +368,13 @@ void com_query_configuration_function(uint8_t *pdata, uint16_t *len)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%02x",COM_DATA_VERSION);
     my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)temp,1);
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     /* 设备类型 */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%04x",DEVICE_TYPE);
     my_cjson_join_string_function(pdata,(uint8_t *)"devtype",(uint8_t *)temp,1);
 #endif
-//    my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)"11",1);
+
     /* 添加QN */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%08d%09d",sg_comqn_t.qn1,sg_comqn_t.qn2);
@@ -354,9 +384,15 @@ void com_query_configuration_function(uint8_t *pdata, uint16_t *len)
     sg_comqn_t.flag = 0;
     
     /* ID */
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%x",device->id.i);
     my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+#else
+    memset(temp,0,sizeof(temp));
+    sprintf(temp,"%d",device->id.i);
+    my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+#endif
     /* 通信命令 */
     my_cjson_join_string_function(pdata,(uint8_t *)"cmd",(uint8_t *)"E1",1);
 
@@ -450,7 +486,7 @@ void com_query_configuration_function(uint8_t *pdata, uint16_t *len)
         sprintf((char*)name,"c%d",index+1);
         my_cjson_join_string_function(pdata,name,(uint8_t*)temp,1);
     }
-#if (configUSE_DEVICE_TYPE == 1)    
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     /* 过压*/
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%d",threshol->volt_max);
@@ -522,7 +558,7 @@ void com_heart_pack_function(uint8_t *data, uint16_t *len)
     /* 数据版本 */
     data[index++] = COM_DATA_VERSION;
 
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     // 设备类型
     data[index++] = (DEVICE_TYPE>>8)&0xff;
     data[index++] = DEVICE_TYPE&0xff;
@@ -583,7 +619,7 @@ void com_ack_function(uint8_t *data, uint16_t *len, uint8_t ack, uint8_t error)
     /* 数据版本 */
     data[index++] = COM_DATA_VERSION;
 
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     // 设备类型
     data[index++] = (DEVICE_TYPE>>8)&0xff;
     data[index++] = DEVICE_TYPE&0xff;
@@ -645,6 +681,8 @@ void com_version_information(uint8_t *pdata, uint16_t *size)
 
     /* 获取crc校验结果 */
 #if (configUSE_DEVICE_TYPE == 1)
+    sprintf(crc_buff, "%02x%04x%xE3", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
+#elif (configUSE_DEVIDE_TYPE_DEC == 1)
     sprintf(crc_buff, "%02x%04x%dE3", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
 #else
     sprintf(crc_buff, "%02x%dE3", COM_DATA_VERSION, device->id.i);
@@ -667,7 +705,7 @@ void com_version_information(uint8_t *pdata, uint16_t *size)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%02x",COM_DATA_VERSION);
     my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)temp,1);
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     /* 设备类型 */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%04x",DEVICE_TYPE);
@@ -675,9 +713,15 @@ void com_version_information(uint8_t *pdata, uint16_t *size)
 #endif
 
     /* ID */
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%x",device->id.i);
     my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+#else
+    memset(temp,0,sizeof(temp));
+    sprintf(temp,"%d",device->id.i);
+    my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+#endif
     /* 通信命令 */
     my_cjson_join_string_function(pdata,(uint8_t *)"cmd",(uint8_t *)"E3",1);
 
@@ -720,6 +764,8 @@ int com_ipc_device_information(uint8_t *pdata, uint16_t *size)
 
     /* 生成校验码 */
 #if (configUSE_DEVICE_TYPE == 1)
+    sprintf(crc_buff, "%02x%04x%xE4", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
+#elif (configUSE_DEVIDE_TYPE_DEC == 1)
     sprintf(crc_buff, "%02x%04x%dE4", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
 #else
     sprintf(crc_buff, "%02x%dE4", COM_DATA_VERSION, device->id.i);
@@ -742,7 +788,7 @@ int com_ipc_device_information(uint8_t *pdata, uint16_t *size)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%02x",COM_DATA_VERSION);
     my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)temp,1);
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     /* 设备类型 */
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%04x",DEVICE_TYPE);
@@ -750,9 +796,15 @@ int com_ipc_device_information(uint8_t *pdata, uint16_t *size)
 #endif
     
     /* ID */
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%x",device->id.i);
     my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+#else
+    memset(temp,0,sizeof(temp));
+    sprintf(temp,"%d",device->id.i);
+    my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+#endif
     /* 通信命令 */
     my_cjson_join_string_function(pdata,(uint8_t *)"cmd",(uint8_t *)"E4",1);
 
@@ -832,6 +884,8 @@ int com_device_snmp_information(uint8_t *pdata, uint16_t *size)
 
     /* 生成校验码 */
 #if (configUSE_DEVICE_TYPE == 1)
+    sprintf(crc_buff, "%02x%04x%xE7", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
+#elif (configUSE_DEVIDE_TYPE_DEC == 1)
     sprintf(crc_buff, "%02x%04x%dE7", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
 #else
     sprintf(crc_buff, "%02x%dE7", COM_DATA_VERSION, device->id.i);
@@ -854,15 +908,21 @@ int com_device_snmp_information(uint8_t *pdata, uint16_t *size)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%02x",COM_DATA_VERSION);
     my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)temp,1);
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%04x",DEVICE_TYPE);
     my_cjson_join_string_function(pdata,(uint8_t *)"devtype",(uint8_t *)temp,1);
 #endif    
     /* ID */
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%x",device->id.i);
     my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+#else
+    memset(temp,0,sizeof(temp));
+    sprintf(temp,"%d",device->id.i);
+    my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+#endif
     /* 通信命令 */
     my_cjson_join_string_function(pdata,(uint8_t *)"cmd",(uint8_t *)"E7",1);
 
@@ -998,6 +1058,8 @@ int com_device_ping_information(uint8_t *pdata, uint16_t *size)
 
     /* 生成校验码 */
 #if (configUSE_DEVICE_TYPE == 1)
+    sprintf(crc_buff, "%02x%04x%xE8", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
+#elif (configUSE_DEVIDE_TYPE_DEC == 1)
     sprintf(crc_buff, "%02x%04x%dE8", COM_DATA_VERSION, DEVICE_TYPE, device->id.i);
 #else
     sprintf(crc_buff, "%02x%dE8", COM_DATA_VERSION, device->id.i);
@@ -1020,16 +1082,22 @@ int com_device_ping_information(uint8_t *pdata, uint16_t *size)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%02x",COM_DATA_VERSION);
     my_cjson_join_string_function(pdata,(uint8_t *)"ver",(uint8_t *)temp,1);
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%04x",DEVICE_TYPE);
     my_cjson_join_string_function(pdata,(uint8_t *)"devtype",(uint8_t *)temp,1);
 #endif    
 
     /* ID */
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     memset(temp,0,sizeof(temp));
     sprintf(temp,"%x",device->id.i);
     my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+#else
+    memset(temp,0,sizeof(temp));
+    sprintf(temp,"%d",device->id.i);
+    my_cjson_join_string_function(pdata,(uint8_t *)"tid",(uint8_t *)temp,1);
+#endif
     /* 通信命令 */
     my_cjson_join_string_function(pdata,(uint8_t *)"cmd",(uint8_t *)"E8",1);
 
@@ -1083,7 +1151,7 @@ void com_rs485_up_param_function(uint8_t *rs485data, uint8_t *data, uint16_t *le
 	/* 数据版本 */
 	data[index++] = COM_NUM_VAERSION;
 
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     // 设备类型
     data[index++] = (DEVICE_TYPE>>8)&0xff;
     data[index++] = DEVICE_TYPE&0xff;
@@ -1337,7 +1405,6 @@ void com_deal_configure_local_network(com_rec_data_t *buff)
     /* 保存 */
     app_set_save_infor_function(SAVE_FLAG_LOCAL_NETWORK);
     eth_set_network_reset();
-    
 }
 
 /*
@@ -1368,8 +1435,7 @@ void com_deal_configure_mac(com_rec_data_t *buff)
     bsp_WriteCpuFlash_Save(DEVICE_FLASH_STORE,DEVICE_MAC_ADDR,(uint8_t *)&local->mac,6);
 //    STMFLASH_Write(DEVICE_MAC_ADDR,(uint32_t *)&local->mac,2);
     app_set_save_infor_function(SAVE_FLAG_LOCAL_NETWORK);
-    eth_set_network_reset();
-    
+    eth_set_network_hw_reset();
 }
 
 /*
@@ -2059,7 +2125,7 @@ static int8_t com_deal_frame(com_frame_t *frame)
     struct device_param *device     = app_get_device_param_function();
     com_rec_data_t      recdata_t   = {0};
     uint32_t             temp       = 0;
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
     uint16_t            device_type = 0;
 #endif
     uint8_t            *rec_buff    = frame->buf;
@@ -2072,7 +2138,6 @@ static int8_t com_deal_frame(com_frame_t *frame)
 
     if(size != 0)
     {
-
         /* 校验CRC:去除crc校验与数据尾 */
         crc = calc_crc8(&rec_buff[2],size-5);
         if(crc != rec_buff[size-3])
@@ -2089,13 +2154,12 @@ static int8_t com_deal_frame(com_frame_t *frame)
         
         /* 数据版本 */
         if(recdata_t.version != COM_DATA_VERSION)
-//        if(recdata_t.version != COM_NUM_VAERSION)
         {
             /* 数据版本错误 */
             goto __ERROR;
         }
         
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
         /* 获取设备类型 */
         device_type = (rec_buff[3] << 8) | rec_buff[4];
         /* 获取ID */
@@ -2245,6 +2309,7 @@ static int8_t com_deal_frame(com_frame_t *frame)
 				break;
 			case CONFIGURE_RS485_UOSTREAM: 	// 配置485透传
 				com_deal_configure_rs485_uostream(&recdata_t);
+                break;
 
             /* 查询指令 */
             case CR_QUERY_CONFIG:               // 查询设备当前参数设置 - 对应上传查询配置
@@ -2358,7 +2423,7 @@ void com_rx_feed(com_channel_e ch, uint8_t *data, uint16_t len)
             p->body_size = 0;
         }
 
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
         if(p->pos == (9 + 8)) p->body_size = d;
 #else
         if(p->pos == (7 + 8)) p->body_size = d;
@@ -2378,7 +2443,7 @@ void com_rx_feed(com_channel_e ch, uint8_t *data, uint16_t len)
         p->tail = (uint16_t)((p->tail << 8) | d);
 
         /* 帧尾匹配且长度足够 → 得到完整帧 */
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
         if(p->tail == COM_TAIL_HEX && ((p->body_size + 21) <= p->pos))
 #else
         if(p->tail == COM_TAIL_HEX && ((p->body_size + 19) <= p->pos))
@@ -2394,7 +2459,7 @@ void com_rx_feed(com_channel_e ch, uint8_t *data, uint16_t len)
         }
 
         /* 协议数据出错(已达预期长度却无帧尾) */
-#if (configUSE_DEVICE_TYPE == 1)
+#if (configUSE_DEVICE_TYPE == 1) || (configUSE_DEVIDE_TYPE_DEC == 1)
         if((21 + p->body_size) <= p->pos)
 #else
         if((19 + p->body_size) <= p->pos)

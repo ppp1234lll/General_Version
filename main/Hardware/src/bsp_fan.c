@@ -3,7 +3,7 @@
 *    函 数 名: 风扇驱动
 *    功能说明: 
 *    形    参: ZHLE
-*    返 回 值: PD15
+*    返 回 值: PA12
 *********************************************************************************************************
 */
 #include "bsp_fan.h"
@@ -11,9 +11,9 @@
 #include "appconfig.h"
 
 #if ( configUSE_EXT_FAN == 1 )
-#define FAN_GPIO_CLK            RCU_GPIOD
-#define FAN_GPIO_PORT           GPIOD
-#define FAN_GPIO_PIN            GPIO_PIN_15
+#define FAN_GPIO_CLK            RCU_GPIOA
+#define FAN_GPIO_PORT           GPIOA
+#define FAN_GPIO_PIN            GPIO_PIN_12
 
 /*
 *********************************************************************************************************

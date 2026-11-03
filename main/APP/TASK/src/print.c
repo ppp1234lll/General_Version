@@ -12,37 +12,37 @@ typedef struct
     uint8_t recv_flag;  // 接收到数据标志
     struct
     {
-        uint8_t return_cmd;      // 回复命令
-        uint8_t return_result; // 回复内容
-        uint32_t    report_time;     // 上报时间
+        uint8_t     return_cmd;     // 回复命令
+        uint8_t     return_result;  // 回复内容
+        uint32_t    report_time;    // 上报时间
     } send;
     struct
     {
-        uint8_t search;            // 搜索
-        uint8_t inquiry;            // 查询配置
-        uint8_t update_mac;        // 配置MAC
-        uint8_t update_relay;    // 配置继电器
-        uint8_t update_ip;        // 配置IP
-        uint8_t config_return;        // 回复
+        uint8_t     search;         // 搜索
+        uint8_t     inquiry;        // 查询配置
+        uint8_t     update_mac;     // 配置MAC
+        uint8_t     update_relay;   // 配置继电器
+        uint8_t     update_ip;      // 配置IP
+        uint8_t     config_return;  // 回复
     } send_flag; 
     
 }sys_print_t;
 
 typedef struct
 {
-    uint8_t   mac[6];          // 网络参数
-    uint8_t   net_ip[IP_ALL][4];  // 本机网络参数
-    uint32_t  id;                          // 设备ID
-    uint8_t     adapter[RELAY_ALL];  // 适配器
-    char           types[15];          // 命令类型
-    char           password[64];    // 密码
-    uint32_t  addr;
+    uint8_t     mac[6];             // 网络参数
+    uint8_t     net_ip[IP_ALL][4];  // 本机网络参数
+    uint32_t    id;                 // 设备ID
+    uint8_t     adapter[RELAY_ALL]; // 适配器
+    char        types[15];          // 命令类型
+    char        password[64];       // 密码
+    uint32_t    addr;
 
-    char      username[64];
-    uint8_t   inside[128];
-    uint8_t   outside[128];
-    uint32_t   port1;
-    uint32_t   port2;    
+    char        username[64];
+    uint8_t     inside[128];
+    uint8_t     outside[128];
+    uint32_t    port1;
+    uint32_t    port2;    
 } print_param_t;
 
 char matchip_list[IP_ALL][5] = {
@@ -70,10 +70,10 @@ DEVICE_RELAY6,
 
 
 __attribute__((section (".RAM_D1"))) print_param_t print_param;
-__attribute__((section (".RAM_D1"))) sys_print_t     print_status;
+__attribute__((section (".RAM_D1"))) sys_print_t   print_status;
 
-__attribute__((section (".RAM_D1"))) uint8_t   print_send_buff[1000];
-__attribute__((section (".RAM_D1"))) uint16_t    print_send_size          = 0;     // 发送数据长度
+__attribute__((section (".RAM_D1"))) uint8_t       print_send_buff[1024];
+__attribute__((section (".RAM_D1"))) uint16_t      print_send_size  = 0;     // 发送数据长度
 /*
 *********************************************************************************************************
 *    函 数 名: print_task_function
@@ -119,11 +119,11 @@ void print_stroage_queue_data(uint8_t *buff,uint16_t len)
 */
 int print_getparam_fun(char *data,char *sStr)
 {
-  char *str  = NULL;
+    char *str  = NULL;
     str = strstr(data,sStr);
     if(!str)
-      return -1;
-  else
+        return -1;
+    else
         return 0;
 }
 
@@ -138,8 +138,8 @@ int print_getparam_fun(char *data,char *sStr)
 */
 int print_queue_find_msg(void)
 {    
-    int8_t     ret     = 0;
-    int           temp[6] = {0};
+    int8_t  ret     = 0;
+    int     temp[6] = {0};
     char    *str  = NULL;
     char    id_str[20] = {0};
         
@@ -394,134 +394,130 @@ void print_deal_com_flag_function(void)
 */
 void print_search_ack_function(uint8_t *pdata, uint16_t *len,uint8_t ack,uint8_t result)
 {
-    struct device_param     *device = app_get_device_param_function();
-    struct local_ip_t       *local  = app_get_local_network_function();
-           carema_t       *ipc    = app_get_carema_param_function();
-    struct remote_ip        *remote = app_get_remote_network_function();
-    char  temp[30]     = {0};
-    char  str[5]     = {0};
+    struct device_param *device = app_get_device_param_function();
+    struct local_ip_t   *local  = app_get_local_network_function();
+           carema_t     *ipc    = app_get_carema_param_function();
+    struct remote_ip    *remote = app_get_remote_network_function();
+    char  temp[64]  = {0};
+    char  str[5]    = {0};
+    cJSON *root = NULL;
+    cJSON *info = NULL;
+    cJSON *data = NULL;
     
-    my_cjson_create_function(pdata,0); // 开始
-    my_cjson_info_create_function(pdata,0); // 开始    
-    /* 设备唯一标识TID */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%X",device->id.i);
-    my_cjson_join_string_function(pdata,(uint8_t*)"tid",(uint8_t*)temp,1);
-
-    /** 系统时间 **/
-    my_cjson_join_string_function(pdata,(uint8_t*)"date",app_get_report_current_time(2),0);
-    my_cjson_info_create_function(pdata,1); // 结束
+    root = cJSON_CreateObject();
+    if (root == NULL) return;
     
-    my_cjson_data_create_function(pdata,0); // 开始
+    /* info 对象 */
+    info = cJSON_CreateObject();
+    if (info == NULL) { cJSON_Delete(root); return; }
+    cJSON_AddItemToObject(root, "info", info);
+    
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%X", device->id.i);
+    cJSON_AddStringToObject(info, "tid", temp);
+    cJSON_AddStringToObject(info, "date", (const char *)app_get_report_current_time(2));
+    
+    /* data 对象 */
+    data = cJSON_CreateObject();
+    if (data == NULL) { cJSON_Delete(root); return; }
+    cJSON_AddItemToObject(root, "data", data);
+    
     switch(ack)
     {
         case NO_ACK:
-            my_cjson_join_string_function(pdata,(uint8_t*)"types",(uint8_t*)"search",1);
+            cJSON_AddStringToObject(data, "types", "search");
             break;
         case MAC_ACK:
-            my_cjson_join_string_function(pdata,(uint8_t*)"types",(uint8_t*)"update_mac",1);
-            if(result == 1)
-                my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"success",1);
-            else
-                my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"fault",1);        
+            cJSON_AddStringToObject(data, "types", "update_mac");
+            cJSON_AddStringToObject(data, "result", result == 1 ? "success" : "fault");
             break;
-        case IP_ACK:        
-            my_cjson_join_string_function(pdata,(uint8_t*)"types",(uint8_t*)"update_ip",1);                
-            if(result == 1)
-                my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"success",1);
-            else
-                my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"fault",1);        
+        case IP_ACK:
+            cJSON_AddStringToObject(data, "types", "update_ip");
+            cJSON_AddStringToObject(data, "result", result == 1 ? "success" : "fault");
             break;
-        case SERVER_ACK:        
-            my_cjson_join_string_function(pdata,(uint8_t*)"types",(uint8_t*)"update_server",1);                
-            if(result == 1)
-                my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"success",1);
-            else
-                my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"fault",1);        
+        case SERVER_ACK:
+            cJSON_AddStringToObject(data, "types", "update_server");
+            cJSON_AddStringToObject(data, "result", result == 1 ? "success" : "fault");
             break;
-        case NAMEPWD_ACK:        
-            my_cjson_join_string_function(pdata,(uint8_t*)"types",(uint8_t*)"update_np",1);                
-            if(result == 1)
-                my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"success",1);
-            else
-                my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"fault",1);        
+        case NAMEPWD_ACK:
+            cJSON_AddStringToObject(data, "types", "update_np");
+            cJSON_AddStringToObject(data, "result", result == 1 ? "success" : "fault");
             break;
         default: break;
     }
-    my_cjson_join_string_function(pdata,(uint8_t*)"tnam",(uint8_t*)"FNVIMT_JY",1);    
+    cJSON_AddStringToObject(data, "tnam", "FNVIMT_JY");
+    
     /* 终端序列号 */
-    memset(temp,0,sizeof(temp));
-    start_get_device_id_str((uint8_t*)temp);
-    my_cjson_join_string_function(pdata,(uint8_t*)"mcu",(uint8_t*)temp,1);    
-    my_cjson_join_string_function(pdata,(uint8_t*)"mod",(uint8_t*)HARD_NO_STR,1);    
-    my_cjson_join_string_function(pdata,(uint8_t*)"sv",(uint8_t*)SOFT_NO_STR,1);    
+    memset(temp, 0, sizeof(temp));
+    start_get_device_id_str((uint8_t *)temp);
+    cJSON_AddStringToObject(data, "mcu", temp);
+    cJSON_AddStringToObject(data, "mod", HARD_NO_STR);
+    cJSON_AddStringToObject(data, "sv", SOFT_NO_STR);
     
     /* 网卡MAC地址 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%02x-%02x-%02x-%02x-%02x-%02x",local->mac[0],local->mac[1],local->mac[2],
-                                                                                             local->mac[3],local->mac[4],local->mac[5]);
-    my_cjson_join_string_function(pdata,(uint8_t*)"mac",(uint8_t*)temp,1);
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%02x-%02x-%02x-%02x-%02x-%02x",
+            local->mac[0], local->mac[1], local->mac[2],
+            local->mac[3], local->mac[4], local->mac[5]);
+    cJSON_AddStringToObject(data, "mac", temp);
     
     /* IP */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d.%d.%d.%d",local->ip[0],local->ip[1],local->ip[2],local->ip[3]);
-    my_cjson_join_string_function(pdata,(uint8_t*)"ip",(uint8_t*)temp,1);    
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%d.%d.%d.%d", local->ip[0], local->ip[1], local->ip[2], local->ip[3]);
+    cJSON_AddStringToObject(data, "ip", temp);
     /* 子网掩码 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d.%d.%d.%d",local->netmask[0],local->netmask[1],local->netmask[2],local->netmask[3]);
-    my_cjson_join_string_function(pdata,(uint8_t*)"nm",(uint8_t*)temp,1);    
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%d.%d.%d.%d", local->netmask[0], local->netmask[1], local->netmask[2], local->netmask[3]);
+    cJSON_AddStringToObject(data, "nm", temp);
     /* 网关 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d.%d.%d.%d",local->gateway[0],local->gateway[1],local->gateway[2],local->gateway[3]);
-    my_cjson_join_string_function(pdata,(uint8_t*)"gw",(uint8_t*)temp,1);    
-
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%d.%d.%d.%d", local->gateway[0], local->gateway[1], local->gateway[2], local->gateway[3]);
+    cJSON_AddStringToObject(data, "gw", temp);
+    
     /* 主网检测IP1 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d.%d.%d.%d",local->ping_ip[0],local->ping_ip[1],local->ping_ip[2],local->ping_ip[3]);
-    my_cjson_join_string_function(pdata,(uint8_t*)"mip1",(uint8_t*)temp,1);
-//        /* 主网检测IP2 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d.%d.%d.%d",local->ping_sub_ip[0],local->ping_sub_ip[1],local->ping_sub_ip[2],local->ping_sub_ip[3]);
-    my_cjson_join_string_function(pdata,(uint8_t*)"mip2",(uint8_t*)temp,1);
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%d.%d.%d.%d", local->ping_ip[0], local->ping_ip[1], local->ping_ip[2], local->ping_ip[3]);
+    cJSON_AddStringToObject(data, "mip1", temp);
+    /* 主网检测IP2 */
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%d.%d.%d.%d", local->ping_sub_ip[0], local->ping_sub_ip[1], local->ping_sub_ip[2], local->ping_sub_ip[3]);
+    cJSON_AddStringToObject(data, "mip2", temp);
     
     /* 摄像机IP */
-    for(uint8_t i=0;i<6;i++)
+    for (uint8_t i = 0; i < 6; i++)
     {
-        memset(str,0,sizeof(str));
-        memset(temp,0,sizeof(temp));
-        sprintf(str,"c%d",i+1);
-        sprintf(temp,"%d.%d.%d.%d",ipc->ip[i][0],ipc->ip[i][1],\
-                                                             ipc->ip[i][2],ipc->ip[i][3]);
-        my_cjson_join_string_function(pdata,(uint8_t*)str,(uint8_t*)temp,1);
+        memset(str, 0, sizeof(str));
+        memset(temp, 0, sizeof(temp));
+        sprintf(str, "c%d", i + 1);
+        sprintf(temp, "%d.%d.%d.%d", ipc->ip[i][0], ipc->ip[i][1], ipc->ip[i][2], ipc->ip[i][3]);
+        cJSON_AddStringToObject(data, str, temp);
     }
     
     /* 内外服务器IP、域名+端口 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%s:%d",remote->inside_iporname,remote->inside_port);
-    my_cjson_join_string_function(pdata,(uint8_t*)"inip",(uint8_t*)temp,1);
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%s:%d", remote->inside_iporname, remote->inside_port);
+    cJSON_AddStringToObject(data, "inip", temp);
     /* 外网服务器IP、域名+端口 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%s:%d",remote->outside_iporname,remote->outside_port);
-    my_cjson_join_string_function(pdata,(uint8_t*)"outip",(uint8_t*)temp,1);
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%s:%d", remote->outside_iporname, remote->outside_port);
+    cJSON_AddStringToObject(data, "outip", temp);
     
     /* SIM卡序列号 */
-    my_cjson_join_string_function(pdata,(uint8_t*)"iccid",(uint8_t*)gsm_get_sim_ccid_function(),1);
+    cJSON_AddStringToObject(data, "iccid", (const char *)gsm_get_sim_ccid_function());
     
-        /* 用户名 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%s",device->name);
-    my_cjson_join_string_function(pdata,(uint8_t*)"name",(uint8_t*)temp,1);
+    /* 用户名 */
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%s", device->name);
+    cJSON_AddStringToObject(data, "name", temp);
     
-        /* 密码 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%s",device->password);
-    my_cjson_join_string_function(pdata,(uint8_t*)"password",(uint8_t*)temp,1);
+    /* 密码 */
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%s", device->password);
+    cJSON_AddStringToObject(data, "pwd", temp);
     
-    my_cjson_data_create_function(pdata,1); // 结束
-    my_cjson_create_function(pdata,1); // 结束
-    
-    *len = strlen((char*)pdata);
-    
+    cJSON_PrintPreallocated(root, (char *)pdata, sizeof(print_send_buff), 0);
+    *len = (uint16_t)strlen((char *)pdata);
+    cJSON_Delete(root);
 }
 
 /*
@@ -538,96 +534,97 @@ void print_inquiry_ack_function(uint8_t *pdata, uint16_t *len)
     char   temp[50]     = {0};
     uint16_t    buff[4] = {0};
     fp32            data_temp         = 0;
+    cJSON *root = NULL;
+    cJSON *info = NULL;
+    cJSON *data = NULL;
     
-    my_cjson_create_function(pdata,0); // 开始
-    my_cjson_info_create_function(pdata,0); // 开始    
-    /* 设备唯一标识TID */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%X",device->id.i);
-    my_cjson_join_string_function(pdata,(uint8_t*)"tid",(uint8_t*)temp,1);
-
-    /** 系统时间 **/
-    my_cjson_join_string_function(pdata,(uint8_t*)"date",app_get_report_current_time(2),0);
-    my_cjson_info_create_function(pdata,1); // 结束
-        
-    my_cjson_data_create_function(pdata,0); // 开始
-    my_cjson_join_string_function(pdata,(uint8_t*)"types",(uint8_t*)"inquiry",1);
+    root = cJSON_CreateObject();
+    if (root == NULL) return;
+    
+    /* info 对象 */
+    info = cJSON_CreateObject();
+    if (info == NULL) { cJSON_Delete(root); return; }
+    cJSON_AddItemToObject(root, "info", info);
+    
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%X", device->id.i);
+    cJSON_AddStringToObject(info, "tid", temp);
+    cJSON_AddStringToObject(info, "date", (const char *)app_get_report_current_time(2));
+    
+    /* data 对象 */
+    data = cJSON_CreateObject();
+    if (data == NULL) { cJSON_Delete(root); return; }
+    cJSON_AddItemToObject(root, "data", data);
+    
+    cJSON_AddStringToObject(data, "types", "inquiry");
     
     /** 电压、电流 **/
     data_temp = det_get_total_energy_handler(0);
     buff[0] = (uint16_t)data_temp;
-    buff[1] = data_temp*100-buff[0]*100;
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d.%02d",buff[0],buff[1]);    
-    my_cjson_join_string_function(pdata,(uint8_t*)"volt",(uint8_t*)temp,1);
-        
+    buff[1] = data_temp * 100 - buff[0] * 100;
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%d.%02d", buff[0], buff[1]);
+    cJSON_AddStringToObject(data, "volt", temp);
+    
     data_temp = det_get_total_energy_handler(1);
     buff[2] = (uint16_t)data_temp;
-    buff[3] = data_temp*100-buff[2]*100;
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d.%02d",buff[2],buff[3]);
-    my_cjson_join_string_function(pdata,(uint8_t*)"cur",(uint8_t*)temp,1);
+    buff[3] = data_temp * 100 - buff[2] * 100;
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%d.%02d", buff[2], buff[3]);
+    cJSON_AddStringToObject(data, "cur", temp);
     
     /** 湿度、温度 **/
-    memset(temp,0,sizeof(temp));
+    memset(temp, 0, sizeof(temp));
     data_temp = det_get_inside_humi();
     buff[0] = (uint16_t)data_temp;
-    buff[1] = data_temp*100-buff[0]*100;
-    sprintf(temp,"%d.%02d",buff[0],buff[1]);
-    my_cjson_join_string_function(pdata,(uint8_t*)"humi",(uint8_t*)temp,1);    
-        
-    memset(temp,0,sizeof(temp));
+    buff[1] = data_temp * 100 - buff[0] * 100;
+    sprintf(temp, "%d.%02d", buff[0], buff[1]);
+    cJSON_AddStringToObject(data, "humi", temp);
+    
+    memset(temp, 0, sizeof(temp));
     data_temp = det_get_inside_temp();
-    if(data_temp < 0) {
+    if (data_temp < 0) {
         data_temp = 0 - data_temp;
         buff[2] = (uint16_t)data_temp;
-        buff[3] = data_temp*100-buff[2]*100;
-        sprintf(temp,"-%d.%02d",buff[2],buff[3]);
-    } 
-    else 
+        buff[3] = data_temp * 100 - buff[2] * 100;
+        sprintf(temp, "-%d.%02d", buff[2], buff[3]);
+    }
+    else
     {
         buff[2] = (uint16_t)data_temp;
-        buff[3] = data_temp*100-buff[2]*100;
-        sprintf(temp,"%d.%02d",buff[2],buff[3]);
-    }    
-    my_cjson_join_string_function(pdata,(uint8_t*)"temp",(uint8_t*)temp,1);    
-
-    /* 门状态 */
-
+        buff[3] = data_temp * 100 - buff[2] * 100;
+        sprintf(temp, "%d.%02d", buff[2], buff[3]);
+    }
+    cJSON_AddStringToObject(data, "temp", temp);
 
     /* 箱体姿态 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d",det_get_cabinet_posture());
-    my_cjson_join_string_function(pdata,(uint8_t*)"angle",(uint8_t*)temp,1);    
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%d", det_get_cabinet_posture());
+    cJSON_AddStringToObject(data, "angle", temp);
     
     /* 无线状态 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%d",gsm_gst_init_status_function(0));
-    my_cjson_join_string_function(pdata,(uint8_t*)"csq",(uint8_t*)temp,1);    
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%d", gsm_gst_init_status_function(0));
+    cJSON_AddStringToObject(data, "csq", temp);
 
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%01d",gsm_gst_init_status_function(1));
-    my_cjson_join_string_function(pdata,(uint8_t*)"wire",(uint8_t*)temp,1);    
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%01d", gsm_gst_init_status_function(1));
+    cJSON_AddStringToObject(data, "wire", temp);
 
     /* SIM卡序列号 */
-    my_cjson_join_string_function(pdata,(uint8_t*)"ccid",(uint8_t*)gsm_get_sim_ccid_function(),1);    
+    cJSON_AddStringToObject(data, "ccid", (const char *)gsm_get_sim_ccid_function());
 
     /* 网络状态 */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%01d",com_report_get_main_network_status(0));    
-    my_cjson_join_string_function(pdata,(uint8_t*)"lan",(uint8_t*)temp,1);        
-    
-    /* 继电器 */
-
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%01d", com_report_get_main_network_status(0));
+    cJSON_AddStringToObject(data, "lan", temp);
 
     /* 故障码 */
-    my_cjson_join_string_function(pdata,(uint8_t*)"error",(uint8_t*)"100",0);    
+    cJSON_AddStringToObject(data, "error", "100");
 
-    my_cjson_data_create_function(pdata,1); // 结束
-    my_cjson_create_function(pdata,1); // 结束
-    
-    *len = strlen((char*)pdata);
-    
+    cJSON_PrintPreallocated(root, (char *)pdata, sizeof(print_send_buff), 0);
+    *len = (uint16_t)strlen((char *)pdata);
+    cJSON_Delete(root);
 }
 
 /*
@@ -666,6 +663,7 @@ void print_tcp_configure_mac(void)
     app_set_save_infor_function(SAVE_FLAG_DEVICE_PARAM);
     app_set_save_infor_function(SAVE_FLAG_LOCAL_NETWORK);
     vTaskDelay(100);
+    eth_set_network_hw_reset();
 //    app_system_softreset();
 }
 
@@ -712,33 +710,34 @@ void print_relay_ack_function(uint8_t *pdata, uint16_t *len, uint8_t result)
 {
     struct device_param     *device = app_get_device_param_function();
     char  temp[10]     = {0};
+    cJSON *root = NULL;
+    cJSON *info = NULL;
+    cJSON *data = NULL;
     
-    my_cjson_create_function(pdata,0); // 开始
-    my_cjson_info_create_function(pdata,0); // 开始    
-    /* 设备唯一标识TID */
-    memset(temp,0,sizeof(temp));
-    sprintf(temp,"%X",device->id.i);
-    my_cjson_join_string_function(pdata,(uint8_t*)"tid",(uint8_t*)temp,1);
-
-    /** 系统时间 **/
-    my_cjson_join_string_function(pdata,(uint8_t*)"date",app_get_report_current_time(2),0);
-    my_cjson_info_create_function(pdata,1); // 结束
+    root = cJSON_CreateObject();
+    if (root == NULL) return;
     
-    my_cjson_data_create_function(pdata,0); // 开始
+    /* info 对象 */
+    info = cJSON_CreateObject();
+    if (info == NULL) { cJSON_Delete(root); return; }
+    cJSON_AddItemToObject(root, "info", info);
     
-    my_cjson_join_string_function(pdata,(uint8_t*)"types",(uint8_t*)"update_relay",1);
-
-    if(result == 1)
-        my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"success",1);
-    else
-        my_cjson_join_string_function(pdata,(uint8_t*)"result",(uint8_t*)"fault",1);        
-            
-    /* 继电器 */
-        
-    my_cjson_data_create_function(pdata,1); // 结束
-    my_cjson_create_function(pdata,1); // 结束
+    memset(temp, 0, sizeof(temp));
+    sprintf(temp, "%X", device->id.i);
+    cJSON_AddStringToObject(info, "tid", temp);
+    cJSON_AddStringToObject(info, "date", (const char *)app_get_report_current_time(2));
     
-    *len = strlen((char*)pdata);
+    /* data 对象 */
+    data = cJSON_CreateObject();
+    if (data == NULL) { cJSON_Delete(root); return; }
+    cJSON_AddItemToObject(root, "data", data);
+    
+    cJSON_AddStringToObject(data, "types", "update_relay");
+    cJSON_AddStringToObject(data, "result", result == 1 ? "success" : "fault");
+    
+    cJSON_PrintPreallocated(root, (char *)pdata, sizeof(print_send_buff), 0);
+    *len = (uint16_t)strlen((char *)pdata);
+    cJSON_Delete(root);
 }
 /*
 *********************************************************************************************************

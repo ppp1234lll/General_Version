@@ -1,4 +1,4 @@
-﻿#ifndef __RTSP_TASK_
+#ifndef __RTSP_TASK_
 #define __RTSP_TASK_
 
 #include "./SYSTEM/sys/sys.h"
@@ -12,6 +12,7 @@ int rtsp_deal_recv_data(char *data);
 
 void rtsp_thread_start(void);
 void rtsp_thread_stop(void);
+void rtsp_delete(void);
 
 
 #endif // 

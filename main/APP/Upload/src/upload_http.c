@@ -25,6 +25,7 @@ typedef struct
     uint16_t    port;
     const char *file_name;             /* 上传日志文件名(来自 log.c) */
     uint8_t     md5_enable;            /* finish 是否携带 md5 */
+    uint8_t     need_reconnect;        /* 1: 下次发送前需重连(服务端 close / 断链) */
     uint32_t    total_chunks;          /* 总分片数 */
     char        upload_id[UPLOAD_HTTP_UPLOAD_ID_MAX];
     char        md5_hex[UPLOAD_HTTP_MD5_HEX_MAX];
@@ -146,6 +147,99 @@ static int upload_http_response_complete(void)
 
 /*
 *********************************************************************************************************
+*    函 数 名: upload_http_resp_wants_close
+*    功能说明: 应答头是否含 Connection: close(服务端主动关连接,下一请求须重连)。
+*********************************************************************************************************
+*/
+static int upload_http_resp_wants_close(void)
+{
+    const char *head_end;
+    const char *p;
+    const char *v;
+
+    head_end = strstr(s_ctx.resp, "\r\n\r\n");
+    if (head_end == NULL)
+    {
+        return 0;
+    }
+
+    p = s_ctx.resp;
+    while ((p != NULL) && (p < head_end))
+    {
+        p = strstr(p, "Connection:");
+        if ((p == NULL) || (p >= head_end))
+        {
+            break;
+        }
+        v = p + 11;
+        while ((v < head_end) && ((*v == ' ') || (*v == '\t')))
+        {
+            v++;
+        }
+        if (((head_end - v) >= 5) &&
+            ((v[0] == 'c') || (v[0] == 'C')) &&
+            ((v[1] == 'l') || (v[1] == 'L')) &&
+            ((v[2] == 'o') || (v[2] == 'O')) &&
+            ((v[3] == 's') || (v[3] == 'S')) &&
+            ((v[4] == 'e') || (v[4] == 'E')))
+        {
+            return 1;
+        }
+        p = v;
+    }
+    return 0;
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: upload_http_reconnect
+*    功能说明: 关闭旧连接并重新建立 TCP,用于分片断点续传时服务端 Connection: close / 断链后恢复。
+*    返 回 值: 0 成功,-1 失败。
+*********************************************************************************************************
+*/
+static int upload_http_reconnect(void)
+{
+    uint8_t retry;
+
+    if ((s_ctx.tp == NULL) || (s_ctx.tp->connect_fn == NULL) || (s_ctx.tp->close_fn == NULL))
+    {
+        return -1;
+    }
+
+    s_ctx.tp->close_fn();
+    vTaskDelay(100);
+
+    for (retry = 0U; retry < 3U; retry++)
+    {
+        if (s_ctx.tp->connect_fn(s_ctx.host, s_ctx.port) == 0)
+        {
+            s_ctx.need_reconnect = 0U;
+            return 0;
+        }
+        vTaskDelay(100);
+    }
+    s_ctx.need_reconnect = 1U;
+    return -1;
+}
+
+/*
+*********************************************************************************************************
+*    函 数 名: upload_http_ensure_connected
+*    功能说明: 若标记需重连则主动重连,保证下一请求有可用链路。
+*    返 回 值: 0 成功,-1 失败。
+*********************************************************************************************************
+*/
+static int upload_http_ensure_connected(void)
+{
+    if (s_ctx.need_reconnect == 0U)
+    {
+        return 0;
+    }
+    return upload_http_reconnect();
+}
+
+/*
+*********************************************************************************************************
 *    函 数 名: upload_http_recv
 *    功能说明: 循环调用 transport->recv 收取应答直至完整或超时,并解析 HTTP 状态码到 s_ctx.status。
 *    返 回 值: 0 成功,-1 失败。
@@ -157,6 +251,7 @@ static int upload_http_recv(void)
     const char *pt;
     int got;
     int r;
+    int link_down = 0;
 
     s_ctx.resp_len = 0;
     s_ctx.resp[0] = '\0';
@@ -168,10 +263,12 @@ static int upload_http_recv(void)
         r = s_ctx.tp->recv_fn(&got);
         if (r == -3)
         {
-            break; /* 链路断开,尝试解析已收内容 */
+            link_down = 1; /* 链路断开,尝试解析已收内容 */
+            break;
         }
         if (r != 0)
         {
+            s_ctx.need_reconnect = 1U;
             return -1;
         }
 
@@ -196,7 +293,14 @@ static int upload_http_recv(void)
     pt = strstr(s_ctx.resp, "HTTP/");
     if ((pt == NULL) || (sscanf(pt, "HTTP/%*d.%*d %d", &s_ctx.status) != 1))
     {
+        s_ctx.need_reconnect = 1U;
         return -1;
+    }
+
+    /* 服务端 Connection: close 或收包过程断链: 本应答可用,但后续请求须重连 */
+    if (link_down || upload_http_resp_wants_close())
+    {
+        s_ctx.need_reconnect = 1U;
     }
     return 0;
 }
@@ -290,6 +394,11 @@ static int upload_http_post_query(const char *path, int keep_alive)
     char hdr[UPLOAD_HTTP_HEADER_MAX];
     int n;
 
+    if (upload_http_ensure_connected() != 0)
+    {
+        return -1;
+    }
+
     n = snprintf(hdr, sizeof(hdr),
                  "POST %s HTTP/1.1\r\n"
                  "Host: %s:%u\r\n"
@@ -303,6 +412,7 @@ static int upload_http_post_query(const char *path, int keep_alive)
     }
     if (s_ctx.tp->send_fn((const uint8_t *)hdr, (uint32_t)n) != 0)
     {
+        s_ctx.need_reconnect = 1U;
         return -1;
     }
     if (upload_http_recv() != 0)
@@ -324,6 +434,11 @@ static int upload_http_post_chunk(uint32_t index, const uint8_t *data, uint16_t 
     char hdr[UPLOAD_HTTP_HEADER_MAX];
     uint32_t pos;
     int n;
+
+    if (upload_http_ensure_connected() != 0)
+    {
+        return -1;
+    }
 
     /* 1) multipart body */
     n = snprintf((char *)s_body, UPLOAD_HTTP_BODY_MAX,
@@ -365,10 +480,12 @@ static int upload_http_post_chunk(uint32_t index, const uint8_t *data, uint16_t 
     /* 3) 先发 header 再发 body,然后收应答 */
     if (s_ctx.tp->send_fn((const uint8_t *)hdr, (uint32_t)n) != 0)
     {
+        s_ctx.need_reconnect = 1U;
         return -1;
     }
     if (s_ctx.tp->send_fn(s_body, pos) != 0)
     {
+        s_ctx.need_reconnect = 1U;
         return -1;
     }
     if (upload_http_recv() != 0)
@@ -466,9 +583,25 @@ static int8_t upload_http_upload_chunks(void)
 
         for (retry = 0; retry < UPLOAD_HTTP_CHUNK_RETRY_MAX; retry++)
         {
+            /* 断链或上次失败后先重连,再按同一 chunkIndex 续传 */
+            if ((s_ctx.need_reconnect != 0U) || (retry > 0))
+            {
+                if (upload_http_reconnect() != 0)
+                {
+                    vTaskDelay(50);
+                    continue;
+                }
+            }
+
             if (upload_http_post_chunk(idx, s_chunk, (uint16_t)read_len) == 0)
             {
                 break;
+            }
+
+            /* 发送/收包失败后标记重连;业务错误(有 HTTP 状态码)也短暂等待再试 */
+            if (s_ctx.status == 0)
+            {
+                s_ctx.need_reconnect = 1U;
             }
             if ((retry + 1) < UPLOAD_HTTP_CHUNK_RETRY_MAX)
             {
@@ -510,6 +643,7 @@ static int8_t upload_http_do_finish(void)
 {
     char query[UPLOAD_HTTP_QUERY_PATH_MAX];
     int n;
+    int retry;
 
     if (s_ctx.md5_enable)
     {
@@ -526,17 +660,41 @@ static int8_t upload_http_do_finish(void)
         return UPLOAD_HTTP_ERR_PARAM;
     }
 
-    if (upload_http_post_query(query, 0) != 0)
+    for (retry = 0; retry < UPLOAD_HTTP_CHUNK_RETRY_MAX; retry++)
     {
-        return (s_ctx.status == 0) ? UPLOAD_HTTP_ERR_RESPONSE : UPLOAD_HTTP_ERR_STATUS;
+        if ((s_ctx.need_reconnect != 0U) || (retry > 0))
+        {
+            if (upload_http_reconnect() != 0)
+            {
+                vTaskDelay(50);
+                continue;
+            }
+        }
+
+        if (upload_http_post_query(query, 0) == 0)
+        {
+            return (upload_http_api_ok() == 0) ? UPLOAD_HTTP_OK : UPLOAD_HTTP_ERR_RESPONSE;
+        }
+
+        if (s_ctx.status == 0)
+        {
+            s_ctx.need_reconnect = 1U;
+        }
+        if ((retry + 1) < UPLOAD_HTTP_CHUNK_RETRY_MAX)
+        {
+            vTaskDelay(50);
+        }
     }
-    return (upload_http_api_ok() == 0) ? UPLOAD_HTTP_OK : UPLOAD_HTTP_ERR_RESPONSE;
+
+    return (s_ctx.status == 0) ? UPLOAD_HTTP_ERR_RESPONSE : UPLOAD_HTTP_ERR_STATUS;
 }
 
 /*
 *********************************************************************************************************
 *    函 数 名: upload_http_file_function
 *    功能说明: HTTP 三步分片上传入口(传输无关): start -> chunk -> finish。
+*              支持断点续传: 服务端 Connection: close / 链路断开后自动重连,
+*              沿用同一 uploadId 从失败分片继续上传。
 *    形    参: request 上传请求; transport 传输回调; http_status_code 输出状态码(可为 NULL)
 *    返 回 值: UPLOAD_HTTP_OK 成功,其他为错误码。
 *********************************************************************************************************

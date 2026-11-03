@@ -1,4 +1,5 @@
 #include "./onvif/onvif.h"
+#include "./onvif/sadp.h"
 #include "main.h"
 
 #define ONVIF_DEBUG             1
@@ -123,7 +124,8 @@ static void onvif_thread(void *arg)
                 ipcInfo.search_flag &=~ONVIF_INIT;
                 ipcInfo.ipc_protocol_status =  HIKVISION_P;//ONVIF_P;//HIKVISION_P;   //先使用海康协议搜索
                 ipcInfo.ipc_num = 0;        
-                memset(ipcInfo.ipc_param,0,sizeof(ipc_t));                
+                memset(ipcInfo.ipc_param,0,sizeof(ipcInfo.ipc_param));
+                sadp_reset();
             }
             if((ipcInfo.search_flag & ONVIF_START)== ONVIF_START )  // 开始检测
             {
@@ -174,7 +176,8 @@ int ONVIF_Search_API(int sockfd)
             ret = ONVIF_IPC_Bind_API(sockfd,HIKVISION_MULTICAST_PROT); // 连接端口
             if(ret ==0)
             {
-                for(uint8_t j=0;j<ONVIF_SEARCH_NUM;j++)   // 循环搜索，
+                /* UDP 37020 搜索 */
+                for(uint8_t j=0;j<ONVIF_SEARCH_NUM;j++)   // UDP 循环搜索
                 {
                     if(g_lwipdev.udp_reset){ break; }   /* 复位请求, 中止搜索 */
                     HIKVISION_IPC_Search_API(sockfd,MULTICAST_ADDR,HIKVISION_MULTICAST_PROT);
@@ -184,10 +187,21 @@ int ONVIF_Search_API(int sockfd)
                         ONVIF_IPC_Recv_API(sockfd,HIKVISION_P); 
                         vTaskDelay(10);  //延时5s    
                     }
-                    
-                }                            
-                ipcInfo.ipc_protocol_status = DAHUA_P;
+                }
             }
+            /* SADP(0x8033) 为二层协议, 不依赖 UDP bind 成功与否 */
+            for(uint8_t j=0;j<ONVIF_SEARCH_NUM;j++)   // SADP 循环搜索
+            {
+                if(g_lwipdev.udp_reset){ break; }
+                sadp_send_inquiry();
+                vTaskDelay(200);
+                for(uint8_t i = 0 ; i < ONVIF_RECV_NUM; i++)
+                {
+                    sadp_recv_process();
+                    vTaskDelay(20);
+                }
+            }
+            ipcInfo.ipc_protocol_status = DAHUA_P;
             // if(sockfd >= 0) 
             //     close(sockfd);
             break;
@@ -944,7 +958,11 @@ unsigned char onvif_init(void)
                         (UBaseType_t    )ONVIF_PRIO,
                         (TaskHandle_t * )&Onvif_Task_Handler);
 
-    if(res != pdPASS){ Onvif_Task_Handler = NULL; }
+    if (res != pdPASS)
+    {
+        printf("onvif_thread: xTaskCreate failed\n");
+        Onvif_Task_Handler = NULL;
+    }
 
     return res;
 }

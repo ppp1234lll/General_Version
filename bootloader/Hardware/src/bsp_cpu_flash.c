@@ -289,6 +289,66 @@ err:
 
 /*
 *********************************************************************************************************
+*    函 数 名: bsp_WriteCpuFlash_Erase
+*    功能说明: 从指定地址开始写入指定长度的数据, 写之前检测并擦除非0xFF的扇区
+*              注意: 擦除时不保存扇区原有数据, 整个扇区数据将丢失
+*    形    参: WriteAddr: 起始地址(必须为4的倍数)
+*              pBuffer: 数据指针(32位字数组)
+*              NumToWrite: 字(32位)数
+*    返 回 值: 无
+*********************************************************************************************************
+*/
+void bsp_WriteCpuFlash_Erase(uint32_t WriteAddr, uint32_t *pBuffer, uint32_t NumToWrite)
+{
+    uint32_t addrx = 0;
+    uint32_t endaddr = 0;
+    fmc_state_enum status = FMC_READY;
+
+    if (WriteAddr < FLASH_BASE || WriteAddr % 4) return;  // 非法地址
+
+    fmc_unlock();
+    fmc_flag_clear(FMC_FLAG_END | FMC_FLAG_OPERR | FMC_FLAG_WPERR | FMC_FLAG_PGMERR | FMC_FLAG_PGSERR);
+
+    addrx = WriteAddr;
+    endaddr = WriteAddr + NumToWrite * 4;
+
+    if (addrx < 0x1FFF0000)  // 只有主存储区,才需要执行擦除操作
+    {
+        while (addrx < endaddr)  // 对非FFFFFFFF的地方,先擦除
+        {
+            if (*(volatile uint32_t *)addrx != 0xFFFFFFFF)
+            {
+                status = fmc_sector_erase(bsp_GetSector(addrx));
+                if (status != FMC_READY)
+                {
+                    fmc_lock();
+                    return;
+                }
+                fmc_flag_clear(FMC_FLAG_END);
+            }
+            else
+            {
+                addrx += 4;
+            }
+        }
+    }
+
+    while (WriteAddr < endaddr)  // 写数据
+    {
+        if (FMC_READY != fmc_word_program(WriteAddr, *pBuffer))
+        {
+            fmc_lock();
+            return;
+        }
+        WriteAddr += 4;
+        pBuffer++;
+    }
+
+    fmc_lock();
+} 
+
+/*
+*********************************************************************************************************
 *    函 数 名: bsp_WriteCpuFlash_Save
 *    功能说明: 写数据到CPU 内部Flash。 保存ReadAddr地址的2K字节数据
 *    形    参: ReadAddr : 读取地址

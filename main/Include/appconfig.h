@@ -1,4 +1,4 @@
-﻿/*
+/*
 *********************************************************************************************************
 *    函 数 名: 头文件汇总
 *    功能说明: appconfig.h
@@ -19,6 +19,7 @@
 *********************************************************************************************************
 */
 #define configUSE_DEVICE_TYPE           1 // 设备类型
+#define configUSE_DEVIDE_TYPE_DEC       0 // 设备类型2(TID为10进制)
 
 #define configUSE_EXT_LED               1 // 外接指示灯
 #define configUSE_EXT_FAN               1 // 外接风扇
@@ -36,8 +37,14 @@
 
 #define configUSE_EXT_SIM               0 // 使用SIM卡检测
 
-#define configUSE_RS485_TRANSPARENT     1 // 使用485透传
-#define configUSE_SUN_POWER             0 // 使用太阳能板
+#define configUSE_RS485_TRANSPARENT     0 // 使用485透传
+#define configUSE_SUN_POWER             1 // 使用太阳能板
+
+#if (configUSE_KEY_MCB == 1) // 只能选择一种检测方式
+    #define configUSE_KEY_MCB_COUPLING    0  // 使用光耦检测
+    #define configUSE_KEY_MCB_METRIC_CHIP 1  // 使用计量芯片
+#endif
+
 /*  
 *********************************************************************************************************
 *                                       DEBUG调试

@@ -1,4 +1,4 @@
-﻿/**
+/**
 * @file
 * Ethernet Interface Skeleton
 */
@@ -36,6 +36,9 @@
 #include "lwip/timeouts.h"
 #include "netif/etharp.h"
 #include "ethernetif.h"
+#include "lwip_comm.h"
+#include "./onvif/sadp.h"
+#include "lwip/prot/ethernet.h"
 
 #include "bsp.h"
 #include "FreeRTOS.h"
@@ -87,12 +90,12 @@ static void low_level_init(struct netif *netif)
     netif->hwaddr_len = ETHARP_HWADDR_LEN;
 
     /* set netif MAC hardware address */
-    netif->hwaddr[0] =  MAC_ADDR0;
-    netif->hwaddr[1] =  MAC_ADDR1;
-    netif->hwaddr[2] =  MAC_ADDR2;
-    netif->hwaddr[3] =  MAC_ADDR3;
-    netif->hwaddr[4] =  MAC_ADDR4;
-    netif->hwaddr[5] =  MAC_ADDR5;
+    netif->hwaddr[0] = g_lwipdev.mac[0];
+    netif->hwaddr[1] = g_lwipdev.mac[1];
+    netif->hwaddr[2] = g_lwipdev.mac[2];
+    netif->hwaddr[3] = g_lwipdev.mac[3];
+    netif->hwaddr[4] = g_lwipdev.mac[4];
+    netif->hwaddr[5] = g_lwipdev.mac[5];
 
     /* set netif maximum transfer unit */
     netif->mtu = 1500;
@@ -273,6 +276,16 @@ TRY_GET_NEXT_FRAME:
             SYS_ARCH_UNPROTECT(sr);
           
             if   (p != NULL){
+                /* 海康 SADP(0x8033) 为二层协议, LWIP 默认会丢弃, 在此拦截 */
+                if(p->len >= SIZEOF_ETH_HDR)
+                {
+                    struct eth_hdr *ethhdr = (struct eth_hdr *)p->payload;
+                    if(ethhdr->type == PP_HTONS(ETHTYPE_SADP))
+                    {
+                        sadp_ethernet_input(p, low_netif);
+                        goto TRY_GET_NEXT_FRAME;
+                    }
+                }
                 if (ERR_OK != low_netif->input( p, low_netif)){
                     pbuf_free(p);
                 }else{

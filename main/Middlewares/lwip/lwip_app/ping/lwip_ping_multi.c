@@ -1,5 +1,6 @@
 #include "lwip_ping_multi.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "lwip/raw.h"
@@ -14,6 +15,9 @@
 
 #define LWIP_MULTI_PING_ID            (0x4D50U)
 #define LWIP_MULTI_PING_FRAME_SIZE    (32U)
+#ifndef LWIP_MULTI_PING_DEBUG
+#define LWIP_MULTI_PING_DEBUG         (0U)   /* 1:串口打印每轮 ping 延时  0:关闭 */
+#endif
 
 typedef struct
 {
@@ -302,6 +306,10 @@ static uint8_t lwip_ping_multi_raw_recv(void *arg, struct raw_pcb *pcb, struct p
             {
                 packet->acked = 1U;
                 packet->rtt_ms = (uint16_t)(sg_ping_multi_t.tick_ms - packet->send_tick_ms);
+                if (packet->rtt_ms == 0U)
+                {
+                    packet->rtt_ms = 1U; /* 同一 tick 内收到回复，按最小 1ms 计 */
+                }
                 if (device->reply_count < LWIP_MULTI_PING_PACKET_NUM)
                 {
                     device->reply_count++;
@@ -622,14 +630,39 @@ static void lwip_ping_multi_finish_round_device(lwip_multi_ping_device_t *device
     if (device_id < LWIP_MULTI_PING_DEVICE_NUM)
     {
         lwip_ping_multi_apply_result(device_id, device->result);
-        det_set_ping_status(1);
     }
 }
+
+#if (LWIP_MULTI_PING_DEBUG != 0U)
+static const char *lwip_ping_multi_device_name(uint8_t device_id)
+{
+    switch (device_id)
+    {
+        case LWIP_MULTI_PING_DEV_MAIN:     return "MAIN";
+        case LWIP_MULTI_PING_DEV_MAIN_SUB: return "MAIN2";
+        case LWIP_MULTI_PING_DEV_CAMERA1:  return "CAM1";
+        case LWIP_MULTI_PING_DEV_CAMERA2:  return "CAM2";
+        case LWIP_MULTI_PING_DEV_CAMERA3:  return "CAM3";
+        case LWIP_MULTI_PING_DEV_CAMERA4:  return "CAM4";
+        case LWIP_MULTI_PING_DEV_CAMERA5:  return "CAM5";
+        case LWIP_MULTI_PING_DEV_CAMERA6:  return "CAM6";
+        default:                           return "UNK";
+    }
+}
+#endif
 
 static void lwip_ping_multi_apply_result(uint8_t device_id, lwip_multi_ping_result_t result)
 {
     const lwip_multi_ping_device_t *device = NULL;
     uint8_t status = 0;
+#if (LWIP_MULTI_PING_DEBUG != 0U)
+    uint8_t packet_index = 0;
+    uint16_t rtt[LWIP_MULTI_PING_PACKET_NUM] = {0};
+    uint32_t sum_rtt = 0;
+    uint8_t acked_num = 0;
+    uint16_t avg_rtt = 0;
+    uint8_t delay_threshold = 0;
+#endif
 
     if (device_id >= LWIP_MULTI_PING_DEVICE_NUM)
     {
@@ -643,6 +676,38 @@ static void lwip_ping_multi_apply_result(uint8_t device_id, lwip_multi_ping_resu
 
     device = &sg_ping_multi_t.device[device_id];
     status = lwip_ping_multi_result_to_status(device, result);
+
+#if (LWIP_MULTI_PING_DEBUG != 0U)
+    delay_threshold = app_get_network_delay_time();
+
+    for (packet_index = 0; packet_index < LWIP_MULTI_PING_PACKET_NUM; packet_index++)
+    {
+        if (device->packet[packet_index].acked != 0U)
+        {
+            rtt[packet_index] = device->packet[packet_index].rtt_ms;
+            sum_rtt += rtt[packet_index];
+            acked_num++;
+        }
+        else
+        {
+            rtt[packet_index] = 0xFFFF; /* 未应答 */
+        }
+    }
+    if (acked_num > 0U)
+    {
+        avg_rtt = (uint16_t)(sum_rtt / acked_num); /* 平均延时(ms)，同 Windows ping Average */
+    }
+
+    /* 串口打印本轮 ping 延时: rtt 单位 ms, 65535=未应答; st:1正常 2故障 4延时 5丢包 */
+    printf("[PING] %s %d.%d.%d.%d rtt=%u/%u/%u/%u avg=%u thr=%u reply=%u/%u res=%u st=%u\r\n",
+           lwip_ping_multi_device_name(device_id),
+           device->ip[0], device->ip[1], device->ip[2], device->ip[3],
+           rtt[0], rtt[1], rtt[2], rtt[3],
+           avg_rtt, delay_threshold,
+           device->reply_count, (unsigned)LWIP_MULTI_PING_PACKET_NUM,
+           (unsigned)result, status);
+#endif
+
     lwip_ping_multi_set_device_status(device_id, status);
 }
 
@@ -650,7 +715,9 @@ static void lwip_ping_multi_apply_result(uint8_t device_id, lwip_multi_ping_resu
 static uint8_t lwip_ping_multi_result_to_status(const lwip_multi_ping_device_t *device, lwip_multi_ping_result_t result)
 {
     uint8_t packet_index = 0;
-    uint16_t max_rtt = 0;
+    uint32_t sum_rtt = 0;
+    uint8_t acked_num = 0;
+    uint16_t avg_rtt = 0;
     uint8_t delay_threshold = app_get_network_delay_time();   // 网络延时判定阈值(ms)
 
     if (device == NULL)
@@ -663,13 +730,18 @@ static uint8_t lwip_ping_multi_result_to_status(const lwip_multi_ping_device_t *
         case LWIP_MULTI_PING_RESULT_OK:
             for (packet_index = 0; packet_index < LWIP_MULTI_PING_PACKET_NUM; packet_index++)
             {
-                if ((device->packet[packet_index].acked != 0U) &&
-                    (device->packet[packet_index].rtt_ms > max_rtt))
+                if (device->packet[packet_index].acked != 0U)
                 {
-                    max_rtt = device->packet[packet_index].rtt_ms;
+                    sum_rtt += device->packet[packet_index].rtt_ms;
+                    acked_num++;
                 }
             }
-            if ((delay_threshold != 0U) && (max_rtt > (uint16_t)delay_threshold))
+            if (acked_num > 0U)
+            {
+                avg_rtt = (uint16_t)(sum_rtt / acked_num);
+            }
+            /* 平均延时 >= 阈值 → 延时故障(对齐 Windows ping Average) */
+            if ((delay_threshold != 0U) && (avg_rtt >= (uint16_t)delay_threshold))
             {
                 return NET_STATUS_DELAY;    // 4 延时
             }
