@@ -771,6 +771,8 @@ static void sf_WriteStatus(uint8_t _ucValue)
 */
 static void sf_WaitForWriteEnd(void)
 {
+    uint16_t feed_cnt = 0;
+    
     sf_SetCS(0);                                    /* 使能片选 */
     g_spiTxBuf[0] = (CMD_RDSR);                        /* 发送命令， 读状态寄存器 */
     g_spiLen = 2;
@@ -790,6 +792,13 @@ static void sf_WaitForWriteEnd(void)
         {
             break;
         }        
+
+        /* 整片擦除等操作可能持续数十秒，等待期间定期喂狗，防止看门狗复位 */
+        if (++feed_cnt >= 4096)
+        {
+            feed_cnt = 0;
+            FeedFwdgt();
+        }
     }    
 }
 

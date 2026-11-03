@@ -60,6 +60,7 @@ void iap_load_app(uint32_t appxaddr)
     { 
         jump2app=(iapfun)*(volatile uint32_t*)(appxaddr+4);        //用户代码区第二个字为程序开始地址(复位地址)        
         sys_msr_msp(*(volatile uint32_t*)appxaddr);                    //初始化APP堆栈指针(用户代码区的第一个字用于存放栈顶地址)
+        FeedFwdgt();                                   //跳转前喂狗，给APP启动留足时间余量
         jump2app();                                    //跳转到APP.
     }
 }         

@@ -15,7 +15,7 @@ void start_bsp_init(void)
 {
     cJSON_Hooks hook;                // 初始化JSON 
 
-    bsp_InitFwdgt(FWDGT_PSC_DIV64,1000);    // 初始化看门狗(硬件、软件2s)
+    bsp_InitFwdgt(FWDGT_PSC_DIV64,6000);    // 初始化阶段看门狗放宽到约12s，系统启动完成后再收窄到2s
     start_get_device_id();              // 获取本机ID
     my_mem_init(SRAMIN);              // 内存初始化
     
@@ -43,7 +43,9 @@ void start_bsp_init(void)
     bsp_InitTimers(TIMER6, 1, 6, 0);
 
     ebtn_APP_Keys_Init();            // 初始化按键模块（已测试）
-    
+
+    FeedFwdgt();                     // 初始化过程分阶段喂狗
+
 #if (configUSE_RS485 == 1)
     RS485_Init(9600);          // 485初始化（已测试）
 #endif
@@ -54,11 +56,14 @@ void start_bsp_init(void)
 #if (configUSE_TILT == 1)
     hal_lis3dh_init(true);   // 陀螺仪初始化 IIC (已测试)
 #endif
+
+    FeedFwdgt();
+
     bl0939_init();           // 电能检测初始化
     bl0910_init();
     
     bsp_InitSPIBus();
-    bsp_InitSFlash();
+    bsp_InitSFlash();        // SPI Flash 检测/初始化可能较慢
 
     FeedFwdgt();
 }
@@ -212,21 +217,26 @@ void start_task(void *pvParameters)
     pvParameters = pvParameters;
     int lwip_retry = 0;
     
-    save_init_function();    
+    save_init_function();               // 文件系统挂载，首次或异常时可能格式化(耗时较长)
+    FeedFwdgt();
     com_recevie_function_init();        // 初始化接收缓冲区
     app_get_storage_param_function();    // 获取本地存储的数据
-    
-    log_init_function();
-    
+    FeedFwdgt();
+
+    log_init_function();                // 日志批次初始化/一致性修复，可能耗时较长
+    FeedFwdgt();
+
     /* 有线网络初始化: 硬件 + lwIP协议栈 */
     if (enet_system_setup() == 0)
     {
         printf("Ethernet hardware init failed, system running in wireless-only mode!\r\n");
     }
-    
+    FeedFwdgt();
+
     while (lwip_comm_init() != 0)
     {
         printf("lwIP Init failed!!\n");
+        FeedFwdgt();
         if (++lwip_retry >= 5)
         {
             printf("lwIP Init failed after 5 retries, skip ethernet!\r\n");
@@ -236,6 +246,8 @@ void start_task(void *pvParameters)
     }    
     printf("run here!!\n");
     FeedFwdgt();  
+    bsp_InitFwdgt(FWDGT_PSC_DIV64,1000);    // 系统初始化完成，看门狗收窄回2s
+    FeedFwdgt();
     taskENTER_CRITICAL();           /* 进入临界区 */
 
     /* 初始化发送模块（内部创建消息池、队列和发送任务） */

@@ -42,6 +42,7 @@ static int lfs_deskio_prog(const struct lfs_config *c, lfs_block_t block, lfs_of
 static int lfs_deskio_erase(const struct lfs_config *c, lfs_block_t block)
 {
     sf_EraseSector(block * c->block_size);
+    FeedFwdgt();        /* 格式化/垃圾回收会连续擦除多个块，逐块喂狗 */
     return 0;
 }
  
