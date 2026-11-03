@@ -34,6 +34,7 @@ OF SUCH DAMAGE.
 
 #include "gd32f4xx_it.h"
 #include "systick.h"
+#include <stdio.h>
 
 /*!
     \brief      this function handles NMI exception
@@ -54,11 +55,30 @@ void NMI_Handler(void)
     \param[out] none
     \retval     none
 */
-void HardFault_Handler(void)
+/* 硬件错误现场打印（调试用）：输出异常栈帧中的PC/LR等，便于定位出错代码 */
+void hardfault_report(uint32_t *frame)
 {
-    /* if Hard Fault exception occurs, go to infinite loop */
+    printf("\r\n[HARDFAULT] CFSR=%08X HFSR=%08X MMFAR=%08X BFAR=%08X\r\n",
+           (unsigned)SCB->CFSR, (unsigned)SCB->HFSR,
+           (unsigned)SCB->MMFAR, (unsigned)SCB->BFAR);
+    printf("[HARDFAULT] R0=%08X R1=%08X R2=%08X R3=%08X\r\n",
+           (unsigned)frame[0], (unsigned)frame[1], (unsigned)frame[2], (unsigned)frame[3]);
+    printf("[HARDFAULT] R12=%08X LR=%08X PC=%08X PSR=%08X\r\n",
+           (unsigned)frame[4], (unsigned)frame[5], (unsigned)frame[6], (unsigned)frame[7]);
+    printf("[HARDFAULT] stopped\r\n");
+
     while(1) {
     }
+}
+
+__asm void HardFault_Handler(void)
+{
+    IMPORT hardfault_report
+    TST     LR, #4
+    ITE     EQ
+    MRSEQ   R0, MSP
+    MRSNE   R0, PSP
+    B       hardfault_report
 }
 
 /*!

@@ -21,7 +21,7 @@ extern QueueHandle_t dtu_rx_q;
 #define MPPT_FUNC_WRITE_MULTI    0x10    // 写多个寄存器
 
 // 寄存器地址定义
-#define MPPT_REG_02_START                0x2000  //机内超温
+#define MPPT_REG_02_START                0x200C  //白天夜晚标志（0x2000为机内超温）
 #define MPPT_REG_02_COUNT                1
 
 #define MPPT_REG_CFS_START               0x3011  //控制器功能状态

@@ -1,5 +1,23 @@
-﻿#include "./Task/inc/dtu.h"
+#include "./Task/inc/dtu.h"
 #include "main.h" 
+
+/* 485/MPPT 调试打印开关（测试用，量产可置0） */
+#define DTU_485_DEBUG       0
+
+#if (DTU_485_DEBUG == 1)
+#define DTU_DBG(...)        printf(__VA_ARGS__)
+static void dtu_dbg_dump(const char *tag, uint8_t *data, uint8_t len)
+{
+    uint8_t i;
+    printf("[485] %s len=%u:", tag, len);
+    for (i = 0; (i < len) && (i < 32U); i++)
+        printf(" %02X", data[i]);
+    printf("\r\n");
+}
+#else
+#define DTU_DBG(...)
+#define dtu_dbg_dump(tag, data, len)
+#endif
 
 // 全局RS485配置变量
 rs485_config_t g_rs485_config = {
@@ -100,6 +118,7 @@ void dtu_task_function(void)
 			/* 超时保护：等待响应超过2s则回退到空闲态 */
 			if (s_mppt_step >= 2) {
 				if ((now_times - s_mppt_timeout) >= pdMS_TO_TICKS(2000)) {
+					DTU_DBG("[485] step=%u timeout, no response\r\n", s_mppt_step);
 					s_mppt_step = 0;
 				}
 			}
@@ -120,6 +139,7 @@ void dtu_task_function(void)
 				break;
 				case 2:  /* 等待并处理电能参数响应 */
 					if (xQueueReceive(dtu_mppt_rx_q, &rx_ptr, 0) == pdTRUE) {
+						dtu_dbg_dump("RX electricity", rx_ptr + 1, rx_ptr[0]);
 						dtu_mppt_parse_electricity(rx_ptr + 1, rx_ptr[0]);
 						dtu_mppt_send_02();
 						s_mppt_timeout = now_times;
@@ -128,6 +148,7 @@ void dtu_task_function(void)
 				break;
 				case 3:  /* 等待并处理02响应 */
 					if (xQueueReceive(dtu_mppt_rx_q, &rx_ptr, 0) == pdTRUE) {
+						dtu_dbg_dump("RX 02", rx_ptr + 1, rx_ptr[0]);
 						dtu_mppt_parse_02(rx_ptr + 1, rx_ptr[0]);
 						dtu_mppt_send_battery();
 						s_mppt_timeout = now_times;
@@ -136,6 +157,7 @@ void dtu_task_function(void)
 				break;
 				case 4:  /* 等待并处理蓄电池响应 */
 					if (xQueueReceive(dtu_mppt_rx_q, &rx_ptr, 0) == pdTRUE) {
+						dtu_dbg_dump("RX battery", rx_ptr + 1, rx_ptr[0]);
 						dtu_mppt_parse_battery(rx_ptr + 1, rx_ptr[0]);
 						dtu_mppt_send_run_day();
 						s_mppt_timeout = now_times;
@@ -144,14 +166,28 @@ void dtu_task_function(void)
 				break;
 				case 5:  /* 等待并处理运行天数响应 */
 					if (xQueueReceive(dtu_mppt_rx_q, &rx_ptr, 0) == pdTRUE) {
+						dtu_dbg_dump("RX run_day", rx_ptr + 1, rx_ptr[0]);
 						dtu_mppt_parse_run_day(rx_ptr + 1, rx_ptr[0]);
 						s_mppt_last_tick = now_times;
 						s_mppt_step = 0;
+						DTU_DBG("[485] OK soc=%u bat=%u.%02u batA=%u.%02u load=%u.%02u solar=%u.%02u day=%u days=%u\r\n",
+								(unsigned)g_mppt.realtime.battery_soc,
+								(unsigned)(g_mppt.realtime.battery_voltage / 100U),
+								(unsigned)(g_mppt.realtime.battery_voltage % 100U),
+								(unsigned)(g_mppt.realtime.battery_current / 100U),
+								(unsigned)(g_mppt.realtime.battery_current % 100U),
+								(unsigned)(g_mppt.realtime.load_voltage / 100U),
+								(unsigned)(g_mppt.realtime.load_voltage % 100U),
+								(unsigned)(g_mppt.realtime.solar_voltage / 100U),
+								(unsigned)(g_mppt.realtime.solar_voltage % 100U),
+								(unsigned)g_mppt.ai_state.day_night_status,
+								(unsigned)g_mppt.realtime.running_days_2);
 					}
 				break;
 			}
 		}
 #endif
+		vTaskDelay(pdMS_TO_TICKS(20));
 	}
 }
 
@@ -205,13 +241,21 @@ void dtu_get_receive_data(uint8_t *data, uint16_t len)
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
 #if (configUSE_RS485_TRANSPARENT == 1)
-    dtu_rx_buf[0] = (uint8_t)len;
-    memcpy(dtu_rx_buf + 1, data, len);
-    xQueueSendFromISR(dtu_rx_q, &dtu_rx_buf, &xHigherPriorityTaskWoken);
+    {
+        uint8_t *rx_msg = dtu_rx_buf;
+        dtu_rx_buf[0] = (uint8_t)len;
+        memcpy(dtu_rx_buf + 1, data, len);
+        /* 队列元素是缓冲区指针，必须传指针变量的地址，不能直接传数组首地址 */
+        xQueueSendFromISR(dtu_rx_q, &rx_msg, &xHigherPriorityTaskWoken);
+    }
 #elif (configUSE_SUN_POWER == 1)
-    dtu_mppt_rx_buf[0] = (uint8_t)len;
-    memcpy(dtu_mppt_rx_buf + 1, data, len);
-    xQueueSendFromISR(dtu_mppt_rx_q, &dtu_mppt_rx_buf, &xHigherPriorityTaskWoken);
+    {
+        uint8_t *rx_msg = dtu_mppt_rx_buf;
+        dtu_mppt_rx_buf[0] = (uint8_t)len;
+        memcpy(dtu_mppt_rx_buf + 1, data, len);
+        /* 队列元素是缓冲区指针，必须传指针变量的地址，不能直接传数组首地址 */
+        xQueueSendFromISR(dtu_mppt_rx_q, &rx_msg, &xHigherPriorityTaskWoken);
+    }
 #endif
 
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -241,7 +285,8 @@ void DTU_MPPT_ReadRegisters(uint8_t slave_id, uint8_t func_code, uint16_t start_
 	calc_crc = usMBCRC16(frame, 6);
 	frame[6] = calc_crc & 0xFF;
 	frame[7] = (calc_crc >> 8) & 0xFF;
-	
+
+	dtu_dbg_dump("TX", frame, 8);
 	rs485_send_str(frame, 8);
 }
 
@@ -315,7 +360,8 @@ static void dtu_mppt_send_battery(void) {
 static void dtu_mppt_parse_02(uint8_t *data, uint8_t len)
 {
 	(void)len;
-	g_mppt.ai_state.day_night_status = (data[3] << 8) | data[4];
+	/* 功能码0x02返回的是位数据: data[3] bit0 = 该开关量状态(0-白天, 1-夜晚) */
+	g_mppt.ai_state.day_night_status = (uint16_t)(data[3] & 0x01);
 }
 
 /*

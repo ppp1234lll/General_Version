@@ -118,6 +118,14 @@ void rs485_send_str(uint8_t *data, uint16_t len)
 {
     RS485_RE_SET();
     RS485_SEND_BUFF(data, len);
+
+    /* DMA发送完成仅表示最后一个字节已写入DR，还需等其真正移位输出后再释放总线，
+       否则末字节（CRC高字节）会被截断，控制器会因CRC校验失败而不应答 */
+    while (RESET == usart_flag_get(RS485_UARTx, USART_FLAG_TBE))
+    {
+    }
+    delay_ms(2);
+
     RS485_RE_RESET();
 }
 
