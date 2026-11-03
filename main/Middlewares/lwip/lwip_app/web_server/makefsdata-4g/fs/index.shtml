@@ -989,7 +989,16 @@
                     this.render([],data,j)
                 }else{
                     if(document.getElementById(data.divid).querySelector('button')==null){
-                        this.get('/setting.cgi?btntype='+data.btntype,(s)=>this.render(s[1],data,j))
+                        this.get('/setting.cgi?btntype='+data.btntype,(s)=>{
+                            // 返回数据项数与页面节点数不一致，说明浏览器用的是缓存的旧页面，提示强制刷新，避免数据显示错位
+                            if(data.nodes && s[1] instanceof Array && s[1].length != data.nodes.length){
+                                if(!this.verWarned){
+                                    this.verWarned = true
+                                    alert('网页与设备固件版本不一致，请按 Ctrl+F5 强制刷新页面')
+                                }
+                            }
+                            this.render(s[1],data,j)
+                        })
                     }
 
                 }

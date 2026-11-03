@@ -1,1 +1,1 @@
-{"version":"FN-YJTY-PY-8-2.1.0.20261103";"url":"http://47.104.98.214:8989/FN-YJTY-PY-8/FN-YJTY-PY-8-2.1.0.20261103_crc.bin";}
+{"version":"FN-YJTY-PY-8-2.1.1.20261103";"url":"http://47.104.98.214:8989/FN-YJTY-PY-8/FN-YJTY-PY-8-2.1.1.20261103_crc.bin";}

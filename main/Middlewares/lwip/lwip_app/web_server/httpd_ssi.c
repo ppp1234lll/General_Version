@@ -366,6 +366,28 @@ static void mppt_fixed2_to_str(char *buff, uint32_t value)
 
 /*
 *********************************************************************************************************
+*    函 数 名: mppt_temp_to_str
+*    功能说明: 温度寄存器(单位0.01℃, 有符号)转字符串，如 2500 -> "25.00"、-500 -> "-5.00"
+*    形    参: @buff : 输出缓冲区  @raw : 寄存器原始值
+*    返 回 值: 无
+*********************************************************************************************************
+*/
+static void mppt_temp_to_str(char *buff, uint16_t raw)
+{
+    int32_t temp = (int16_t)raw;
+    char    sign[2] = {0};
+
+    if (temp < 0)
+    {
+        sign[0] = '-';
+        temp = -temp;
+    }
+
+    sprintf(buff,"%s%u.%02u",sign,(unsigned int)(temp / 100),(unsigned int)(temp % 100));
+}
+
+/*
+*********************************************************************************************************
 *    函 数 名: httpd_ssi_mppt_data_collection_function
 *    功能说明: 485控制器(MPPT太阳能控制器)参数界面更新
 *    形    参: @pcInsert : 输出缓冲区(JSON数组字符串)
@@ -443,9 +465,9 @@ void httpd_ssi_mppt_data_collection_function(char *pcInsert)
     value = ((uint32_t)mppt->realtime.total_discharge_kwh_H << 16) | mppt->realtime.total_discharge_kwh_L;
     mppt_fixed2_to_str(buff[15],value);
 
-    /* 温度、运行天数、昼夜状态 */
-    sprintf(buff[16],"%d",(int16_t)mppt->realtime.ambient_temp);
-    sprintf(buff[17],"%d",(int16_t)mppt->realtime.device_temp);
+    /* 温度(0.01℃)、运行天数、昼夜状态 */
+    mppt_temp_to_str(buff[16],mppt->realtime.ambient_temp);
+    mppt_temp_to_str(buff[17],mppt->realtime.device_temp);
     sprintf(buff[18],"%u",(unsigned int)mppt->realtime.running_days_2);
     sprintf(buff[19],"%s",mppt->ai_state.day_night_status ? "\xe5\xa4\x9c\xe6\x99\x9a" : "\xe7\x99\xbd\xe5\xa4\xa9"); /* 夜晚/白天 */
 
